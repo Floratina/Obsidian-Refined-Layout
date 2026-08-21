@@ -41,6 +41,10 @@ const requiredCalloutRules = [
   "--rl-edit-callout-title-only-padding-bottom-em",
   "--rl-read-callout-title-only-padding-bottom-em",
   ".callout.is-collapsible.is-collapsed .callout-title",
+  "border-bottom-left-radius: 0 !important",
+  "border-bottom-right-radius: 0 !important",
+  "border-top-right-radius: 0 !important",
+  "border-top-left-radius: 0 !important",
   ".callout-title + .callout-content > :is(h1, h2, h3, h4, h5, h6",
 ];
 for (const selector of requiredCalloutRules) {
@@ -99,11 +103,29 @@ if (settingsSource === undefined) {
   const referencedVariables = new Set(
     [...css.matchAll(/var\((--rl-[a-z0-9-]+)/g)].map((match) => match[1]),
   );
+  const cssDefinedVariables = new Set(
+    customPropertyDefinitions.map((definition) => definition.replace(/\s*:$/, "")),
+  );
   const missingVariables = [...referencedVariables]
-    .filter((variable) => !generatedVariables.has(variable))
+    .filter((variable) => !generatedVariables.has(variable) && !cssDefinedVariables.has(variable))
     .sort();
   if (missingVariables.length > 0) {
     failures.push(`CSS 引用了设置中不存在的变量：${missingVariables.join(", ")}`);
+  }
+
+  const requiredHeadingDecorationRules = [
+    "top: 50% !important",
+    "@supports (top: 1lh)",
+    "top: 0.5lh !important",
+    "translateY(var(--rl-edit-heading-decoration-line-padding-top, 0px))",
+    "--rl-edit-heading-decoration-line-padding-top: var(--rl-edit-headings-h1-top-em)",
+    "--rl-edit-heading-decoration-line-padding-top: var(--rl-edit-blockquote-headings-h1-top-em)",
+    "--rl-edit-heading-decoration-line-padding-top: 0px",
+  ];
+  for (const rule of requiredHeadingDecorationRules) {
+    if (!css.includes(rule)) {
+      failures.push(`缺少标题装饰线首行定位规则：${rule}`);
+    }
   }
 
   const legacySettings = {

@@ -15,7 +15,6 @@ import {
 export type ResettableSection =
   | "body"
   | "headings"
-  | "headingDecoration"
   | "callout"
   | "blockquote"
   | "image"
@@ -109,6 +108,7 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
     this.renderGlobalReset(containerEl);
     this.renderBodySection(containerEl);
     this.renderHeadingsSection(containerEl);
+    this.renderHeadingDecorationSection(containerEl);
     this.renderCalloutSection(containerEl);
     this.renderBlockquoteSection(containerEl);
     this.renderImageSection(containerEl);
@@ -231,13 +231,8 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
 
   private renderHeadingsSection(container: HTMLElement): void {
     const section = this.createSection(container, "正文标题 H1–H6", "headings", "headings");
-    this.addNumber(section, ["headingDecoration", "leftPx"], "装饰线左偏移", "主题标题装饰线相对标题的水平位置。");
-    this.addNumber(section, ["headingDecoration", "widthPx"], "装饰线宽度", "主题标题装饰线宽度。");
-    this.addNumber(section, ["headingDecoration", "radiusPx"], "装饰线圆角", "主题标题装饰线圆角。");
-    this.addNumber(section, ["headingDecoration", "marginRightPx"], "装饰线右间距", "替代旧 CSS 中缺失的变量，默认 0。", { min: 0 });
     if (this.mode === "edit") {
       this.addNumber(section, ["headingDecoration", "firstHeadingPaddingTopPx"], "首行标题顶部补偿", "文档第一行是标题时的顶部补偿。");
-      this.addNumber(section, ["headingDecoration", "firstHeadingDecorOffsetPx"], "首行装饰线补偿", "文档第一行标题装饰线的额外偏移。");
     }
 
     for (const level of HEADING_LEVELS) {
@@ -246,8 +241,49 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
       this.addNumber(group, ["headings", level, "lineHeight"], `${HEADING_LABELS[level]} 行高`, "标题行高。");
       this.addNumber(group, ["headings", level, "topEm"], `${HEADING_LABELS[level]} 上间距`, "标题顶部间距。");
       this.addNumber(group, ["headings", level, "bottomEm"], `${HEADING_LABELS[level]} 下间距`, "标题底部间距。");
-      this.addNumber(group, ["headings", level, "decorHeightPx"], `${HEADING_LABELS[level]} 装饰线高度`, "主题标题装饰线高度。");
-      this.addNumber(group, ["headings", level, "decorOffsetPx"], `${HEADING_LABELS[level]} 装饰线垂直偏移`, "在垂直居中基础上的微调。");
+    }
+  }
+
+  private renderHeadingDecorationSection(container: HTMLElement): void {
+    const section = container.createEl("details", { cls: "rl-settings-section" });
+    section.createEl("summary", { text: "标题伪元素" });
+
+    new Setting(section)
+      .setName("主题标题伪元素")
+      .setDesc("调整主题已经提供的标题 ::before；没有标题伪元素的主题不会新增装饰。")
+      .addExtraButton((button) => {
+        button
+          .setIcon("reset")
+          .setTooltip("恢复本区默认值")
+          .onClick(() => {
+            this.plugin.resetHeadingDecoration(this.mode);
+            this.display();
+          });
+      });
+
+    this.addNumber(section, ["headingDecoration", "leftPx"], "水平偏移", "伪元素相对标题的水平位置。");
+    this.addNumber(section, ["headingDecoration", "widthPx"], "宽度", "伪元素宽度。");
+    this.addNumber(section, ["headingDecoration", "radiusPx"], "圆角", "伪元素圆角半径。");
+    this.addNumber(section, ["headingDecoration", "marginRightPx"], "右间距", "伪元素右侧间距。", { min: 0 });
+    if (this.mode === "edit") {
+      this.addNumber(
+        section,
+        ["headingDecoration", "firstHeadingDecorOffsetPx"],
+        "文档首标题额外补偿",
+        "仅在文档第一行就是标题时叠加；正值向下，负值向上。",
+      );
+    }
+
+    for (const level of HEADING_LEVELS) {
+      const group = section.createEl("details", { cls: "rl-settings-subsection" });
+      group.createEl("summary", { text: HEADING_LABELS[level] });
+      this.addNumber(group, ["headings", level, "decorHeightPx"], `${HEADING_LABELS[level]} 高度`, "伪元素高度。");
+      this.addNumber(
+        group,
+        ["headings", level, "decorOffsetPx"],
+        `${HEADING_LABELS[level]} 垂直补偿`,
+        "在第一行垂直居中的基础上微调；正值向下，负值向上。",
+      );
     }
   }
 

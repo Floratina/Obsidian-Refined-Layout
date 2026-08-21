@@ -443,6 +443,7 @@ var RefinedLayoutSettingTab = class extends import_obsidian.PluginSettingTab {
     this.renderGlobalReset(containerEl);
     this.renderBodySection(containerEl);
     this.renderHeadingsSection(containerEl);
+    this.renderHeadingDecorationSection(containerEl);
     this.renderCalloutSection(containerEl);
     this.renderBlockquoteSection(containerEl);
     this.renderImageSection(containerEl);
@@ -528,13 +529,8 @@ var RefinedLayoutSettingTab = class extends import_obsidian.PluginSettingTab {
   }
   renderHeadingsSection(container) {
     const section = this.createSection(container, "\u6B63\u6587\u6807\u9898 H1\u2013H6", "headings", "headings");
-    this.addNumber(section, ["headingDecoration", "leftPx"], "\u88C5\u9970\u7EBF\u5DE6\u504F\u79FB", "\u4E3B\u9898\u6807\u9898\u88C5\u9970\u7EBF\u76F8\u5BF9\u6807\u9898\u7684\u6C34\u5E73\u4F4D\u7F6E\u3002");
-    this.addNumber(section, ["headingDecoration", "widthPx"], "\u88C5\u9970\u7EBF\u5BBD\u5EA6", "\u4E3B\u9898\u6807\u9898\u88C5\u9970\u7EBF\u5BBD\u5EA6\u3002");
-    this.addNumber(section, ["headingDecoration", "radiusPx"], "\u88C5\u9970\u7EBF\u5706\u89D2", "\u4E3B\u9898\u6807\u9898\u88C5\u9970\u7EBF\u5706\u89D2\u3002");
-    this.addNumber(section, ["headingDecoration", "marginRightPx"], "\u88C5\u9970\u7EBF\u53F3\u95F4\u8DDD", "\u66FF\u4EE3\u65E7 CSS \u4E2D\u7F3A\u5931\u7684\u53D8\u91CF\uFF0C\u9ED8\u8BA4 0\u3002", { min: 0 });
     if (this.mode === "edit") {
       this.addNumber(section, ["headingDecoration", "firstHeadingPaddingTopPx"], "\u9996\u884C\u6807\u9898\u9876\u90E8\u8865\u507F", "\u6587\u6863\u7B2C\u4E00\u884C\u662F\u6807\u9898\u65F6\u7684\u9876\u90E8\u8865\u507F\u3002");
-      this.addNumber(section, ["headingDecoration", "firstHeadingDecorOffsetPx"], "\u9996\u884C\u88C5\u9970\u7EBF\u8865\u507F", "\u6587\u6863\u7B2C\u4E00\u884C\u6807\u9898\u88C5\u9970\u7EBF\u7684\u989D\u5916\u504F\u79FB\u3002");
     }
     for (const level of HEADING_LEVELS) {
       const group = section.createEl("details", { cls: "rl-settings-subsection" });
@@ -542,8 +538,39 @@ var RefinedLayoutSettingTab = class extends import_obsidian.PluginSettingTab {
       this.addNumber(group, ["headings", level, "lineHeight"], `${HEADING_LABELS[level]} \u884C\u9AD8`, "\u6807\u9898\u884C\u9AD8\u3002");
       this.addNumber(group, ["headings", level, "topEm"], `${HEADING_LABELS[level]} \u4E0A\u95F4\u8DDD`, "\u6807\u9898\u9876\u90E8\u95F4\u8DDD\u3002");
       this.addNumber(group, ["headings", level, "bottomEm"], `${HEADING_LABELS[level]} \u4E0B\u95F4\u8DDD`, "\u6807\u9898\u5E95\u90E8\u95F4\u8DDD\u3002");
-      this.addNumber(group, ["headings", level, "decorHeightPx"], `${HEADING_LABELS[level]} \u88C5\u9970\u7EBF\u9AD8\u5EA6`, "\u4E3B\u9898\u6807\u9898\u88C5\u9970\u7EBF\u9AD8\u5EA6\u3002");
-      this.addNumber(group, ["headings", level, "decorOffsetPx"], `${HEADING_LABELS[level]} \u88C5\u9970\u7EBF\u5782\u76F4\u504F\u79FB`, "\u5728\u5782\u76F4\u5C45\u4E2D\u57FA\u7840\u4E0A\u7684\u5FAE\u8C03\u3002");
+    }
+  }
+  renderHeadingDecorationSection(container) {
+    const section = container.createEl("details", { cls: "rl-settings-section" });
+    section.createEl("summary", { text: "\u6807\u9898\u4F2A\u5143\u7D20" });
+    new import_obsidian.Setting(section).setName("\u4E3B\u9898\u6807\u9898\u4F2A\u5143\u7D20").setDesc("\u8C03\u6574\u4E3B\u9898\u5DF2\u7ECF\u63D0\u4F9B\u7684\u6807\u9898 ::before\uFF1B\u6CA1\u6709\u6807\u9898\u4F2A\u5143\u7D20\u7684\u4E3B\u9898\u4E0D\u4F1A\u65B0\u589E\u88C5\u9970\u3002").addExtraButton((button) => {
+      button.setIcon("reset").setTooltip("\u6062\u590D\u672C\u533A\u9ED8\u8BA4\u503C").onClick(() => {
+        this.plugin.resetHeadingDecoration(this.mode);
+        this.display();
+      });
+    });
+    this.addNumber(section, ["headingDecoration", "leftPx"], "\u6C34\u5E73\u504F\u79FB", "\u4F2A\u5143\u7D20\u76F8\u5BF9\u6807\u9898\u7684\u6C34\u5E73\u4F4D\u7F6E\u3002");
+    this.addNumber(section, ["headingDecoration", "widthPx"], "\u5BBD\u5EA6", "\u4F2A\u5143\u7D20\u5BBD\u5EA6\u3002");
+    this.addNumber(section, ["headingDecoration", "radiusPx"], "\u5706\u89D2", "\u4F2A\u5143\u7D20\u5706\u89D2\u534A\u5F84\u3002");
+    this.addNumber(section, ["headingDecoration", "marginRightPx"], "\u53F3\u95F4\u8DDD", "\u4F2A\u5143\u7D20\u53F3\u4FA7\u95F4\u8DDD\u3002", { min: 0 });
+    if (this.mode === "edit") {
+      this.addNumber(
+        section,
+        ["headingDecoration", "firstHeadingDecorOffsetPx"],
+        "\u6587\u6863\u9996\u6807\u9898\u989D\u5916\u8865\u507F",
+        "\u4EC5\u5728\u6587\u6863\u7B2C\u4E00\u884C\u5C31\u662F\u6807\u9898\u65F6\u53E0\u52A0\uFF1B\u6B63\u503C\u5411\u4E0B\uFF0C\u8D1F\u503C\u5411\u4E0A\u3002"
+      );
+    }
+    for (const level of HEADING_LEVELS) {
+      const group = section.createEl("details", { cls: "rl-settings-subsection" });
+      group.createEl("summary", { text: HEADING_LABELS[level] });
+      this.addNumber(group, ["headings", level, "decorHeightPx"], `${HEADING_LABELS[level]} \u9AD8\u5EA6`, "\u4F2A\u5143\u7D20\u9AD8\u5EA6\u3002");
+      this.addNumber(
+        group,
+        ["headings", level, "decorOffsetPx"],
+        `${HEADING_LABELS[level]} \u5782\u76F4\u8865\u507F`,
+        "\u5728\u7B2C\u4E00\u884C\u5782\u76F4\u5C45\u4E2D\u7684\u57FA\u7840\u4E0A\u5FAE\u8C03\uFF1B\u6B63\u503C\u5411\u4E0B\uFF0C\u8D1F\u503C\u5411\u4E0A\u3002"
+      );
     }
   }
   renderCalloutSection(container) {
@@ -784,11 +811,26 @@ var RefinedLayoutPlugin = class extends import_obsidian2.Plugin {
   resetSection(mode, section, module2) {
     const defaults = cloneDefaultSettings();
     this.settings[mode].modules[module2] = defaults[mode].modules[module2];
-    if (section !== "canvasReset") {
+    if (section === "headings") {
+      for (const level of HEADING_LEVELS) {
+        this.settings[mode].headings[level].lineHeight = defaults[mode].headings[level].lineHeight;
+        this.settings[mode].headings[level].topEm = defaults[mode].headings[level].topEm;
+        this.settings[mode].headings[level].bottomEm = defaults[mode].headings[level].bottomEm;
+      }
+      this.settings[mode].headingDecoration.firstHeadingPaddingTopPx = defaults[mode].headingDecoration.firstHeadingPaddingTopPx;
+    } else if (section !== "canvasReset") {
       this.settings[mode][section] = structuredClone(defaults[mode][section]);
     }
-    if (section === "headings") {
-      this.settings[mode].headingDecoration = structuredClone(defaults[mode].headingDecoration);
+    this.applyAndScheduleSave();
+  }
+  resetHeadingDecoration(mode) {
+    const defaults = cloneDefaultSettings();
+    const firstHeadingPaddingTopPx = this.settings[mode].headingDecoration.firstHeadingPaddingTopPx;
+    this.settings[mode].headingDecoration = structuredClone(defaults[mode].headingDecoration);
+    this.settings[mode].headingDecoration.firstHeadingPaddingTopPx = firstHeadingPaddingTopPx;
+    for (const level of HEADING_LEVELS) {
+      this.settings[mode].headings[level].decorHeightPx = defaults[mode].headings[level].decorHeightPx;
+      this.settings[mode].headings[level].decorOffsetPx = defaults[mode].headings[level].decorOffsetPx;
     }
     this.applyAndScheduleSave();
   }

@@ -1,6 +1,7 @@
 import { Plugin } from "obsidian";
 import {
   cloneDefaultSettings,
+  HEADING_LEVELS,
   mergeSettings,
   MODULE_KEYS,
   type ModeKey,
@@ -123,11 +124,27 @@ export default class RefinedLayoutPlugin extends Plugin {
   resetSection(mode: ModeKey, section: ResettableSection, module: ModuleKey): void {
     const defaults = cloneDefaultSettings();
     this.settings[mode].modules[module] = defaults[mode].modules[module];
-    if (section !== "canvasReset") {
+    if (section === "headings") {
+      for (const level of HEADING_LEVELS) {
+        this.settings[mode].headings[level].lineHeight = defaults[mode].headings[level].lineHeight;
+        this.settings[mode].headings[level].topEm = defaults[mode].headings[level].topEm;
+        this.settings[mode].headings[level].bottomEm = defaults[mode].headings[level].bottomEm;
+      }
+      this.settings[mode].headingDecoration.firstHeadingPaddingTopPx = defaults[mode].headingDecoration.firstHeadingPaddingTopPx;
+    } else if (section !== "canvasReset") {
       this.settings[mode][section] = structuredClone(defaults[mode][section]) as never;
     }
-    if (section === "headings") {
-      this.settings[mode].headingDecoration = structuredClone(defaults[mode].headingDecoration);
+    this.applyAndScheduleSave();
+  }
+
+  resetHeadingDecoration(mode: ModeKey): void {
+    const defaults = cloneDefaultSettings();
+    const firstHeadingPaddingTopPx = this.settings[mode].headingDecoration.firstHeadingPaddingTopPx;
+    this.settings[mode].headingDecoration = structuredClone(defaults[mode].headingDecoration);
+    this.settings[mode].headingDecoration.firstHeadingPaddingTopPx = firstHeadingPaddingTopPx;
+    for (const level of HEADING_LEVELS) {
+      this.settings[mode].headings[level].decorHeightPx = defaults[mode].headings[level].decorHeightPx;
+      this.settings[mode].headings[level].decorOffsetPx = defaults[mode].headings[level].decorOffsetPx;
     }
     this.applyAndScheduleSave();
   }

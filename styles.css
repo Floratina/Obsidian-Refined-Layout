@@ -44,36 +44,42 @@ body.refined-layout-enabled.rl-read-body .markdown-rendered .el-ul > ul {
    -------------------------------------------------------------------------- */
 
 body.refined-layout-enabled.rl-edit-headings .markdown-source-view.mod-cm6 .HyperMD-header-1 {
+  --rl-edit-heading-decoration-line-padding-top: var(--rl-edit-headings-h1-top-em);
   line-height: var(--rl-edit-headings-h1-line-height) !important;
   padding-top: var(--rl-edit-headings-h1-top-em) !important;
   padding-bottom: var(--rl-edit-headings-h1-bottom-em) !important;
 }
 
 body.refined-layout-enabled.rl-edit-headings .markdown-source-view.mod-cm6 .HyperMD-header-2 {
+  --rl-edit-heading-decoration-line-padding-top: var(--rl-edit-headings-h2-top-em);
   line-height: var(--rl-edit-headings-h2-line-height) !important;
   padding-top: var(--rl-edit-headings-h2-top-em) !important;
   padding-bottom: var(--rl-edit-headings-h2-bottom-em) !important;
 }
 
 body.refined-layout-enabled.rl-edit-headings .markdown-source-view.mod-cm6 .HyperMD-header-3 {
+  --rl-edit-heading-decoration-line-padding-top: var(--rl-edit-headings-h3-top-em);
   line-height: var(--rl-edit-headings-h3-line-height) !important;
   padding-top: var(--rl-edit-headings-h3-top-em) !important;
   padding-bottom: var(--rl-edit-headings-h3-bottom-em) !important;
 }
 
 body.refined-layout-enabled.rl-edit-headings .markdown-source-view.mod-cm6 .HyperMD-header-4 {
+  --rl-edit-heading-decoration-line-padding-top: var(--rl-edit-headings-h4-top-em);
   line-height: var(--rl-edit-headings-h4-line-height) !important;
   padding-top: var(--rl-edit-headings-h4-top-em) !important;
   padding-bottom: var(--rl-edit-headings-h4-bottom-em) !important;
 }
 
 body.refined-layout-enabled.rl-edit-headings .markdown-source-view.mod-cm6 .HyperMD-header-5 {
+  --rl-edit-heading-decoration-line-padding-top: var(--rl-edit-headings-h5-top-em);
   line-height: var(--rl-edit-headings-h5-line-height) !important;
   padding-top: var(--rl-edit-headings-h5-top-em) !important;
   padding-bottom: var(--rl-edit-headings-h5-bottom-em) !important;
 }
 
 body.refined-layout-enabled.rl-edit-headings .markdown-source-view.mod-cm6 .HyperMD-header-6 {
+  --rl-edit-heading-decoration-line-padding-top: var(--rl-edit-headings-h6-top-em);
   line-height: var(--rl-edit-headings-h6-line-height) !important;
   padding-top: var(--rl-edit-headings-h6-top-em) !important;
   padding-bottom: var(--rl-edit-headings-h6-bottom-em) !important;
@@ -97,6 +103,7 @@ body.refined-layout-enabled.rl-edit-headings .markdown-source-view.mod-cm6 .cm-c
 }
 
 body.refined-layout-enabled.rl-edit-headings .markdown-source-view.mod-cm6 .cm-content > .cm-line:first-child[class*="HyperMD-header"] {
+  --rl-edit-heading-decoration-line-padding-top: var(--rl-edit-heading-decoration-first-heading-padding-top-px);
   padding-top: var(--rl-edit-heading-decoration-first-heading-padding-top-px) !important;
 }
 
@@ -219,6 +226,27 @@ body.refined-layout-enabled.rl-read-headings .markdown-rendered .el-h5 h5::befor
 body.refined-layout-enabled.rl-read-headings .markdown-rendered .el-h6 h6::before {
   height: var(--rl-read-headings-h6-decor-height-px) !important;
   margin-top: var(--rl-read-headings-h6-decor-offset-px) !important;
+}
+
+/*
+ * Modern browsers can anchor an absolute pseudo-element to the first line's
+ * line box. Keep the 50% rules above as the compatibility fallback for older
+ * Electron versions, then use the first-line center when lh is supported.
+ * CodeMirror positions the pseudo-element from the line element's top edge,
+ * while the first line box starts below its padding. A second translation
+ * applies that exact padding without arithmetic and remains independent from
+ * the user-controlled decoration offsets.
+ */
+@supports (top: 1lh) {
+  body.refined-layout-enabled.rl-edit-headings .markdown-source-view.mod-cm6 .cm-content [class*="HyperMD-header"]::before {
+    top: 0.5lh !important;
+    transform: translateY(-50%) translateY(var(--rl-edit-heading-decoration-line-padding-top, 0px)) !important;
+  }
+
+  body.refined-layout-enabled.rl-read-headings .markdown-rendered :is(.el-h1, .el-h2, .el-h3, .el-h4, .el-h5, .el-h6) :is(h1, h2, h3, h4, h5, h6)::before {
+    top: 0.5lh !important;
+    transform: translateY(-50%) !important;
+  }
 }
 
 /* --------------------------------------------------------------------------
@@ -395,6 +423,7 @@ body.refined-layout-enabled.rl-read-callouts .markdown-rendered .callout-content
 /* A heading immediately after the Callout title owns the vertical gap. */
 body.refined-layout-enabled.rl-edit-callouts .markdown-source-view.mod-cm6 :is(.callout.drop-shadow, .cm-callout) .callout-title + .callout-content > :is(h1, h2, h3, h4, h5, h6, [class*="HyperMD-header"], .el-h1, .el-h2, .el-h3, .el-h4, .el-h5, .el-h6):first-child,
 body.refined-layout-enabled.rl-edit-callouts .markdown-source-view.mod-cm6 :is(.callout.drop-shadow, .cm-callout) .callout-title + .callout-content > :first-child:has([class*="HyperMD-header"]) {
+  --rl-edit-heading-decoration-line-padding-top: 0px;
   margin-top: 0 !important;
   padding-top: 0 !important;
 }
@@ -437,36 +466,42 @@ body.refined-layout-enabled.rl-read-blockquotes .markdown-rendered .el-blockquot
 
 /* Blockquote headings: editing */
 body.refined-layout-enabled.rl-edit-blockquotes .markdown-source-view.mod-cm6 .cm-line.HyperMD-quote.HyperMD-header-1 {
+  --rl-edit-heading-decoration-line-padding-top: var(--rl-edit-blockquote-headings-h1-top-em);
   line-height: var(--rl-edit-blockquote-headings-h1-line-height) !important;
   padding-top: var(--rl-edit-blockquote-headings-h1-top-em) !important;
   padding-bottom: var(--rl-edit-blockquote-headings-h1-bottom-em) !important;
 }
 
 body.refined-layout-enabled.rl-edit-blockquotes .markdown-source-view.mod-cm6 .cm-line.HyperMD-quote.HyperMD-header-2 {
+  --rl-edit-heading-decoration-line-padding-top: var(--rl-edit-blockquote-headings-h2-top-em);
   line-height: var(--rl-edit-blockquote-headings-h2-line-height) !important;
   padding-top: var(--rl-edit-blockquote-headings-h2-top-em) !important;
   padding-bottom: var(--rl-edit-blockquote-headings-h2-bottom-em) !important;
 }
 
 body.refined-layout-enabled.rl-edit-blockquotes .markdown-source-view.mod-cm6 .cm-line.HyperMD-quote.HyperMD-header-3 {
+  --rl-edit-heading-decoration-line-padding-top: var(--rl-edit-blockquote-headings-h3-top-em);
   line-height: var(--rl-edit-blockquote-headings-h3-line-height) !important;
   padding-top: var(--rl-edit-blockquote-headings-h3-top-em) !important;
   padding-bottom: var(--rl-edit-blockquote-headings-h3-bottom-em) !important;
 }
 
 body.refined-layout-enabled.rl-edit-blockquotes .markdown-source-view.mod-cm6 .cm-line.HyperMD-quote.HyperMD-header-4 {
+  --rl-edit-heading-decoration-line-padding-top: var(--rl-edit-blockquote-headings-h4-top-em);
   line-height: var(--rl-edit-blockquote-headings-h4-line-height) !important;
   padding-top: var(--rl-edit-blockquote-headings-h4-top-em) !important;
   padding-bottom: var(--rl-edit-blockquote-headings-h4-bottom-em) !important;
 }
 
 body.refined-layout-enabled.rl-edit-blockquotes .markdown-source-view.mod-cm6 .cm-line.HyperMD-quote.HyperMD-header-5 {
+  --rl-edit-heading-decoration-line-padding-top: var(--rl-edit-blockquote-headings-h5-top-em);
   line-height: var(--rl-edit-blockquote-headings-h5-line-height) !important;
   padding-top: var(--rl-edit-blockquote-headings-h5-top-em) !important;
   padding-bottom: var(--rl-edit-blockquote-headings-h5-bottom-em) !important;
 }
 
 body.refined-layout-enabled.rl-edit-blockquotes .markdown-source-view.mod-cm6 .cm-line.HyperMD-quote.HyperMD-header-6 {
+  --rl-edit-heading-decoration-line-padding-top: var(--rl-edit-blockquote-headings-h6-top-em);
   line-height: var(--rl-edit-blockquote-headings-h6-line-height) !important;
   padding-top: var(--rl-edit-blockquote-headings-h6-top-em) !important;
   padding-bottom: var(--rl-edit-blockquote-headings-h6-bottom-em) !important;
@@ -729,6 +764,40 @@ body.refined-layout-enabled.rl-read-blockquotes .markdown-rendered .el-blockquot
   body.refined-layout-enabled.rl-edit-tables .markdown-source-view.mod-cm6 .cm-content table:not(.callout *):not(blockquote *),
   body.refined-layout-enabled.rl-read-tables .markdown-rendered table:not(.callout *):not(.el-blockquote *)
 ) :is(thead, tbody) > tr:first-child > :is(th, td):last-child {
+  border-top-right-radius: 0 !important;
+}
+
+/* Callout table headers must not form a rounded lower edge. Keep the table's
+   outer radius and the final data row radius intact. */
+:is(
+  body.refined-layout-enabled.rl-edit-callouts .markdown-source-view.mod-cm6 :is(.callout, .callout-content) table,
+  body.refined-layout-enabled.rl-read-callouts .markdown-rendered :is(.callout, .callout-content) table
+) :is(thead > tr:first-child, tbody > tr:first-child) > :is(th, td) {
+  border-bottom-left-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+}
+
+/* Remove the upper inner corners between adjacent Callout header cells while
+   preserving the table's two outer top corners. */
+:is(
+  body.refined-layout-enabled.rl-edit-callouts .markdown-source-view.mod-cm6 :is(.callout, .callout-content) table,
+  body.refined-layout-enabled.rl-read-callouts .markdown-rendered :is(.callout, .callout-content) table
+) :is(thead > tr:first-child, tbody:only-child > tr:first-child) > :is(th, td):first-child:not(:last-child) {
+  border-top-right-radius: 0 !important;
+}
+
+:is(
+  body.refined-layout-enabled.rl-edit-callouts .markdown-source-view.mod-cm6 :is(.callout, .callout-content) table,
+  body.refined-layout-enabled.rl-read-callouts .markdown-rendered :is(.callout, .callout-content) table
+) :is(thead > tr:first-child, tbody:only-child > tr:first-child) > :is(th, td):last-child:not(:first-child) {
+  border-top-left-radius: 0 !important;
+}
+
+:is(
+  body.refined-layout-enabled.rl-edit-callouts .markdown-source-view.mod-cm6 :is(.callout, .callout-content) table,
+  body.refined-layout-enabled.rl-read-callouts .markdown-rendered :is(.callout, .callout-content) table
+) :is(thead > tr:first-child, tbody:only-child > tr:first-child) > :is(th, td):not(:first-child):not(:last-child) {
+  border-top-left-radius: 0 !important;
   border-top-right-radius: 0 !important;
 }
 
