@@ -93,6 +93,7 @@ export interface CalloutSettings {
   listEndEm: number;
   lastListEndEm: number;
   headings: Record<HeadingLevel, ContextHeadingSettings>;
+  image: ImageSettings;
   table: TableSettings;
 }
 
@@ -118,7 +119,7 @@ export interface CodeBlockSettings {
   marginBottomEm: number;
 }
 
-export interface HeadingGapSettings {
+export interface BodyHeadingGapSettings {
   emptyLineEm: number;
   paragraphEm: number;
   listEm: number;
@@ -127,9 +128,23 @@ export interface HeadingGapSettings {
   tableEm: number;
   imageEm: number;
   calloutEm: number;
-  calloutParagraphPx: number;
-  calloutListPx: number;
-  calloutTablePx: number;
+}
+
+export interface ContextHeadingGapSettings {
+  emptyLineEm: number;
+  paragraphPx: number;
+  listPx: number;
+  quotePx: number;
+  codePx: number;
+  tablePx: number;
+  imagePx: number;
+  calloutPx: number;
+}
+
+export interface HeadingGapSettings {
+  body: BodyHeadingGapSettings;
+  callout: ContextHeadingGapSettings;
+  blockquote: ContextHeadingGapSettings;
 }
 
 export interface ModeSettings {
@@ -146,7 +161,7 @@ export interface ModeSettings {
 }
 
 export interface RefinedLayoutSettings {
-  schemaVersion: 1;
+  schemaVersion: 2;
   edit: ModeSettings;
   read: ModeSettings;
 }
@@ -168,6 +183,9 @@ const READ_TABLE: TableSettings = {
   spacingTopPx: 4,
   spacingBottomPx: 6,
 };
+
+const EDIT_IMAGE: ImageSettings = { maxWidthPct: 85, radiusPx: 8, borderPx: 2 };
+const READ_IMAGE: ImageSettings = { maxWidthPct: 85, radiusPx: 8, borderPx: 2 };
 
 const EDIT_HEADINGS: Record<HeadingLevel, HeadingSettings> = {
   h1: { lineHeight: 1.4, topEm: 0.4, bottomEm: 0.004, decorHeightPx: 20, decorOffsetPx: 0 },
@@ -236,7 +254,7 @@ const ALL_MODULES: ModuleSettings = {
 };
 
 export const DEFAULT_SETTINGS: RefinedLayoutSettings = {
-  schemaVersion: 1,
+  schemaVersion: 2,
   edit: {
     modules: { ...ALL_MODULES },
     body: {
@@ -278,6 +296,7 @@ export const DEFAULT_SETTINGS: RefinedLayoutSettings = {
       listEndEm: 0,
       lastListEndEm: 0,
       headings: EDIT_CALLOUT_HEADINGS,
+      image: { ...EDIT_IMAGE },
       table: { ...EDIT_TABLE },
     },
     blockquote: {
@@ -288,7 +307,7 @@ export const DEFAULT_SETTINGS: RefinedLayoutSettings = {
       headings: EDIT_BLOCKQUOTE_HEADINGS,
       table: { ...EDIT_TABLE },
     },
-    image: { maxWidthPct: 85, radiusPx: 8, borderPx: 2 },
+    image: { ...EDIT_IMAGE },
     table: { ...EDIT_TABLE },
     codeBlock: {
       lineHeight: 1.62,
@@ -297,17 +316,36 @@ export const DEFAULT_SETTINGS: RefinedLayoutSettings = {
       marginBottomEm: 0,
     },
     headingGap: {
-      emptyLineEm: 0.3,
-      paragraphEm: 0.3,
-      listEm: 0.3,
-      quoteEm: 0.3,
-      codeEm: 0.3,
-      tableEm: 0.3,
-      imageEm: 0.3,
-      calloutEm: 0.3,
-      calloutParagraphPx: -3,
-      calloutListPx: -5,
-      calloutTablePx: -1,
+      body: {
+        emptyLineEm: 0.3,
+        paragraphEm: 0.3,
+        listEm: 0.3,
+        quoteEm: 0.3,
+        codeEm: 0.3,
+        tableEm: 0.3,
+        imageEm: 0.3,
+        calloutEm: 0.3,
+      },
+      callout: {
+        emptyLineEm: 0,
+        paragraphPx: -3,
+        listPx: -5,
+        quotePx: 0,
+        codePx: 0,
+        tablePx: -1,
+        imagePx: 0,
+        calloutPx: 0,
+      },
+      blockquote: {
+        emptyLineEm: 0,
+        paragraphPx: 0,
+        listPx: 0,
+        quotePx: 0,
+        codePx: 0,
+        tablePx: 0,
+        imagePx: 0,
+        calloutPx: 0,
+      },
     },
   },
   read: {
@@ -351,6 +389,7 @@ export const DEFAULT_SETTINGS: RefinedLayoutSettings = {
       listEndEm: 0,
       lastListEndEm: 0,
       headings: READ_CALLOUT_HEADINGS,
+      image: { ...READ_IMAGE },
       table: { ...READ_TABLE },
     },
     blockquote: {
@@ -361,7 +400,7 @@ export const DEFAULT_SETTINGS: RefinedLayoutSettings = {
       headings: READ_BLOCKQUOTE_HEADINGS,
       table: { ...READ_TABLE },
     },
-    image: { maxWidthPct: 85, radiusPx: 8, borderPx: 2 },
+    image: { ...READ_IMAGE },
     table: { ...READ_TABLE },
     codeBlock: {
       lineHeight: 1.35,
@@ -370,17 +409,36 @@ export const DEFAULT_SETTINGS: RefinedLayoutSettings = {
       marginBottomEm: 0.5,
     },
     headingGap: {
-      emptyLineEm: 0,
-      paragraphEm: 0,
-      listEm: 0,
-      quoteEm: 0,
-      codeEm: 0,
-      tableEm: 0,
-      imageEm: 0,
-      calloutEm: 0,
-      calloutParagraphPx: 0,
-      calloutListPx: 6,
-      calloutTablePx: 8,
+      body: {
+        emptyLineEm: 0,
+        paragraphEm: 0,
+        listEm: 0,
+        quoteEm: 0,
+        codeEm: 0,
+        tableEm: 0,
+        imageEm: 0,
+        calloutEm: 0,
+      },
+      callout: {
+        emptyLineEm: 0,
+        paragraphPx: 0,
+        listPx: 6,
+        quotePx: 0,
+        codePx: 0,
+        tablePx: 8,
+        imagePx: 0,
+        calloutPx: 0,
+      },
+      blockquote: {
+        emptyLineEm: 0,
+        paragraphPx: 0,
+        listPx: 0,
+        quotePx: 0,
+        codePx: 0,
+        tablePx: 0,
+        imagePx: 0,
+        calloutPx: 0,
+      },
     },
   },
 };
@@ -414,6 +472,65 @@ export function cloneDefaultSettings(): RefinedLayoutSettings {
   return structuredClone(DEFAULT_SETTINGS);
 }
 
+function migrateSettings(candidate: unknown): unknown {
+  if (typeof candidate !== "object" || candidate === null) {
+    return candidate;
+  }
+
+  const source = structuredClone(candidate) as Record<string, unknown>;
+  const schemaVersion = source.schemaVersion;
+  if (schemaVersion !== 1) {
+    return source;
+  }
+
+  for (const mode of MODE_KEYS) {
+    const modeSettings = source[mode];
+    if (typeof modeSettings !== "object" || modeSettings === null) {
+      continue;
+    }
+    const modeRecord = modeSettings as Record<string, unknown>;
+    const legacyGap = modeRecord.headingGap;
+    if (typeof legacyGap !== "object" || legacyGap === null) {
+      continue;
+    }
+    const gap = legacyGap as Record<string, unknown>;
+    const body = {
+      emptyLineEm: gap.emptyLineEm,
+      paragraphEm: gap.paragraphEm,
+      listEm: gap.listEm,
+      quoteEm: gap.quoteEm,
+      codeEm: gap.codeEm,
+      tableEm: gap.tableEm,
+      imageEm: gap.imageEm,
+      calloutEm: gap.calloutEm,
+    };
+    const callout = {
+      emptyLineEm: 0,
+      paragraphPx: gap.calloutParagraphPx,
+      listPx: gap.calloutListPx,
+      quotePx: 0,
+      codePx: 0,
+      tablePx: gap.calloutTablePx,
+      imagePx: 0,
+      calloutPx: 0,
+    };
+    const blockquote = {
+      emptyLineEm: 0,
+      paragraphPx: 0,
+      listPx: 0,
+      quotePx: 0,
+      codePx: 0,
+      tablePx: 0,
+      imagePx: 0,
+      calloutPx: 0,
+    };
+    modeRecord.headingGap = { body, callout, blockquote };
+  }
+
+  source.schemaVersion = 2;
+  return source;
+}
+
 export function mergeSettings(candidate: unknown): RefinedLayoutSettings {
-  return mergeKnown(cloneDefaultSettings(), candidate);
+  return mergeKnown(cloneDefaultSettings(), migrateSettings(candidate));
 }

@@ -27,6 +27,7 @@ module.exports = __toCommonJS(main_exports);
 var import_obsidian2 = require("obsidian");
 
 // src/settings.ts
+var MODE_KEYS = ["edit", "read"];
 var MODULE_KEYS = [
   "body",
   "headings",
@@ -55,6 +56,8 @@ var READ_TABLE = {
   spacingTopPx: 4,
   spacingBottomPx: 6
 };
+var EDIT_IMAGE = { maxWidthPct: 85, radiusPx: 8, borderPx: 2 };
+var READ_IMAGE = { maxWidthPct: 85, radiusPx: 8, borderPx: 2 };
 var EDIT_HEADINGS = {
   h1: { lineHeight: 1.4, topEm: 0.4, bottomEm: 4e-3, decorHeightPx: 20, decorOffsetPx: 0 },
   h2: { lineHeight: 1.4, topEm: 0.4, bottomEm: 4e-3, decorHeightPx: 19.5, decorOffsetPx: 0 },
@@ -115,7 +118,7 @@ var ALL_MODULES = {
   canvasReset: true
 };
 var DEFAULT_SETTINGS = {
-  schemaVersion: 1,
+  schemaVersion: 2,
   edit: {
     modules: { ...ALL_MODULES },
     body: {
@@ -157,6 +160,7 @@ var DEFAULT_SETTINGS = {
       listEndEm: 0,
       lastListEndEm: 0,
       headings: EDIT_CALLOUT_HEADINGS,
+      image: { ...EDIT_IMAGE },
       table: { ...EDIT_TABLE }
     },
     blockquote: {
@@ -167,7 +171,7 @@ var DEFAULT_SETTINGS = {
       headings: EDIT_BLOCKQUOTE_HEADINGS,
       table: { ...EDIT_TABLE }
     },
-    image: { maxWidthPct: 85, radiusPx: 8, borderPx: 2 },
+    image: { ...EDIT_IMAGE },
     table: { ...EDIT_TABLE },
     codeBlock: {
       lineHeight: 1.62,
@@ -176,17 +180,36 @@ var DEFAULT_SETTINGS = {
       marginBottomEm: 0
     },
     headingGap: {
-      emptyLineEm: 0.3,
-      paragraphEm: 0.3,
-      listEm: 0.3,
-      quoteEm: 0.3,
-      codeEm: 0.3,
-      tableEm: 0.3,
-      imageEm: 0.3,
-      calloutEm: 0.3,
-      calloutParagraphPx: -3,
-      calloutListPx: -5,
-      calloutTablePx: -1
+      body: {
+        emptyLineEm: 0.3,
+        paragraphEm: 0.3,
+        listEm: 0.3,
+        quoteEm: 0.3,
+        codeEm: 0.3,
+        tableEm: 0.3,
+        imageEm: 0.3,
+        calloutEm: 0.3
+      },
+      callout: {
+        emptyLineEm: 0,
+        paragraphPx: -3,
+        listPx: -5,
+        quotePx: 0,
+        codePx: 0,
+        tablePx: -1,
+        imagePx: 0,
+        calloutPx: 0
+      },
+      blockquote: {
+        emptyLineEm: 0,
+        paragraphPx: 0,
+        listPx: 0,
+        quotePx: 0,
+        codePx: 0,
+        tablePx: 0,
+        imagePx: 0,
+        calloutPx: 0
+      }
     }
   },
   read: {
@@ -230,6 +253,7 @@ var DEFAULT_SETTINGS = {
       listEndEm: 0,
       lastListEndEm: 0,
       headings: READ_CALLOUT_HEADINGS,
+      image: { ...READ_IMAGE },
       table: { ...READ_TABLE }
     },
     blockquote: {
@@ -240,7 +264,7 @@ var DEFAULT_SETTINGS = {
       headings: READ_BLOCKQUOTE_HEADINGS,
       table: { ...READ_TABLE }
     },
-    image: { maxWidthPct: 85, radiusPx: 8, borderPx: 2 },
+    image: { ...READ_IMAGE },
     table: { ...READ_TABLE },
     codeBlock: {
       lineHeight: 1.35,
@@ -249,17 +273,36 @@ var DEFAULT_SETTINGS = {
       marginBottomEm: 0.5
     },
     headingGap: {
-      emptyLineEm: 0,
-      paragraphEm: 0,
-      listEm: 0,
-      quoteEm: 0,
-      codeEm: 0,
-      tableEm: 0,
-      imageEm: 0,
-      calloutEm: 0,
-      calloutParagraphPx: 0,
-      calloutListPx: 6,
-      calloutTablePx: 8
+      body: {
+        emptyLineEm: 0,
+        paragraphEm: 0,
+        listEm: 0,
+        quoteEm: 0,
+        codeEm: 0,
+        tableEm: 0,
+        imageEm: 0,
+        calloutEm: 0
+      },
+      callout: {
+        emptyLineEm: 0,
+        paragraphPx: 0,
+        listPx: 6,
+        quotePx: 0,
+        codePx: 0,
+        tablePx: 8,
+        imagePx: 0,
+        calloutPx: 0
+      },
+      blockquote: {
+        emptyLineEm: 0,
+        paragraphPx: 0,
+        listPx: 0,
+        quotePx: 0,
+        codePx: 0,
+        tablePx: 0,
+        imagePx: 0,
+        calloutPx: 0
+      }
     }
   }
 };
@@ -283,8 +326,63 @@ function mergeKnown(defaults, candidate) {
 function cloneDefaultSettings() {
   return structuredClone(DEFAULT_SETTINGS);
 }
+function migrateSettings(candidate) {
+  if (typeof candidate !== "object" || candidate === null) {
+    return candidate;
+  }
+  const source = structuredClone(candidate);
+  const schemaVersion = source.schemaVersion;
+  if (schemaVersion !== 1) {
+    return source;
+  }
+  for (const mode of MODE_KEYS) {
+    const modeSettings = source[mode];
+    if (typeof modeSettings !== "object" || modeSettings === null) {
+      continue;
+    }
+    const modeRecord = modeSettings;
+    const legacyGap = modeRecord.headingGap;
+    if (typeof legacyGap !== "object" || legacyGap === null) {
+      continue;
+    }
+    const gap = legacyGap;
+    const body = {
+      emptyLineEm: gap.emptyLineEm,
+      paragraphEm: gap.paragraphEm,
+      listEm: gap.listEm,
+      quoteEm: gap.quoteEm,
+      codeEm: gap.codeEm,
+      tableEm: gap.tableEm,
+      imageEm: gap.imageEm,
+      calloutEm: gap.calloutEm
+    };
+    const callout = {
+      emptyLineEm: 0,
+      paragraphPx: gap.calloutParagraphPx,
+      listPx: gap.calloutListPx,
+      quotePx: 0,
+      codePx: 0,
+      tablePx: gap.calloutTablePx,
+      imagePx: 0,
+      calloutPx: 0
+    };
+    const blockquote = {
+      emptyLineEm: 0,
+      paragraphPx: 0,
+      listPx: 0,
+      quotePx: 0,
+      codePx: 0,
+      tablePx: 0,
+      imagePx: 0,
+      calloutPx: 0
+    };
+    modeRecord.headingGap = { body, callout, blockquote };
+  }
+  source.schemaVersion = 2;
+  return source;
+}
 function mergeSettings(candidate) {
-  return mergeKnown(cloneDefaultSettings(), candidate);
+  return mergeKnown(cloneDefaultSettings(), migrateSettings(candidate));
 }
 
 // src/settings-tab.ts
@@ -460,11 +558,10 @@ var RefinedLayoutSettingTab = class extends import_obsidian.PluginSettingTab {
       ["marginBottomPx", "\u5361\u7247\u4E0B\u5916\u8FB9\u8DDD", "Callout \u4E0E\u540E\u65B9\u5185\u5BB9\u7684\u8DDD\u79BB\u3002"],
       ["titleLineHeight", "Callout \u6807\u9898\u884C\u9AD8", "\u6807\u9898\u680F\u6587\u5B57\u884C\u9AD8\u3002"],
       ["titlePaddingTopEm", "\u6807\u9898\u4E0A\u5185\u8FB9\u8DDD", "\u6807\u9898\u680F\u9876\u90E8\u5185\u8FB9\u8DDD\u3002"],
-      ["titlePaddingBottomEm", "\u6807\u9898\u4E0B\u5185\u8FB9\u8DDD", "\u6807\u9898\u680F\u5E95\u90E8\u5185\u8FB9\u8DDD\u3002"],
+      ["titlePaddingBottomEm", "\u6807\u9898\u4E0B\u5185\u8FB9\u8DDD", "\u6807\u9898\u680F\u5E95\u90E8\u5185\u8FB9\u8DDD\uFF1B\u4EC5\u6807\u9898\u3001\u6298\u53E0\u6216\u540E\u63A5\u6807\u9898\u65F6\u4F1A\u81EA\u52A8\u6291\u5236\u51B2\u7A81\u7A7A\u767D\u3002"],
       ["titlePaddingLeftPx", "\u6807\u9898\u5DE6\u5185\u8FB9\u8DDD", "\u6807\u9898\u680F\u5DE6\u4FA7\u5185\u8FB9\u8DDD\u3002"],
       ["titlePaddingRightPx", "\u6807\u9898\u53F3\u5185\u8FB9\u8DDD", "\u6807\u9898\u680F\u53F3\u4FA7\u5185\u8FB9\u8DDD\u3002"],
       ["titleOnlyPaddingTopEm", "\u4EC5\u6807\u9898\u65F6\u4E0A\u5185\u8FB9\u8DDD", "Callout \u53EA\u6709\u6807\u9898\u65F6\u7684\u9876\u90E8\u5185\u8FB9\u8DDD\u3002"],
-      ["titleOnlyPaddingBottomEm", "\u4EC5\u6807\u9898\u65F6\u4E0B\u5185\u8FB9\u8DDD", "Callout \u53EA\u6709\u6807\u9898\u65F6\u7684\u5E95\u90E8\u5185\u8FB9\u8DDD\u3002"],
       ["collapsedPaddingTopEm", "\u6298\u53E0\u72B6\u6001\u4E0A\u5185\u8FB9\u8DDD", "\u6298\u53E0 Callout \u7684\u9876\u90E8\u5185\u8FB9\u8DDD\u3002"],
       ["collapsedPaddingBottomEm", "\u6298\u53E0\u72B6\u6001\u4E0B\u5185\u8FB9\u8DDD", "\u6298\u53E0 Callout \u7684\u5E95\u90E8\u5185\u8FB9\u8DDD\u3002"],
       ["paragraphLineHeight", "\u5185\u90E8\u6B63\u6587\u884C\u9AD8", "Callout \u6B63\u6587\u884C\u9AD8\uFF0C\u72EC\u7ACB\u4E8E\u666E\u901A\u6B63\u6587\u3002"],
@@ -476,8 +573,9 @@ var RefinedLayoutSettingTab = class extends import_obsidian.PluginSettingTab {
     for (const [key, name, description] of fields) {
       this.addNumber(section, ["callout", key], name, description);
     }
+    this.renderImageFields(section, ["callout", "image"], "Callout \u56FE\u7247");
     this.renderContextHeadings(section, "callout", this.mode === "read");
-    this.renderTableFields(section, ["callout", "table"], "Callout \u8868\u683C");
+    this.renderTableFields(section, ["callout", "table"], "Callout \u8868\u683C\uFF08\u72EC\u7ACB\uFF09");
   }
   renderBlockquoteSection(container) {
     const section = this.createSection(container, "\u5F15\u7528\u5757", "blockquotes", "blockquote");
@@ -503,9 +601,14 @@ var RefinedLayoutSettingTab = class extends import_obsidian.PluginSettingTab {
   }
   renderImageSection(container) {
     const section = this.createSection(container, "\u56FE\u7247", "images", "image");
-    this.addNumber(section, ["image", "maxWidthPct"], "\u6700\u5927\u5BBD\u5EA6", "\u539F\u751F Markdown \u56FE\u7247\u76F8\u5BF9\u6B63\u6587\u533A\u57DF\u7684\u6700\u5927\u5BBD\u5EA6\u3002");
-    this.addNumber(section, ["image", "radiusPx"], "\u56FE\u7247\u5706\u89D2", "\u56FE\u7247\u5706\u89D2\u534A\u5F84\u3002");
-    this.addNumber(section, ["image", "borderPx"], "\u56FE\u7247\u8FB9\u6846", "\u56FE\u7247\u8FB9\u6846\u5BBD\u5EA6\u3002");
+    this.renderImageFields(section, ["image"], "\u6B63\u6587\u56FE\u7247");
+  }
+  renderImageFields(container, prefix, label) {
+    const group = container.createEl("details", { cls: "rl-settings-subsection" });
+    group.createEl("summary", { text: label });
+    this.addNumber(group, [...prefix, "maxWidthPct"], "\u6700\u5927\u5BBD\u5EA6", "\u56FE\u7247\u76F8\u5BF9\u6240\u5728\u5185\u5BB9\u533A\u57DF\u7684\u6700\u5927\u5BBD\u5EA6\u3002");
+    this.addNumber(group, [...prefix, "radiusPx"], "\u56FE\u7247\u5706\u89D2", "\u56FE\u7247\u5706\u89D2\u534A\u5F84\u3002");
+    this.addNumber(group, [...prefix, "borderPx"], "\u56FE\u7247\u8FB9\u6846", "\u56FE\u7247\u8FB9\u6846\u5BBD\u5EA6\u3002");
   }
   renderTableSection(container) {
     const section = this.createSection(container, "\u6B63\u6587\u8868\u683C", "tables", "table");
@@ -533,26 +636,43 @@ var RefinedLayoutSettingTab = class extends import_obsidian.PluginSettingTab {
   }
   renderHeadingGapSection(container) {
     const section = this.createSection(container, "\u6807\u9898\u540E\u9996\u5143\u7D20", "headingGaps", "headingGap");
-    if (this.mode === "edit") {
-      const fields = [
+    this.renderHeadingGapGroup(section, "body", "\u6B63\u6587");
+    this.renderHeadingGapGroup(section, "callout", "Callout");
+    this.renderHeadingGapGroup(section, "blockquote", "Quote");
+  }
+  renderHeadingGapGroup(container, context, label) {
+    const group = container.createEl("details", { cls: "rl-settings-subsection" });
+    group.createEl("summary", { text: label });
+    if (context === "body") {
+      const fields2 = [
         ["emptyLineEm", "\u6807\u9898\u540E\u7A7A\u884C\u9AD8\u5EA6", "\u6807\u9898\u3001\u7A7A\u884C\u3001\u975E\u6807\u9898\u5143\u7D20\u7EC4\u5408\u4E2D\u7684\u7A7A\u884C\u9AD8\u5EA6\u3002"],
-        ["paragraphEm", "\u7D27\u90BB\u6B63\u6587\u95F4\u8DDD", "\u6807\u9898\u540E\u6CA1\u6709\u7A7A\u884C\u4E14\u7D27\u90BB\u6B63\u6587\u65F6\u7684\u9876\u90E8\u8865\u507F\u3002"],
-        ["listEm", "\u7D27\u90BB\u5217\u8868\u95F4\u8DDD", "\u6807\u9898\u540E\u7D27\u90BB\u5217\u8868\u65F6\u7684\u9876\u90E8\u8865\u507F\u3002"],
-        ["quoteEm", "\u7D27\u90BB\u5F15\u7528\u5757\u95F4\u8DDD", "\u6807\u9898\u540E\u7D27\u90BB\u5F15\u7528\u5757\u65F6\u7684\u9876\u90E8\u8865\u507F\u3002"],
-        ["codeEm", "\u7D27\u90BB\u4EE3\u7801\u5757\u95F4\u8DDD", "\u6807\u9898\u540E\u7D27\u90BB\u4EE3\u7801\u5757\u65F6\u7684\u9876\u90E8\u8865\u507F\u3002"],
-        ["tableEm", "\u7D27\u90BB\u8868\u683C\u95F4\u8DDD", "\u6807\u9898\u540E\u7D27\u90BB\u8868\u683C\u65F6\u7684\u9876\u90E8\u8865\u507F\u3002"],
-        ["imageEm", "\u7D27\u90BB\u56FE\u7247\u95F4\u8DDD", "\u6807\u9898\u540E\u7D27\u90BB\u56FE\u7247\u65F6\u7684\u9876\u90E8\u8865\u507F\u3002"],
-        ["calloutEm", "\u7D27\u90BB Callout \u95F4\u8DDD", "\u6807\u9898\u540E\u7D27\u90BB Callout \u65F6\u7684\u9876\u90E8\u8865\u507F\u3002"],
-        ["calloutParagraphPx", "Callout \u6807\u9898\u540E\u6B63\u6587", "Callout \u5185\u90E8\u6807\u9898\u540E\u7D27\u90BB\u6B63\u6587\u65F6\u7684\u95F4\u8DDD\u3002"],
-        ["calloutListPx", "Callout \u6807\u9898\u540E\u5217\u8868", "Callout \u5185\u90E8\u6807\u9898\u540E\u7D27\u90BB\u5217\u8868\u65F6\u7684\u95F4\u8DDD\u3002"],
-        ["calloutTablePx", "Callout \u6807\u9898\u540E\u8868\u683C", "Callout \u5185\u90E8\u6807\u9898\u540E\u7D27\u90BB\u8868\u683C\u65F6\u7684\u95F4\u8DDD\u3002"]
+        ["paragraphEm", "\u7D27\u90BB\u6B63\u6587\u95F4\u8DDD", "\u6B63\u6587\u6807\u9898\u540E\u6CA1\u6709\u7A7A\u884C\u4E14\u7D27\u90BB\u6B63\u6587\u65F6\u7684\u9876\u90E8\u8865\u507F\u3002"],
+        ["listEm", "\u7D27\u90BB\u5217\u8868\u95F4\u8DDD", "\u6B63\u6587\u6807\u9898\u540E\u7D27\u90BB\u5217\u8868\u65F6\u7684\u9876\u90E8\u8865\u507F\u3002"],
+        ["quoteEm", "\u7D27\u90BB Quote \u95F4\u8DDD", "\u6B63\u6587\u6807\u9898\u540E\u7D27\u90BB Quote \u65F6\u7684\u9876\u90E8\u8865\u507F\u3002"],
+        ["codeEm", "\u7D27\u90BB\u4EE3\u7801\u5757\u95F4\u8DDD", "\u6B63\u6587\u6807\u9898\u540E\u7D27\u90BB\u4EE3\u7801\u5757\u65F6\u7684\u9876\u90E8\u8865\u507F\u3002"],
+        ["tableEm", "\u7D27\u90BB\u8868\u683C\u95F4\u8DDD", "\u6B63\u6587\u6807\u9898\u540E\u7D27\u90BB\u8868\u683C\u65F6\u7684\u9876\u90E8\u8865\u507F\u3002"],
+        ["imageEm", "\u7D27\u90BB\u56FE\u7247\u95F4\u8DDD", "\u6B63\u6587\u6807\u9898\u540E\u7D27\u90BB\u56FE\u7247\u65F6\u7684\u9876\u90E8\u8865\u507F\u3002"],
+        ["calloutEm", "\u7D27\u90BB Callout \u95F4\u8DDD", "\u6B63\u6587\u6807\u9898\u540E\u7D27\u90BB Callout \u65F6\u7684\u9876\u90E8\u8865\u507F\u3002"]
       ];
-      for (const [key, name, description] of fields) {
-        this.addNumber(section, ["headingGap", key], name, description);
+      for (const [key, name, description] of fields2) {
+        this.addNumber(group, ["headingGap", "body", key], name, description);
       }
-    } else {
-      this.addNumber(section, ["headingGap", "calloutListPx"], "Callout \u6807\u9898\u540E\u5217\u8868", "\u9605\u8BFB\u6A21\u5F0F Callout \u5185\u90E8\u6807\u9898\u540E\u7D27\u90BB\u5217\u8868\u65F6\u7684\u95F4\u8DDD\u3002");
-      this.addNumber(section, ["headingGap", "calloutTablePx"], "Callout \u6807\u9898\u540E\u8868\u683C", "\u9605\u8BFB\u6A21\u5F0F Callout \u5185\u90E8\u6807\u9898\u540E\u7D27\u90BB\u8868\u683C\u65F6\u7684\u95F4\u8DDD\u3002");
+      return;
+    }
+    if (this.mode === "edit") {
+      this.addNumber(group, ["headingGap", context, "emptyLineEm"], "\u6807\u9898\u540E\u7A7A\u884C\u9AD8\u5EA6", `${label} \u5185\u6807\u9898\u540E\u7A7A\u884C\u7684\u9AD8\u5EA6\u3002`);
+    }
+    const fields = [
+      ["paragraphPx", "\u7D27\u90BB\u6B63\u6587\u95F4\u8DDD", `${label} \u5185\u6807\u9898\u540E\u7D27\u90BB\u6B63\u6587\u65F6\u7684\u95F4\u8DDD\u3002`],
+      ["listPx", "\u7D27\u90BB\u5217\u8868\u95F4\u8DDD", `${label} \u5185\u6807\u9898\u540E\u7D27\u90BB\u5217\u8868\u65F6\u7684\u95F4\u8DDD\u3002`],
+      ["quotePx", "\u7D27\u90BB Quote \u95F4\u8DDD", `${label} \u5185\u6807\u9898\u540E\u7D27\u90BB Quote \u65F6\u7684\u95F4\u8DDD\u3002`],
+      ["codePx", "\u7D27\u90BB\u4EE3\u7801\u5757\u95F4\u8DDD", `${label} \u5185\u6807\u9898\u540E\u7D27\u90BB\u4EE3\u7801\u5757\u65F6\u7684\u95F4\u8DDD\u3002`],
+      ["tablePx", "\u7D27\u90BB\u8868\u683C\u95F4\u8DDD", `${label} \u5185\u6807\u9898\u540E\u7D27\u90BB\u8868\u683C\u65F6\u7684\u95F4\u8DDD\u3002`],
+      ["imagePx", "\u7D27\u90BB\u56FE\u7247\u95F4\u8DDD", `${label} \u5185\u6807\u9898\u540E\u7D27\u90BB\u56FE\u7247\u65F6\u7684\u95F4\u8DDD\u3002`],
+      ["calloutPx", "\u7D27\u90BB Callout \u95F4\u8DDD", `${label} \u5185\u6807\u9898\u540E\u7D27\u90BB Callout \u65F6\u7684\u95F4\u8DDD\u3002`]
+    ];
+    for (const [key, name, description] of fields) {
+      this.addNumber(group, ["headingGap", context, key], name, description);
     }
   }
   renderCanvasSection(container) {

@@ -263,11 +263,10 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
       ["marginBottomPx", "卡片下外边距", "Callout 与后方内容的距离。"],
       ["titleLineHeight", "Callout 标题行高", "标题栏文字行高。"],
       ["titlePaddingTopEm", "标题上内边距", "标题栏顶部内边距。"],
-      ["titlePaddingBottomEm", "标题下内边距", "标题栏底部内边距。"],
+      ["titlePaddingBottomEm", "标题下内边距", "标题栏底部内边距；仅标题、折叠或后接标题时会自动抑制冲突空白。"],
       ["titlePaddingLeftPx", "标题左内边距", "标题栏左侧内边距。"],
       ["titlePaddingRightPx", "标题右内边距", "标题栏右侧内边距。"],
       ["titleOnlyPaddingTopEm", "仅标题时上内边距", "Callout 只有标题时的顶部内边距。"],
-      ["titleOnlyPaddingBottomEm", "仅标题时下内边距", "Callout 只有标题时的底部内边距。"],
       ["collapsedPaddingTopEm", "折叠状态上内边距", "折叠 Callout 的顶部内边距。"],
       ["collapsedPaddingBottomEm", "折叠状态下内边距", "折叠 Callout 的底部内边距。"],
       ["paragraphLineHeight", "内部正文行高", "Callout 正文行高，独立于普通正文。"],
@@ -280,8 +279,9 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
       this.addNumber(section, ["callout", key], name, description);
     }
 
+    this.renderImageFields(section, ["callout", "image"], "Callout 图片");
     this.renderContextHeadings(section, "callout", this.mode === "read");
-    this.renderTableFields(section, ["callout", "table"], "Callout 表格");
+    this.renderTableFields(section, ["callout", "table"], "Callout 表格（独立）");
   }
 
   private renderBlockquoteSection(container: HTMLElement): void {
@@ -314,9 +314,15 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
 
   private renderImageSection(container: HTMLElement): void {
     const section = this.createSection(container, "图片", "images", "image");
-    this.addNumber(section, ["image", "maxWidthPct"], "最大宽度", "原生 Markdown 图片相对正文区域的最大宽度。");
-    this.addNumber(section, ["image", "radiusPx"], "图片圆角", "图片圆角半径。");
-    this.addNumber(section, ["image", "borderPx"], "图片边框", "图片边框宽度。");
+    this.renderImageFields(section, ["image"], "正文图片");
+  }
+
+  private renderImageFields(container: HTMLElement, prefix: string[], label: string): void {
+    const group = container.createEl("details", { cls: "rl-settings-subsection" });
+    group.createEl("summary", { text: label });
+    this.addNumber(group, [...prefix, "maxWidthPct"], "最大宽度", "图片相对所在内容区域的最大宽度。");
+    this.addNumber(group, [...prefix, "radiusPx"], "图片圆角", "图片圆角半径。");
+    this.addNumber(group, [...prefix, "borderPx"], "图片边框", "图片边框宽度。");
   }
 
   private renderTableSection(container: HTMLElement): void {
@@ -348,26 +354,51 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
 
   private renderHeadingGapSection(container: HTMLElement): void {
     const section = this.createSection(container, "标题后首元素", "headingGaps", "headingGap");
-    if (this.mode === "edit") {
+    this.renderHeadingGapGroup(section, "body", "正文");
+    this.renderHeadingGapGroup(section, "callout", "Callout");
+    this.renderHeadingGapGroup(section, "blockquote", "Quote");
+  }
+
+  private renderHeadingGapGroup(
+    container: HTMLElement,
+    context: "body" | "callout" | "blockquote",
+    label: string,
+  ): void {
+    const group = container.createEl("details", { cls: "rl-settings-subsection" });
+    group.createEl("summary", { text: label });
+
+    if (context === "body") {
       const fields: Array<[string, string, string]> = [
         ["emptyLineEm", "标题后空行高度", "标题、空行、非标题元素组合中的空行高度。"],
-        ["paragraphEm", "紧邻正文间距", "标题后没有空行且紧邻正文时的顶部补偿。"],
-        ["listEm", "紧邻列表间距", "标题后紧邻列表时的顶部补偿。"],
-        ["quoteEm", "紧邻引用块间距", "标题后紧邻引用块时的顶部补偿。"],
-        ["codeEm", "紧邻代码块间距", "标题后紧邻代码块时的顶部补偿。"],
-        ["tableEm", "紧邻表格间距", "标题后紧邻表格时的顶部补偿。"],
-        ["imageEm", "紧邻图片间距", "标题后紧邻图片时的顶部补偿。"],
-        ["calloutEm", "紧邻 Callout 间距", "标题后紧邻 Callout 时的顶部补偿。"],
-        ["calloutParagraphPx", "Callout 标题后正文", "Callout 内部标题后紧邻正文时的间距。"],
-        ["calloutListPx", "Callout 标题后列表", "Callout 内部标题后紧邻列表时的间距。"],
-        ["calloutTablePx", "Callout 标题后表格", "Callout 内部标题后紧邻表格时的间距。"],
+        ["paragraphEm", "紧邻正文间距", "正文标题后没有空行且紧邻正文时的顶部补偿。"],
+        ["listEm", "紧邻列表间距", "正文标题后紧邻列表时的顶部补偿。"],
+        ["quoteEm", "紧邻 Quote 间距", "正文标题后紧邻 Quote 时的顶部补偿。"],
+        ["codeEm", "紧邻代码块间距", "正文标题后紧邻代码块时的顶部补偿。"],
+        ["tableEm", "紧邻表格间距", "正文标题后紧邻表格时的顶部补偿。"],
+        ["imageEm", "紧邻图片间距", "正文标题后紧邻图片时的顶部补偿。"],
+        ["calloutEm", "紧邻 Callout 间距", "正文标题后紧邻 Callout 时的顶部补偿。"],
       ];
       for (const [key, name, description] of fields) {
-        this.addNumber(section, ["headingGap", key], name, description);
+        this.addNumber(group, ["headingGap", "body", key], name, description);
       }
-    } else {
-      this.addNumber(section, ["headingGap", "calloutListPx"], "Callout 标题后列表", "阅读模式 Callout 内部标题后紧邻列表时的间距。");
-      this.addNumber(section, ["headingGap", "calloutTablePx"], "Callout 标题后表格", "阅读模式 Callout 内部标题后紧邻表格时的间距。");
+      return;
+    }
+
+    if (this.mode === "edit") {
+      this.addNumber(group, ["headingGap", context, "emptyLineEm"], "标题后空行高度", `${label} 内标题后空行的高度。`);
+    }
+
+    const fields: Array<[string, string, string]> = [
+      ["paragraphPx", "紧邻正文间距", `${label} 内标题后紧邻正文时的间距。`],
+      ["listPx", "紧邻列表间距", `${label} 内标题后紧邻列表时的间距。`],
+      ["quotePx", "紧邻 Quote 间距", `${label} 内标题后紧邻 Quote 时的间距。`],
+      ["codePx", "紧邻代码块间距", `${label} 内标题后紧邻代码块时的间距。`],
+      ["tablePx", "紧邻表格间距", `${label} 内标题后紧邻表格时的间距。`],
+      ["imagePx", "紧邻图片间距", `${label} 内标题后紧邻图片时的间距。`],
+      ["calloutPx", "紧邻 Callout 间距", `${label} 内标题后紧邻 Callout 时的间距。`],
+    ];
+    for (const [key, name, description] of fields) {
+      this.addNumber(group, ["headingGap", context, key], name, description);
     }
   }
 

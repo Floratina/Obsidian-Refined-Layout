@@ -36,6 +36,17 @@ if (openingBraces !== closingBraces) {
   failures.push(`花括号数量不平衡：${openingBraces} / ${closingBraces}`);
 }
 
+const requiredCalloutRules = [
+  "callout-title:not(:has(+ .callout-content > *))",
+  ".callout.is-collapsible.is-collapsed .callout-title",
+  ".callout-title + .callout-content > :is(h1, h2, h3, h4, h5, h6",
+];
+for (const selector of requiredCalloutRules) {
+  if (!css.includes(selector)) {
+    failures.push(`缺少 Callout 间距回归规则：${selector}`);
+  }
+}
+
 const customPropertyDefinitions = css.match(/--[a-z0-9-]+\s*:/gi) ?? [];
 const unscopedDefinitions = customPropertyDefinitions.filter(
   (definition) => !definition.startsWith("--rl-"),
@@ -91,6 +102,50 @@ if (settingsSource === undefined) {
     .sort();
   if (missingVariables.length > 0) {
     failures.push(`CSS 引用了设置中不存在的变量：${missingVariables.join(", ")}`);
+  }
+
+  const legacySettings = {
+    schemaVersion: 1,
+    edit: {
+      headingGap: {
+        emptyLineEm: 1,
+        paragraphEm: 2,
+        listEm: 3,
+        quoteEm: 4,
+        codeEm: 5,
+        tableEm: 6,
+        imageEm: 7,
+        calloutEm: 8,
+        calloutParagraphPx: -3,
+        calloutListPx: -5,
+        calloutTablePx: -1,
+      },
+    },
+    read: {
+      headingGap: {
+        emptyLineEm: 0,
+        paragraphEm: 0,
+        listEm: 0,
+        quoteEm: 0,
+        codeEm: 0,
+        tableEm: 0,
+        imageEm: 0,
+        calloutEm: 0,
+        calloutParagraphPx: 0,
+        calloutListPx: 6,
+        calloutTablePx: 8,
+      },
+    },
+  };
+  const migrated = settingsModule.mergeSettings(legacySettings);
+  if (
+    migrated.schemaVersion !== 2
+    || migrated.edit.headingGap.body.paragraphEm !== 2
+    || migrated.edit.headingGap.callout.listPx !== -5
+    || migrated.read.headingGap.callout.tablePx !== 8
+    || migrated.edit.callout.image.maxWidthPct !== settingsModule.DEFAULT_SETTINGS.edit.image.maxWidthPct
+  ) {
+    failures.push("schemaVersion 1 设置迁移检查失败");
   }
 }
 

@@ -26,6 +26,9 @@ cssclasses:
 > | 引用表格 A | 引用表格 B |
 > | --- | --- |
 > | 1 | 2 |
+>
+> #### Quote 内 H4 后图片
+> ![[refined-layout-test-image.png]]
 
 ##### H5 后紧邻代码块
 ```text
@@ -47,6 +50,14 @@ cssclasses:
 > | Callout 表格 A | Callout 表格 B |
 > | --- | --- |
 > | 1 | 2 |
+>
+> #### Callout 内 H4 后图片
+> ![[refined-layout-test-image.png]]
+
+> [!info] 只有标题的 Callout
+
+> [!warning]- 默认折叠的 Callout
+> 折叠时标题下内边距应当归零。
 
 ## 标题后紧邻表格
 | 正文表格 A | 正文表格 B |
