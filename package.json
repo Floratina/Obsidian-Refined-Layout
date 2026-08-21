@@ -1,0 +1,26 @@
+{
+  "name": "refined-layout",
+  "version": "0.1.0",
+  "description": "Independent layout controls for Obsidian editing and reading views.",
+  "main": "main.js",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "node esbuild.config.mjs",
+    "build": "tsc --noEmit --skipLibCheck && node esbuild.config.mjs production",
+    "lint": "eslint . && stylelint styles.css",
+    "check:css": "node scripts/check-css.mjs",
+    "check": "npm run lint && npm run check:css && npm run build"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^26.2.0",
+    "esbuild": "^0.28.2",
+    "eslint": "^10.8.1",
+    "globals": "^17.11.0",
+    "obsidian": "^1.13.1",
+    "stylelint": "^17.14.1",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.67.0"
+  }
+}
