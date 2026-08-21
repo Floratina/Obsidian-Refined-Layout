@@ -24,7 +24,7 @@ __export(main_exports, {
   default: () => RefinedLayoutPlugin
 });
 module.exports = __toCommonJS(main_exports);
-var import_obsidian = require("obsidian");
+var import_obsidian2 = require("obsidian");
 
 // src/settings.ts
 var MODULE_KEYS = [
@@ -38,6 +38,7 @@ var MODULE_KEYS = [
   "headingGaps",
   "canvasReset"
 ];
+var HEADING_LEVELS = ["h1", "h2", "h3", "h4", "h5", "h6"];
 var EDIT_TABLE = {
   cellPaddingPx: 0.6,
   innerBorderPx: 1,
@@ -286,6 +287,285 @@ function mergeSettings(candidate) {
   return mergeKnown(cloneDefaultSettings(), candidate);
 }
 
+// src/settings-tab.ts
+var import_obsidian = require("obsidian");
+var MODE_LABELS = {
+  edit: "\u7F16\u8F91\u6A21\u5F0F",
+  read: "\u9605\u8BFB\u6A21\u5F0F"
+};
+var HEADING_LABELS = {
+  h1: "H1",
+  h2: "H2",
+  h3: "H3",
+  h4: "H4",
+  h5: "H5",
+  h6: "H6"
+};
+function inferNumberOptions(path) {
+  const key = path[path.length - 1] ?? "";
+  const joined = path.join(".").toLowerCase();
+  const unit = key.endsWith("Em") ? "em" : key.endsWith("Px") ? "px" : key.endsWith("Pct") ? "%" : "";
+  if (unit === "%") {
+    return { unit, min: 10, max: 100, step: 1 };
+  }
+  if (key.toLowerCase().includes("lineheight")) {
+    return { unit, min: 0.5, max: 3, step: 0.01 };
+  }
+  const allowsNegative = joined.includes("margin") || joined.includes("offset") || joined.includes("headinggap") || key === "topEm" || key === "bottomEm" || key === "bottomPx" || key === "leftPx";
+  const isSize = joined.includes("radius") || joined.includes("border") || joined.includes("width") || joined.includes("height") || joined.includes("padding");
+  if (unit === "em") {
+    return { unit, min: allowsNegative ? -5 : 0, max: 10, step: 0.01 };
+  }
+  if (unit === "px") {
+    return {
+      unit,
+      min: allowsNegative ? -64 : 0,
+      max: isSize ? 128 : 256,
+      step: 0.5
+    };
+  }
+  return { unit, min: allowsNegative ? -10 : 0, max: 100, step: 0.01 };
+}
+var RefinedLayoutSettingTab = class extends import_obsidian.PluginSettingTab {
+  constructor(app, plugin) {
+    super(app, plugin);
+    this.plugin = plugin;
+    this.mode = "edit";
+  }
+  display() {
+    const { containerEl } = this;
+    containerEl.empty();
+    containerEl.addClass("refined-layout-settings");
+    containerEl.createEl("h2", { text: "Refined Layout" });
+    containerEl.createEl("p", {
+      cls: "rl-settings-notice",
+      text: "\u9996\u6B21\u6D4B\u8BD5\u63D2\u4EF6\u524D\uFF0C\u8BF7\u5728\u201C\u5916\u89C2 \u2192 CSS \u4EE3\u7801\u7247\u6BB5\u201D\u4E2D\u5173\u95ED\u540C\u540D\u7684\u3010\u57FA\u7840\u4FEE\u6539\u3011refined-layout\uFF0C\u907F\u514D\u4E24\u4EFD\u6837\u5F0F\u540C\u65F6\u751F\u6548\u3002"
+    });
+    this.renderModeSwitcher(containerEl);
+    this.renderGlobalReset(containerEl);
+    this.renderBodySection(containerEl);
+    this.renderHeadingsSection(containerEl);
+    this.renderCalloutSection(containerEl);
+    this.renderBlockquoteSection(containerEl);
+    this.renderImageSection(containerEl);
+    this.renderTableSection(containerEl);
+    this.renderCodeBlockSection(containerEl);
+    this.renderHeadingGapSection(containerEl);
+    this.renderCanvasSection(containerEl);
+  }
+  renderModeSwitcher(container) {
+    const setting = new import_obsidian.Setting(container).setName("\u8BBE\u7F6E\u6A21\u5F0F").setDesc("\u7F16\u8F91\u6A21\u5F0F\u4E0E\u9605\u8BFB\u6A21\u5F0F\u7684\u53C2\u6570\u548C\u6A21\u5757\u5F00\u5173\u5B8C\u5168\u72EC\u7ACB\u3002");
+    for (const mode of ["edit", "read"]) {
+      setting.addButton((button) => {
+        button.setButtonText(MODE_LABELS[mode]);
+        if (this.mode === mode) {
+          button.setCta();
+        }
+        button.onClick(() => {
+          this.mode = mode;
+          this.display();
+        });
+      });
+    }
+  }
+  renderGlobalReset(container) {
+    new import_obsidian.Setting(container).setName(`${MODE_LABELS[this.mode]} \xB7 \u5168\u90E8\u6062\u590D\u9ED8\u8BA4`).setDesc("\u6062\u590D\u7F16\u8F91\u548C\u9605\u8BFB\u4E24\u5957\u8BBE\u7F6E\u4EE5\u53CA\u5168\u90E8\u6A21\u5757\u5F00\u5173\u3002").addButton((button) => {
+      button.setWarning().setButtonText("\u5168\u90E8\u91CD\u7F6E").onClick(() => {
+        this.plugin.resetAll();
+        this.display();
+      });
+    });
+  }
+  createSection(container, title, module2, resetSection, open = false) {
+    const details = container.createEl("details", { cls: "rl-settings-section" });
+    details.open = open;
+    details.createEl("summary", { text: title });
+    const enabled = this.plugin.settings[this.mode].modules[module2];
+    new import_obsidian.Setting(details).setName("\u542F\u7528\u672C\u6A21\u5757").addToggle((toggle) => {
+      toggle.setValue(enabled).onChange((value) => {
+        this.plugin.setModule(this.mode, module2, value);
+      });
+    }).addExtraButton((button) => {
+      button.setIcon("reset").setTooltip("\u6062\u590D\u672C\u533A\u9ED8\u8BA4\u503C").onClick(() => {
+        this.plugin.resetSection(this.mode, resetSection, module2);
+        this.display();
+      });
+    });
+    return details;
+  }
+  addNumber(container, path, name, description, options = {}) {
+    const inferred = inferNumberOptions(path);
+    const config = { ...inferred, ...options };
+    const value = this.plugin.getNumber(this.mode, path);
+    const setting = new import_obsidian.Setting(container).setName(name).setDesc(description);
+    setting.addText((text) => {
+      text.setValue(String(value));
+      text.inputEl.type = "number";
+      text.inputEl.step = String(config.step);
+      text.inputEl.min = String(config.min);
+      text.inputEl.max = String(config.max);
+      text.inputEl.addClass("rl-settings-number");
+      text.onChange((rawValue) => {
+        const parsed = Number(rawValue);
+        if (!Number.isFinite(parsed) || parsed < config.min || parsed > config.max) {
+          return;
+        }
+        this.plugin.setNumber(this.mode, path, parsed);
+      });
+    });
+    if (config.unit !== "") {
+      setting.controlEl.createSpan({ cls: "rl-settings-unit", text: config.unit });
+    }
+  }
+  renderBodySection(container) {
+    const section = this.createSection(container, "\u6B63\u6587\u4E0E\u5217\u8868", "body", "body", true);
+    this.addNumber(section, ["body", "lineHeight"], "\u6B63\u6587\u884C\u9AD8", "\u666E\u901A\u6B63\u6587\u7684\u884C\u9AD8\u3002");
+    if (this.mode === "edit") {
+      this.addNumber(section, ["body", "emptyLineHeightEm"], "\u7A7A\u884C\u9AD8\u5EA6", "CodeMirror \u7A7A\u767D\u884C\u7684\u9AD8\u5EA6\u3002");
+    } else {
+      this.addNumber(section, ["body", "paragraphSpacingEm"], "\u6BB5\u843D\u95F4\u8DDD", "\u9605\u8BFB\u6A21\u5F0F\u6BB5\u843D\u4E4B\u95F4\u7684\u95F4\u8DDD\u3002");
+    }
+    this.addNumber(section, ["body", "listStartEm"], "\u5217\u8868\u4E0A\u95F4\u8DDD", "\u6B63\u6587\u5217\u8868\u9876\u90E8\u95F4\u8DDD\u3002");
+    this.addNumber(section, ["body", "listEndEm"], "\u5217\u8868\u4E0B\u95F4\u8DDD", "\u6B63\u6587\u5217\u8868\u5E95\u90E8\u95F4\u8DDD\u3002");
+  }
+  renderHeadingsSection(container) {
+    const section = this.createSection(container, "\u6B63\u6587\u6807\u9898 H1\u2013H6", "headings", "headings");
+    this.addNumber(section, ["headingDecoration", "leftPx"], "\u88C5\u9970\u7EBF\u5DE6\u504F\u79FB", "\u4E3B\u9898\u6807\u9898\u88C5\u9970\u7EBF\u76F8\u5BF9\u6807\u9898\u7684\u6C34\u5E73\u4F4D\u7F6E\u3002");
+    this.addNumber(section, ["headingDecoration", "widthPx"], "\u88C5\u9970\u7EBF\u5BBD\u5EA6", "\u4E3B\u9898\u6807\u9898\u88C5\u9970\u7EBF\u5BBD\u5EA6\u3002");
+    this.addNumber(section, ["headingDecoration", "radiusPx"], "\u88C5\u9970\u7EBF\u5706\u89D2", "\u4E3B\u9898\u6807\u9898\u88C5\u9970\u7EBF\u5706\u89D2\u3002");
+    this.addNumber(section, ["headingDecoration", "marginRightPx"], "\u88C5\u9970\u7EBF\u53F3\u95F4\u8DDD", "\u66FF\u4EE3\u65E7 CSS \u4E2D\u7F3A\u5931\u7684\u53D8\u91CF\uFF0C\u9ED8\u8BA4 0\u3002", { min: 0 });
+    if (this.mode === "edit") {
+      this.addNumber(section, ["headingDecoration", "firstHeadingPaddingTopPx"], "\u9996\u884C\u6807\u9898\u9876\u90E8\u8865\u507F", "\u6587\u6863\u7B2C\u4E00\u884C\u662F\u6807\u9898\u65F6\u7684\u9876\u90E8\u8865\u507F\u3002");
+      this.addNumber(section, ["headingDecoration", "firstHeadingDecorOffsetPx"], "\u9996\u884C\u88C5\u9970\u7EBF\u8865\u507F", "\u6587\u6863\u7B2C\u4E00\u884C\u6807\u9898\u88C5\u9970\u7EBF\u7684\u989D\u5916\u504F\u79FB\u3002");
+    }
+    for (const level of HEADING_LEVELS) {
+      const group = section.createEl("details", { cls: "rl-settings-subsection" });
+      group.createEl("summary", { text: HEADING_LABELS[level] });
+      this.addNumber(group, ["headings", level, "lineHeight"], `${HEADING_LABELS[level]} \u884C\u9AD8`, "\u6807\u9898\u884C\u9AD8\u3002");
+      this.addNumber(group, ["headings", level, "topEm"], `${HEADING_LABELS[level]} \u4E0A\u95F4\u8DDD`, "\u6807\u9898\u9876\u90E8\u95F4\u8DDD\u3002");
+      this.addNumber(group, ["headings", level, "bottomEm"], `${HEADING_LABELS[level]} \u4E0B\u95F4\u8DDD`, "\u6807\u9898\u5E95\u90E8\u95F4\u8DDD\u3002");
+      this.addNumber(group, ["headings", level, "decorHeightPx"], `${HEADING_LABELS[level]} \u88C5\u9970\u7EBF\u9AD8\u5EA6`, "\u4E3B\u9898\u6807\u9898\u88C5\u9970\u7EBF\u9AD8\u5EA6\u3002");
+      this.addNumber(group, ["headings", level, "decorOffsetPx"], `${HEADING_LABELS[level]} \u88C5\u9970\u7EBF\u5782\u76F4\u504F\u79FB`, "\u5728\u5782\u76F4\u5C45\u4E2D\u57FA\u7840\u4E0A\u7684\u5FAE\u8C03\u3002");
+    }
+  }
+  renderCalloutSection(container) {
+    const section = this.createSection(container, "Callout", "callouts", "callout");
+    const fields = [
+      ["radiusPx", "\u5361\u7247\u5706\u89D2", "Callout \u5361\u7247\u5706\u89D2\u3002"],
+      ["paddingTopPx", "\u5361\u7247\u4E0A\u5185\u8FB9\u8DDD", "Callout \u5361\u7247\u4E0A\u5185\u8FB9\u8DDD\u3002"],
+      ["paddingBottomPx", "\u5361\u7247\u4E0B\u5185\u8FB9\u8DDD", "Callout \u5361\u7247\u4E0B\u5185\u8FB9\u8DDD\u3002"],
+      ["paddingLeftPx", "\u5361\u7247\u5DE6\u5185\u8FB9\u8DDD", "Callout \u5361\u7247\u5DE6\u5185\u8FB9\u8DDD\u3002"],
+      ["paddingRightPx", "\u5361\u7247\u53F3\u5185\u8FB9\u8DDD", "Callout \u5361\u7247\u53F3\u5185\u8FB9\u8DDD\u3002"],
+      ["marginTopPx", "\u5361\u7247\u4E0A\u5916\u8FB9\u8DDD", "Callout \u4E0E\u524D\u65B9\u5185\u5BB9\u7684\u8DDD\u79BB\u3002"],
+      ["marginBottomPx", "\u5361\u7247\u4E0B\u5916\u8FB9\u8DDD", "Callout \u4E0E\u540E\u65B9\u5185\u5BB9\u7684\u8DDD\u79BB\u3002"],
+      ["titleLineHeight", "Callout \u6807\u9898\u884C\u9AD8", "\u6807\u9898\u680F\u6587\u5B57\u884C\u9AD8\u3002"],
+      ["titlePaddingTopEm", "\u6807\u9898\u4E0A\u5185\u8FB9\u8DDD", "\u6807\u9898\u680F\u9876\u90E8\u5185\u8FB9\u8DDD\u3002"],
+      ["titlePaddingBottomEm", "\u6807\u9898\u4E0B\u5185\u8FB9\u8DDD", "\u6807\u9898\u680F\u5E95\u90E8\u5185\u8FB9\u8DDD\u3002"],
+      ["titlePaddingLeftPx", "\u6807\u9898\u5DE6\u5185\u8FB9\u8DDD", "\u6807\u9898\u680F\u5DE6\u4FA7\u5185\u8FB9\u8DDD\u3002"],
+      ["titlePaddingRightPx", "\u6807\u9898\u53F3\u5185\u8FB9\u8DDD", "\u6807\u9898\u680F\u53F3\u4FA7\u5185\u8FB9\u8DDD\u3002"],
+      ["titleOnlyPaddingTopEm", "\u4EC5\u6807\u9898\u65F6\u4E0A\u5185\u8FB9\u8DDD", "Callout \u53EA\u6709\u6807\u9898\u65F6\u7684\u9876\u90E8\u5185\u8FB9\u8DDD\u3002"],
+      ["titleOnlyPaddingBottomEm", "\u4EC5\u6807\u9898\u65F6\u4E0B\u5185\u8FB9\u8DDD", "Callout \u53EA\u6709\u6807\u9898\u65F6\u7684\u5E95\u90E8\u5185\u8FB9\u8DDD\u3002"],
+      ["collapsedPaddingTopEm", "\u6298\u53E0\u72B6\u6001\u4E0A\u5185\u8FB9\u8DDD", "\u6298\u53E0 Callout \u7684\u9876\u90E8\u5185\u8FB9\u8DDD\u3002"],
+      ["collapsedPaddingBottomEm", "\u6298\u53E0\u72B6\u6001\u4E0B\u5185\u8FB9\u8DDD", "\u6298\u53E0 Callout \u7684\u5E95\u90E8\u5185\u8FB9\u8DDD\u3002"],
+      ["paragraphLineHeight", "\u5185\u90E8\u6B63\u6587\u884C\u9AD8", "Callout \u6B63\u6587\u884C\u9AD8\uFF0C\u72EC\u7ACB\u4E8E\u666E\u901A\u6B63\u6587\u3002"],
+      ["paragraphSpacingEm", "\u5185\u90E8\u6BB5\u843D\u95F4\u8DDD", "Callout \u6BB5\u843D\u95F4\u8DDD\u3002"],
+      ["listStartEm", "\u5185\u90E8\u5217\u8868\u4E0A\u95F4\u8DDD", "Callout \u5217\u8868\u9876\u90E8\u95F4\u8DDD\u3002"],
+      ["listEndEm", "\u5185\u90E8\u5217\u8868\u4E0B\u95F4\u8DDD", "Callout \u5217\u8868\u5E95\u90E8\u95F4\u8DDD\u3002"],
+      ["lastListEndEm", "\u672B\u5C3E\u5217\u8868\u4E0B\u95F4\u8DDD", "\u5217\u8868\u662F Callout \u6700\u540E\u5143\u7D20\u65F6\u7684\u5E95\u90E8\u95F4\u8DDD\u3002"]
+    ];
+    for (const [key, name, description] of fields) {
+      this.addNumber(section, ["callout", key], name, description);
+    }
+    this.renderContextHeadings(section, "callout", this.mode === "read");
+    this.renderTableFields(section, ["callout", "table"], "Callout \u8868\u683C");
+  }
+  renderBlockquoteSection(container) {
+    const section = this.createSection(container, "\u5F15\u7528\u5757", "blockquotes", "blockquote");
+    this.addNumber(section, ["blockquote", "paragraphLineHeight"], "\u5185\u90E8\u6B63\u6587\u884C\u9AD8", "\u5F15\u7528\u5757\u6B63\u6587\u884C\u9AD8\uFF0C\u72EC\u7ACB\u4E8E\u666E\u901A\u6B63\u6587\u3002");
+    this.addNumber(section, ["blockquote", "paragraphSpacingEm"], "\u5185\u90E8\u6BB5\u843D\u95F4\u8DDD", "\u5F15\u7528\u5757\u6BB5\u843D\u95F4\u8DDD\u3002");
+    this.addNumber(section, ["blockquote", "listStartEm"], "\u5185\u90E8\u5217\u8868\u4E0A\u95F4\u8DDD", "\u5F15\u7528\u5757\u5217\u8868\u9876\u90E8\u95F4\u8DDD\u3002");
+    this.addNumber(section, ["blockquote", "listEndEm"], "\u5185\u90E8\u5217\u8868\u4E0B\u95F4\u8DDD", "\u5F15\u7528\u5757\u5217\u8868\u5E95\u90E8\u95F4\u8DDD\u3002");
+    this.renderContextHeadings(section, "blockquote", false);
+    this.renderTableFields(section, ["blockquote", "table"], "\u5F15\u7528\u5757\u8868\u683C");
+  }
+  renderContextHeadings(container, context, bottomUsesPx) {
+    const headings = container.createEl("details", { cls: "rl-settings-subsection" });
+    headings.createEl("summary", { text: "\u5185\u90E8\u6807\u9898 H1\u2013H6" });
+    for (const level of HEADING_LEVELS) {
+      const group = headings.createEl("details", { cls: "rl-settings-subsection" });
+      group.createEl("summary", { text: HEADING_LABELS[level] });
+      const prefix = [context, "headings", level];
+      this.addNumber(group, [...prefix, "lineHeight"], `${HEADING_LABELS[level]} \u884C\u9AD8`, "\u5185\u90E8\u6807\u9898\u884C\u9AD8\u3002");
+      this.addNumber(group, [...prefix, "topEm"], `${HEADING_LABELS[level]} \u4E0A\u95F4\u8DDD`, "\u5185\u90E8\u6807\u9898\u9876\u90E8\u95F4\u8DDD\u3002");
+      const bottomKey = bottomUsesPx ? "bottomPx" : "bottomEm";
+      this.addNumber(group, [...prefix, bottomKey], `${HEADING_LABELS[level]} \u4E0B\u95F4\u8DDD`, "\u5185\u90E8\u6807\u9898\u5E95\u90E8\u95F4\u8DDD\u3002");
+    }
+  }
+  renderImageSection(container) {
+    const section = this.createSection(container, "\u56FE\u7247", "images", "image");
+    this.addNumber(section, ["image", "maxWidthPct"], "\u6700\u5927\u5BBD\u5EA6", "\u539F\u751F Markdown \u56FE\u7247\u76F8\u5BF9\u6B63\u6587\u533A\u57DF\u7684\u6700\u5927\u5BBD\u5EA6\u3002");
+    this.addNumber(section, ["image", "radiusPx"], "\u56FE\u7247\u5706\u89D2", "\u56FE\u7247\u5706\u89D2\u534A\u5F84\u3002");
+    this.addNumber(section, ["image", "borderPx"], "\u56FE\u7247\u8FB9\u6846", "\u56FE\u7247\u8FB9\u6846\u5BBD\u5EA6\u3002");
+  }
+  renderTableSection(container) {
+    const section = this.createSection(container, "\u6B63\u6587\u8868\u683C", "tables", "table");
+    this.renderTableFields(section, ["table"], "\u6B63\u6587\u8868\u683C");
+  }
+  renderTableFields(container, prefix, label) {
+    const group = container.createEl("details", { cls: "rl-settings-subsection" });
+    group.createEl("summary", { text: label });
+    this.addNumber(group, [...prefix, "cellPaddingPx"], "\u5355\u5143\u683C\u5185\u8FB9\u8DDD", "\u8868\u683C\u5355\u5143\u683C\u5185\u8FB9\u8DDD\u3002");
+    this.addNumber(group, [...prefix, "innerBorderPx"], "\u5185\u6846\u7EBF\u5BBD\u5EA6", "\u8868\u683C\u5185\u90E8\u8FB9\u6846\u5BBD\u5EA6\u3002");
+    this.addNumber(group, [...prefix, "outerBorderPx"], "\u5916\u8FB9\u6846\u5BBD\u5EA6", "\u8868\u683C\u5916\u8FB9\u6846\u5BBD\u5EA6\u3002");
+    this.addNumber(group, [...prefix, "radiusPx"], "\u8868\u683C\u5706\u89D2", "\u8868\u683C\u6574\u4F53\u5706\u89D2\u3002");
+    this.addNumber(group, [...prefix, "spacingTopPx"], "\u8868\u683C\u4E0A\u95F4\u8DDD", "\u8868\u683C\u4E0E\u524D\u65B9\u5185\u5BB9\u7684\u8DDD\u79BB\u3002");
+    this.addNumber(group, [...prefix, "spacingBottomPx"], "\u8868\u683C\u4E0B\u95F4\u8DDD", "\u8868\u683C\u4E0E\u540E\u65B9\u5185\u5BB9\u7684\u8DDD\u79BB\u3002");
+  }
+  renderCodeBlockSection(container) {
+    const section = this.createSection(container, "\u4EE3\u7801\u5757", "codeBlocks", "codeBlock");
+    this.addNumber(section, ["codeBlock", "lineHeight"], "\u4EE3\u7801\u884C\u9AD8", "\u4EE3\u7801\u5757\u5185\u90E8\u884C\u9AD8\u3002");
+    if (this.mode === "edit") {
+      this.addNumber(section, ["codeBlock", "innerSpacingEm"], "\u5185\u90E8\u7A7A\u884C\u95F4\u8DDD", "\u7F16\u8F91\u6A21\u5F0F\u4EE3\u7801\u5757\u5185\u90E8\u7A7A\u884C\u7684\u95F4\u8DDD\u3002");
+    } else {
+      this.addNumber(section, ["codeBlock", "marginTopEm"], "\u4EE3\u7801\u5757\u4E0A\u95F4\u8DDD", "\u9605\u8BFB\u6A21\u5F0F\u4EE3\u7801\u5757\u9876\u90E8\u95F4\u8DDD\u3002");
+      this.addNumber(section, ["codeBlock", "marginBottomEm"], "\u4EE3\u7801\u5757\u4E0B\u95F4\u8DDD", "\u9605\u8BFB\u6A21\u5F0F\u4EE3\u7801\u5757\u5E95\u90E8\u95F4\u8DDD\u3002");
+    }
+  }
+  renderHeadingGapSection(container) {
+    const section = this.createSection(container, "\u6807\u9898\u540E\u9996\u5143\u7D20", "headingGaps", "headingGap");
+    if (this.mode === "edit") {
+      const fields = [
+        ["emptyLineEm", "\u6807\u9898\u540E\u7A7A\u884C\u9AD8\u5EA6", "\u6807\u9898\u3001\u7A7A\u884C\u3001\u975E\u6807\u9898\u5143\u7D20\u7EC4\u5408\u4E2D\u7684\u7A7A\u884C\u9AD8\u5EA6\u3002"],
+        ["paragraphEm", "\u7D27\u90BB\u6B63\u6587\u95F4\u8DDD", "\u6807\u9898\u540E\u6CA1\u6709\u7A7A\u884C\u4E14\u7D27\u90BB\u6B63\u6587\u65F6\u7684\u9876\u90E8\u8865\u507F\u3002"],
+        ["listEm", "\u7D27\u90BB\u5217\u8868\u95F4\u8DDD", "\u6807\u9898\u540E\u7D27\u90BB\u5217\u8868\u65F6\u7684\u9876\u90E8\u8865\u507F\u3002"],
+        ["quoteEm", "\u7D27\u90BB\u5F15\u7528\u5757\u95F4\u8DDD", "\u6807\u9898\u540E\u7D27\u90BB\u5F15\u7528\u5757\u65F6\u7684\u9876\u90E8\u8865\u507F\u3002"],
+        ["codeEm", "\u7D27\u90BB\u4EE3\u7801\u5757\u95F4\u8DDD", "\u6807\u9898\u540E\u7D27\u90BB\u4EE3\u7801\u5757\u65F6\u7684\u9876\u90E8\u8865\u507F\u3002"],
+        ["tableEm", "\u7D27\u90BB\u8868\u683C\u95F4\u8DDD", "\u6807\u9898\u540E\u7D27\u90BB\u8868\u683C\u65F6\u7684\u9876\u90E8\u8865\u507F\u3002"],
+        ["imageEm", "\u7D27\u90BB\u56FE\u7247\u95F4\u8DDD", "\u6807\u9898\u540E\u7D27\u90BB\u56FE\u7247\u65F6\u7684\u9876\u90E8\u8865\u507F\u3002"],
+        ["calloutEm", "\u7D27\u90BB Callout \u95F4\u8DDD", "\u6807\u9898\u540E\u7D27\u90BB Callout \u65F6\u7684\u9876\u90E8\u8865\u507F\u3002"],
+        ["calloutParagraphPx", "Callout \u6807\u9898\u540E\u6B63\u6587", "Callout \u5185\u90E8\u6807\u9898\u540E\u7D27\u90BB\u6B63\u6587\u65F6\u7684\u95F4\u8DDD\u3002"],
+        ["calloutListPx", "Callout \u6807\u9898\u540E\u5217\u8868", "Callout \u5185\u90E8\u6807\u9898\u540E\u7D27\u90BB\u5217\u8868\u65F6\u7684\u95F4\u8DDD\u3002"],
+        ["calloutTablePx", "Callout \u6807\u9898\u540E\u8868\u683C", "Callout \u5185\u90E8\u6807\u9898\u540E\u7D27\u90BB\u8868\u683C\u65F6\u7684\u95F4\u8DDD\u3002"]
+      ];
+      for (const [key, name, description] of fields) {
+        this.addNumber(section, ["headingGap", key], name, description);
+      }
+    } else {
+      this.addNumber(section, ["headingGap", "calloutListPx"], "Callout \u6807\u9898\u540E\u5217\u8868", "\u9605\u8BFB\u6A21\u5F0F Callout \u5185\u90E8\u6807\u9898\u540E\u7D27\u90BB\u5217\u8868\u65F6\u7684\u95F4\u8DDD\u3002");
+      this.addNumber(section, ["headingGap", "calloutTablePx"], "Callout \u6807\u9898\u540E\u8868\u683C", "\u9605\u8BFB\u6A21\u5F0F Callout \u5185\u90E8\u6807\u9898\u540E\u7D27\u90BB\u8868\u683C\u65F6\u7684\u95F4\u8DDD\u3002");
+    }
+  }
+  renderCanvasSection(container) {
+    if (this.mode !== "read") {
+      return;
+    }
+    const section = this.createSection(container, "Canvas \u6837\u5F0F\u91CD\u7F6E", "canvasReset", "canvasReset");
+    section.createEl("p", {
+      text: "\u542F\u7528\u540E\uFF0CCanvas \u5361\u7247\u4F1A\u6062\u590D\u7D27\u51D1\u7684\u9ED8\u8BA4\u6807\u9898\u3001\u6BB5\u843D\u3001Callout\u3001\u8868\u683C\u548C\u56FE\u7247\u5E03\u5C40\u3002"
+    });
+  }
+};
+
 // src/main.ts
 var ROOT_CLASS = "refined-layout-enabled";
 function toKebabCase(value) {
@@ -320,18 +600,90 @@ function collectVariables(mode, source, path = [], output = /* @__PURE__ */ new 
   }
   return output;
 }
-var RefinedLayoutPlugin = class extends import_obsidian.Plugin {
+function readNestedNumber(source, path) {
+  let cursor = source;
+  for (const key of path) {
+    if (typeof cursor !== "object" || cursor === null || !(key in cursor)) {
+      throw new Error(`Unknown settings path: ${path.join(".")}`);
+    }
+    cursor = cursor[key];
+  }
+  if (typeof cursor !== "number") {
+    throw new Error(`Settings path is not numeric: ${path.join(".")}`);
+  }
+  return cursor;
+}
+function writeNestedNumber(source, path, value) {
+  let cursor = source;
+  for (const key of path.slice(0, -1)) {
+    const next = cursor[key];
+    if (typeof next !== "object" || next === null) {
+      throw new Error(`Unknown settings path: ${path.join(".")}`);
+    }
+    cursor = next;
+  }
+  const lastKey = path[path.length - 1];
+  if (lastKey === void 0 || typeof cursor[lastKey] !== "number") {
+    throw new Error(`Settings path is not numeric: ${path.join(".")}`);
+  }
+  cursor[lastKey] = value;
+}
+var RefinedLayoutPlugin = class extends import_obsidian2.Plugin {
   constructor() {
     super(...arguments);
+    this.settings = cloneDefaultSettings();
     this.appliedProperties = /* @__PURE__ */ new Set();
     this.appliedModuleClasses = /* @__PURE__ */ new Set();
+    this.saveTimer = null;
   }
   async onload() {
     this.settings = mergeSettings(await this.loadData());
     this.applySettings();
+    this.addSettingTab(new RefinedLayoutSettingTab(this.app, this));
   }
   onunload() {
+    if (this.saveTimer !== null) {
+      window.clearTimeout(this.saveTimer);
+      this.saveTimer = null;
+      void this.saveData(this.settings);
+    }
     this.clearAppliedStyles();
+  }
+  getNumber(mode, path) {
+    return readNestedNumber(this.settings[mode], path);
+  }
+  setNumber(mode, path, value) {
+    writeNestedNumber(this.settings[mode], path, value);
+    this.applyAndScheduleSave();
+  }
+  setModule(mode, module2, enabled) {
+    this.settings[mode].modules[module2] = enabled;
+    this.applyAndScheduleSave();
+  }
+  resetSection(mode, section, module2) {
+    const defaults = cloneDefaultSettings();
+    this.settings[mode].modules[module2] = defaults[mode].modules[module2];
+    if (section !== "canvasReset") {
+      this.settings[mode][section] = structuredClone(defaults[mode][section]);
+    }
+    if (section === "headings") {
+      this.settings[mode].headingDecoration = structuredClone(defaults[mode].headingDecoration);
+    }
+    this.applyAndScheduleSave();
+  }
+  resetAll() {
+    this.settings = cloneDefaultSettings();
+    this.applyAndScheduleSave();
+  }
+  applyAndScheduleSave() {
+    this.applySettings();
+    if (this.saveTimer !== null) {
+      window.clearTimeout(this.saveTimer);
+    }
+    this.saveTimer = window.setTimeout(() => {
+      this.saveTimer = null;
+      void this.saveData(this.settings);
+    }, 150);
   }
   applySettings() {
     const body = document.body;

@@ -636,43 +636,67 @@ body.refined-layout-enabled.rl-read-blockquotes .markdown-rendered .el-blockquot
 }
 
 /* All enabled table contexts share the same edge cleanup behavior. */
-body.refined-layout-enabled :is(
-  .markdown-source-view.mod-cm6 .cm-content table,
-  .markdown-rendered table
-) td,
-body.refined-layout-enabled :is(
-  .markdown-source-view.mod-cm6 .cm-content table,
-  .markdown-rendered table
-) th {
+:is(
+  body.refined-layout-enabled.rl-edit-tables .markdown-source-view.mod-cm6 .cm-content table:not(.callout *):not(blockquote *),
+  body.refined-layout-enabled.rl-read-tables .markdown-rendered table:not(.callout *):not(.el-blockquote *),
+  body.refined-layout-enabled.rl-edit-callouts .markdown-source-view.mod-cm6 .callout table,
+  body.refined-layout-enabled.rl-read-callouts .markdown-rendered .callout table,
+  body.refined-layout-enabled.rl-edit-blockquotes .markdown-source-view.mod-cm6 blockquote table,
+  body.refined-layout-enabled.rl-read-blockquotes .markdown-rendered .el-blockquote table
+) :is(td, th) {
   border-top: none !important;
 }
 
-body.refined-layout-enabled :is(
-  .markdown-source-view.mod-cm6 .cm-content table,
-  .markdown-rendered table
+:is(
+  body.refined-layout-enabled.rl-edit-tables .markdown-source-view.mod-cm6 .cm-content table:not(.callout *):not(blockquote *),
+  body.refined-layout-enabled.rl-read-tables .markdown-rendered table:not(.callout *):not(.el-blockquote *),
+  body.refined-layout-enabled.rl-edit-callouts .markdown-source-view.mod-cm6 .callout table,
+  body.refined-layout-enabled.rl-read-callouts .markdown-rendered .callout table,
+  body.refined-layout-enabled.rl-edit-blockquotes .markdown-source-view.mod-cm6 blockquote table,
+  body.refined-layout-enabled.rl-read-blockquotes .markdown-rendered .el-blockquote table
 ) th {
   border-radius: 0 !important;
 }
 
-body.refined-layout-enabled :is(
-  .markdown-source-view.mod-cm6 .cm-content table,
-  .markdown-rendered table
+:is(
+  body.refined-layout-enabled.rl-edit-tables .markdown-source-view.mod-cm6 .cm-content table:not(.callout *):not(blockquote *),
+  body.refined-layout-enabled.rl-read-tables .markdown-rendered table:not(.callout *):not(.el-blockquote *),
+  body.refined-layout-enabled.rl-edit-callouts .markdown-source-view.mod-cm6 .callout table,
+  body.refined-layout-enabled.rl-read-callouts .markdown-rendered .callout table,
+  body.refined-layout-enabled.rl-edit-blockquotes .markdown-source-view.mod-cm6 blockquote table,
+  body.refined-layout-enabled.rl-read-blockquotes .markdown-rendered .el-blockquote table
 ) :is(th, td):first-child {
   border-left: none !important;
 }
 
-body.refined-layout-enabled :is(
-  .markdown-source-view.mod-cm6 .cm-content table,
-  .markdown-rendered table
+:is(
+  body.refined-layout-enabled.rl-edit-tables .markdown-source-view.mod-cm6 .cm-content table:not(.callout *):not(blockquote *),
+  body.refined-layout-enabled.rl-read-tables .markdown-rendered table:not(.callout *):not(.el-blockquote *),
+  body.refined-layout-enabled.rl-edit-callouts .markdown-source-view.mod-cm6 .callout table,
+  body.refined-layout-enabled.rl-read-callouts .markdown-rendered .callout table,
+  body.refined-layout-enabled.rl-edit-blockquotes .markdown-source-view.mod-cm6 blockquote table,
+  body.refined-layout-enabled.rl-read-blockquotes .markdown-rendered .el-blockquote table
 ) :is(th, td):last-child {
   border-right: none !important;
   border-left: none !important;
 }
 
-body.refined-layout-enabled :is(
-  .markdown-source-view.mod-cm6 .cm-content table,
-  .markdown-rendered table
-) tbody tr:last-child :is(th, td) {
+:is(
+  body.refined-layout-enabled.rl-edit-tables .markdown-source-view.mod-cm6 .cm-content table:not(.callout *):not(blockquote *),
+  body.refined-layout-enabled.rl-read-tables .markdown-rendered table:not(.callout *):not(.el-blockquote *),
+  body.refined-layout-enabled.rl-edit-callouts .markdown-source-view.mod-cm6 .callout table,
+  body.refined-layout-enabled.rl-read-callouts .markdown-rendered .callout table,
+  body.refined-layout-enabled.rl-edit-blockquotes .markdown-source-view.mod-cm6 blockquote table,
+  body.refined-layout-enabled.rl-read-blockquotes .markdown-rendered .el-blockquote table
+) tbody tr:last-child :is(th, td),
+:is(
+  body.refined-layout-enabled.rl-edit-tables .markdown-source-view.mod-cm6 .cm-content table:not(.callout *):not(blockquote *),
+  body.refined-layout-enabled.rl-read-tables .markdown-rendered table:not(.callout *):not(.el-blockquote *),
+  body.refined-layout-enabled.rl-edit-callouts .markdown-source-view.mod-cm6 .callout table,
+  body.refined-layout-enabled.rl-read-callouts .markdown-rendered .callout table,
+  body.refined-layout-enabled.rl-edit-blockquotes .markdown-source-view.mod-cm6 blockquote table,
+  body.refined-layout-enabled.rl-read-blockquotes .markdown-rendered .el-blockquote table
+) thead:only-child tr :is(th, td) {
   border-bottom: none !important;
 }
 
@@ -723,7 +747,8 @@ body.refined-layout-enabled.rl-edit-heading-gaps .markdown-source-view.mod-cm6 .
   margin-block-start: var(--rl-edit-heading-gap-image-em) !important;
 }
 
-body.refined-layout-enabled.rl-edit-heading-gaps .markdown-source-view.mod-cm6 .cm-content > [class^="HyperMD-header"] + :is(.callout.drop-shadow, .cm-callout .callout) {
+body.refined-layout-enabled.rl-edit-heading-gaps .markdown-source-view.mod-cm6 .cm-content > [class^="HyperMD-header"] + .callout.drop-shadow,
+body.refined-layout-enabled.rl-edit-heading-gaps .markdown-source-view.mod-cm6 .cm-content > [class^="HyperMD-header"] + .cm-callout .callout {
   margin-block-start: var(--rl-edit-heading-gap-callout-em) !important;
 }
 
