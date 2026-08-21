@@ -38,6 +38,8 @@ if (openingBraces !== closingBraces) {
 
 const requiredCalloutRules = [
   "callout-title:not(:has(+ .callout-content > *))",
+  "--rl-edit-callout-title-only-padding-bottom-em",
+  "--rl-read-callout-title-only-padding-bottom-em",
   ".callout.is-collapsible.is-collapsed .callout-title",
   ".callout-title + .callout-content > :is(h1, h2, h3, h4, h5, h6",
 ];

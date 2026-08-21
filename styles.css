@@ -240,7 +240,7 @@ body.refined-layout-enabled.rl-edit-callouts .markdown-source-view.mod-cm6 :is(.
 
 body.refined-layout-enabled.rl-edit-callouts .markdown-source-view.mod-cm6 :is(.callout.drop-shadow, .cm-callout) .callout-title:not(:has(+ .callout-content > *)) {
   padding-top: var(--rl-edit-callout-title-only-padding-top-em) !important;
-  padding-bottom: 0 !important;
+  padding-bottom: var(--rl-edit-callout-title-only-padding-bottom-em) !important;
 }
 
 body.refined-layout-enabled.rl-edit-callouts .markdown-source-view.mod-cm6 .callout.is-collapsible.is-collapsed {
@@ -286,7 +286,7 @@ body.refined-layout-enabled.rl-read-callouts .markdown-rendered .callout-title {
 
 body.refined-layout-enabled.rl-read-callouts .markdown-rendered .callout > .callout-title:not(:has(+ .callout-content > *)) {
   padding-top: var(--rl-read-callout-title-only-padding-top-em) !important;
-  padding-bottom: 0 !important;
+  padding-bottom: var(--rl-read-callout-title-only-padding-bottom-em) !important;
 }
 
 body.refined-layout-enabled.rl-read-callouts .markdown-rendered .callout.is-collapsible.is-collapsed {

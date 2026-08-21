@@ -267,6 +267,7 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
       ["titlePaddingLeftPx", "标题左内边距", "标题栏左侧内边距。"],
       ["titlePaddingRightPx", "标题右内边距", "标题栏右侧内边距。"],
       ["titleOnlyPaddingTopEm", "仅标题时上内边距", "Callout 只有标题时的顶部内边距。"],
+      ["titleOnlyPaddingBottomEm", "仅标题时下内边距", "Callout 只有标题时的底部内边距；独立于有内容 Callout 的卡片下内边距。"],
       ["collapsedPaddingTopEm", "折叠状态上内边距", "折叠 Callout 的顶部内边距。"],
       ["collapsedPaddingBottomEm", "折叠状态下内边距", "折叠 Callout 的底部内边距。"],
       ["paragraphLineHeight", "内部正文行高", "Callout 正文行高，独立于普通正文。"],
