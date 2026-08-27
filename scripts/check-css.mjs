@@ -85,7 +85,7 @@ const requiredSettingsStyles = [
   ".rl-settings-card-header",
   ".rl-settings-card-actions",
   ".rl-settings-fields",
-  "grid-template-columns: repeat(auto-fit",
+  ".rl-settings-pill-bar",
   "@media (max-width: 620px)",
 ];
 for (const rule of requiredSettingsStyles) {

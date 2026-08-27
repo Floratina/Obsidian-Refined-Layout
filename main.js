@@ -437,17 +437,17 @@ var HEADING_LABELS = {
   h6: "H6"
 };
 var SETTINGS_TABS = [
-  { id: "body", label: "\u6B63\u6587\u4E0E\u5217\u8868", description: "\u666E\u901A\u6B63\u6587\u3001\u7A7A\u884C\u548C\u5217\u8868\u95F4\u8DDD\u3002", module: "body", reset: "body" },
-  { id: "headings", label: "\u6B63\u6587\u6807\u9898 H1\u2013H6", description: "\u6B63\u6587\u6807\u9898\u7684\u884C\u9AD8\u548C\u4E0A\u4E0B\u95F4\u8DDD\u3002", module: "headings", reset: "headings" },
+  { id: "body", label: "\u6B63\u6587\u4E0E\u5217\u8868", description: "\u666E\u901A\u6B63\u6587\u3001\u7A7A\u884C\u548C\u5217\u8868\u95F4\u8DDD\u8BBE\u7F6E\u3002", module: "body", reset: "body" },
+  { id: "headings", label: "\u6B63\u6587\u6807\u9898 H1\u2013H6", description: "\u6B63\u6587\u6807\u9898\u5404\u7EA7\u522B\u7684\u884C\u9AD8\u548C\u4E0A\u4E0B\u8FB9\u8DDD\u3002", module: "headings", reset: "headings" },
   { id: "headingDecoration", label: "\u6807\u9898\u4F2A\u5143\u7D20", description: "\u4E3B\u9898\u6807\u9898\u88C5\u9970\u7EBF\u7684\u4F4D\u7F6E\u3001\u5C3A\u5BF8\u548C\u504F\u79FB\u3002", module: "headings", reset: "headingDecoration" },
-  { id: "callout", label: "Callout", description: "Callout \u5361\u7247\u3001\u6807\u9898\u548C\u5185\u90E8\u5185\u5BB9\u5E03\u5C40\u3002", module: "callouts", reset: "callout" },
-  { id: "blockquote", label: "\u5F15\u7528\u5757", description: "\u5F15\u7528\u5757\u6B63\u6587\u3001\u6807\u9898\u548C\u8868\u683C\u5E03\u5C40\u3002", module: "blockquotes", reset: "blockquote" },
-  { id: "image", label: "\u56FE\u7247", description: "\u6B63\u6587\u56FE\u7247\u7684\u5C3A\u5BF8\u548C\u5916\u89C2\u3002", module: "images", reset: "image" },
-  { id: "mermaid", label: "Mermaid \u56FE\u8868", description: "\u7EB5\u5411\u4E0E\u6A2A\u5411 Mermaid \u7684\u5BBD\u5EA6\u89C4\u5219\u3002", module: "mermaid", reset: "mermaid" },
-  { id: "table", label: "\u6B63\u6587\u8868\u683C", description: "\u6B63\u6587\u8868\u683C\u7684\u5185\u8FB9\u8DDD\u3001\u8FB9\u6846\u548C\u95F4\u8DDD\u3002", module: "tables", reset: "table" },
-  { id: "codeBlock", label: "\u4EE3\u7801\u5757", description: "\u4EE3\u7801\u5757\u884C\u9AD8\u548C\u6A21\u5F0F\u76F8\u5173\u95F4\u8DDD\u3002", module: "codeBlocks", reset: "codeBlock" },
-  { id: "headingGap", label: "\u6807\u9898\u540E\u9996\u5143\u7D20", description: "\u6807\u9898\u540E\u63A5\u6B63\u6587\u3001\u5217\u8868\u548C\u5176\u4ED6\u5143\u7D20\u65F6\u7684\u95F4\u8DDD\u3002", module: "headingGaps", reset: "headingGap" },
-  { id: "canvasReset", label: "Canvas \u6837\u5F0F\u91CD\u7F6E", description: "\u9605\u8BFB\u6A21\u5F0F Canvas \u5361\u7247\u7684\u7D27\u51D1\u5E03\u5C40\u3002", module: "canvasReset", reset: "canvasReset" }
+  { id: "callout", label: "Callout", description: "Callout \u5361\u7247\u5916\u89C2\u3001\u6807\u9898\u680F\u3001\u6B63\u6587\u53CA\u5185\u90E8\u5143\u7D20\u6392\u7248\u3002", module: "callouts", reset: "callout" },
+  { id: "blockquote", label: "\u5F15\u7528\u5757", description: "\u5F15\u7528\u5757\u5185\u90E8\u6B63\u6587\u3001\u8868\u683C\u548C\u5404\u7EA7\u6807\u9898\u6392\u7248\u3002", module: "blockquotes", reset: "blockquote" },
+  { id: "image", label: "\u56FE\u7247", description: "\u6B63\u6587\u56FE\u7247\u7684\u5C3A\u5BF8\u3001\u5706\u89D2\u4E0E\u8FB9\u6846\u5916\u89C2\u3002", module: "images", reset: "image" },
+  { id: "mermaid", label: "Mermaid \u56FE\u8868", description: "\u7EB5\u5411\u4E0E\u6A2A\u5411 Mermaid \u56FE\u8868\u7684\u81EA\u9002\u5E94\u5BBD\u5EA6\u89C4\u5219\u3002", module: "mermaid", reset: "mermaid" },
+  { id: "table", label: "\u6B63\u6587\u8868\u683C", description: "\u6B63\u6587\u8868\u683C\u7684\u5355\u5143\u683C\u5185\u8FB9\u8DDD\u3001\u6846\u7EBF\u3001\u5706\u89D2\u548C\u5916\u8FB9\u8DDD\u3002", module: "tables", reset: "table" },
+  { id: "codeBlock", label: "\u4EE3\u7801\u5757", description: "\u4EE3\u7801\u5757\u884C\u9AD8\u53CA\u6A21\u5F0F\u76F8\u5173\u7684\u4E0A\u4E0B\u8FB9\u8DDD\u8BBE\u7F6E\u3002", module: "codeBlocks", reset: "codeBlock" },
+  { id: "headingGap", label: "\u6807\u9898\u540E\u9996\u5143\u7D20", description: "\u6807\u9898\u540E\u63A5\u6B63\u6587\u3001\u5217\u8868\u3001\u4EE3\u7801\u5757\u7B49\u5143\u7D20\u65F6\u7684\u95F4\u8DDD\u8865\u507F\u3002", module: "headingGaps", reset: "headingGap" },
+  { id: "canvasReset", label: "Canvas \u6837\u5F0F\u91CD\u7F6E", description: "\u9605\u8BFB\u6A21\u5F0F Canvas \u767D\u677F\u5361\u7247\u7684\u7D27\u51D1\u5E03\u5C40\u91CD\u7F6E\u3002", module: "canvasReset", reset: "canvasReset" }
 ];
 function inferNumberOptions(path) {
   const key = path[path.length - 1] ?? "";
@@ -482,6 +482,12 @@ var RefinedLayoutSettingTab = class extends import_obsidian.PluginSettingTab {
     this.activeTabByMode = {
       edit: "body",
       read: "body"
+    };
+    this.activeHeadingLevelByContext = {
+      headings: "h1",
+      headingDecoration: "h1",
+      callout: "h1",
+      blockquote: "h1"
     };
   }
   display() {
@@ -683,15 +689,17 @@ var RefinedLayoutSettingTab = class extends import_obsidian.PluginSettingTab {
     }
   }
   createModuleCard(container, tab) {
-    const card = container.createDiv({ cls: "rl-settings-card" });
-    const header = card.createDiv({ cls: "rl-settings-card-header" });
-    const heading = header.createDiv({ cls: "rl-settings-card-heading" });
-    heading.createEl("h3", { text: tab.label });
-    heading.createDiv({ cls: "rl-settings-card-description", text: tab.description });
-    const actions = header.createDiv({ cls: "rl-settings-card-actions" });
-    const actionSetting = new import_obsidian.Setting(actions).setClass("rl-settings-card-action-setting").setName("\u542F\u7528\u672C\u6A21\u5757").addToggle((toggle) => {
-      toggle.setValue(this.plugin.settings[this.mode].modules[tab.module]).onChange((value) => {
+    const isModuleEnabled = this.plugin.settings[this.mode].modules[tab.module];
+    const contentContainer = container.createDiv({
+      cls: `rl-settings-content-wrapper ${isModuleEnabled ? "" : "rl-settings-disabled"}`
+    });
+    const group = container.createDiv({ cls: "setting-group rl-settings-group rl-settings-module-group" });
+    container.insertBefore(group, contentContainer);
+    const card = group.createDiv({ cls: "setting-items rl-settings-card rl-settings-module-card" });
+    new import_obsidian.Setting(card).setName(tab.label).setDesc(tab.description).addToggle((toggle) => {
+      toggle.setValue(isModuleEnabled).onChange((value) => {
         this.plugin.setModule(this.mode, tab.module, value);
+        contentContainer.classList.toggle("rl-settings-disabled", !value);
       });
     }).addExtraButton((button) => {
       button.setIcon("reset").setTooltip("\u6062\u590D\u672C\u533A\u9ED8\u8BA4\u503C").onClick(() => {
@@ -703,22 +711,37 @@ var RefinedLayoutSettingTab = class extends import_obsidian.PluginSettingTab {
         this.display();
       });
     });
-    actionSetting.controlEl.setAttribute("aria-label", `${tab.label} \u6A21\u5757\u64CD\u4F5C`);
-    return card.createDiv({ cls: "rl-settings-card-body" });
+    return contentContainer;
   }
-  createGroup(container, title, description) {
-    const group = container.createDiv({ cls: "rl-settings-group" });
-    const heading = group.createDiv({ cls: "rl-settings-group-heading" });
-    heading.createEl("h4", { text: title });
-    if (description !== void 0) {
-      heading.createDiv({ cls: "rl-settings-group-description", text: description });
+  createGroupCard(container, title, description) {
+    const group = container.createDiv({ cls: "setting-group rl-settings-group" });
+    if (title !== void 0) {
+      const header = group.createDiv({ cls: "rl-settings-group-header" });
+      header.createEl("h4", { text: title, cls: "rl-settings-group-title" });
+      if (description !== void 0) {
+        header.createDiv({ cls: "rl-settings-group-description", text: description });
+      }
     }
-    return group.createDiv({ cls: "rl-settings-fields" });
+    const card = group.createDiv({ cls: "setting-items rl-settings-card rl-settings-fields" });
+    return card;
   }
-  createDisclosureGroup(container, title) {
-    const details = container.createEl("details", { cls: "rl-settings-disclosure" });
-    details.createEl("summary", { text: title });
-    return details.createDiv({ cls: "rl-settings-fields" });
+  renderHeadingLevelPills(container, contextKey, onLevelChange) {
+    const currentLevel = this.activeHeadingLevelByContext[contextKey] ?? "h1";
+    const pillBar = container.createDiv({ cls: "rl-settings-pill-bar" });
+    for (const level of HEADING_LEVELS) {
+      const pill = pillBar.createEl("button", {
+        cls: `rl-settings-pill ${level === currentLevel ? "rl-settings-pill-active" : ""}`,
+        text: HEADING_LABELS[level],
+        attr: { type: "button" }
+      });
+      pill.addEventListener("click", () => {
+        this.activeHeadingLevelByContext[contextKey] = level;
+        pillBar.querySelectorAll(".rl-settings-pill").forEach((btn, idx) => {
+          btn.classList.toggle("rl-settings-pill-active", HEADING_LEVELS[idx] === level);
+        });
+        onLevelChange(level);
+      });
+    }
   }
   addNumber(container, path, name, description, options = {}) {
     const inferred = inferNumberOptions(path);
@@ -745,167 +768,177 @@ var RefinedLayoutSettingTab = class extends import_obsidian.PluginSettingTab {
     }
   }
   renderBodySection(container, tab) {
-    const card = this.createModuleCard(container, tab);
-    const fields = this.createGroup(card, "\u6B63\u6587\u4E0E\u5217\u8868", "\u666E\u901A\u6B63\u6587\u3001\u7A7A\u884C\u548C\u5217\u8868\u7684\u95F4\u8DDD\u8BBE\u7F6E\u3002");
-    this.addNumber(fields, ["body", "lineHeight"], "\u6B63\u6587\u884C\u9AD8", "\u666E\u901A\u6B63\u6587\u7684\u884C\u9AD8\u3002");
+    const content = this.createModuleCard(container, tab);
+    const bodyCard = this.createGroupCard(content, "\u6B63\u6587\u6392\u7248", "\u666E\u901A\u6B63\u6587\u884C\u9AD8\u3001\u6BB5\u843D\u6216\u7A7A\u884C\u9AD8\u5EA6\u8BBE\u7F6E\u3002");
+    this.addNumber(bodyCard, ["body", "lineHeight"], "\u6B63\u6587\u884C\u9AD8", "\u666E\u901A\u6B63\u6587\u6587\u672C\u7684\u884C\u9AD8\u3002");
     if (this.mode === "edit") {
-      this.addNumber(fields, ["body", "emptyLineHeightEm"], "\u7A7A\u884C\u9AD8\u5EA6", "CodeMirror \u7A7A\u767D\u884C\u7684\u9AD8\u5EA6\u3002");
+      this.addNumber(bodyCard, ["body", "emptyLineHeightEm"], "\u7A7A\u884C\u9AD8\u5EA6", "CodeMirror \u6E90\u7801\u89C6\u56FE\u4E2D\u7A7A\u767D\u884C\u7684\u9AD8\u5EA6\u3002");
     } else {
-      this.addNumber(fields, ["body", "paragraphSpacingEm"], "\u6BB5\u843D\u95F4\u8DDD", "\u9605\u8BFB\u6A21\u5F0F\u6BB5\u843D\u4E4B\u95F4\u7684\u95F4\u8DDD\u3002");
+      this.addNumber(bodyCard, ["body", "paragraphSpacingEm"], "\u6BB5\u843D\u95F4\u8DDD", "\u9605\u8BFB\u89C6\u56FE\u4E2D\u666E\u901A\u6BB5\u843D\u4E4B\u95F4\u7684\u5782\u76F4\u95F4\u8DDD\u3002");
     }
-    this.addNumber(fields, ["body", "listStartEm"], "\u5217\u8868\u4E0A\u95F4\u8DDD", "\u6B63\u6587\u5217\u8868\u9876\u90E8\u95F4\u8DDD\u3002");
-    this.addNumber(fields, ["body", "listEndEm"], "\u5217\u8868\u4E0B\u95F4\u8DDD", "\u6B63\u6587\u5217\u8868\u5E95\u90E8\u95F4\u8DDD\u3002");
+    const listCard = this.createGroupCard(content, "\u5217\u8868\u95F4\u8DDD", "\u666E\u901A\u5217\u8868\u6574\u4F53\u9876\u90E8\u4E0E\u5E95\u90E8\u7684\u95F4\u8DDD\u3002");
+    this.addNumber(listCard, ["body", "listStartEm"], "\u5217\u8868\u4E0A\u95F4\u8DDD", "\u6B63\u6587\u5217\u8868\u4E0E\u524D\u65B9\u5185\u5BB9\u7684\u9876\u90E8\u95F4\u8DDD\u3002");
+    this.addNumber(listCard, ["body", "listEndEm"], "\u5217\u8868\u4E0B\u95F4\u8DDD", "\u6B63\u6587\u5217\u8868\u4E0E\u540E\u65B9\u5185\u5BB9\u7684\u5E95\u90E8\u95F4\u8DDD\u3002");
   }
   renderHeadingsSection(container, tab) {
-    const card = this.createModuleCard(container, tab);
+    const content = this.createModuleCard(container, tab);
     if (this.mode === "edit") {
-      const firstHeading = this.createGroup(card, "\u6587\u6863\u9996\u884C");
-      this.addNumber(firstHeading, ["headingDecoration", "firstHeadingPaddingTopPx"], "\u9996\u884C\u6807\u9898\u9876\u90E8\u8865\u507F", "\u6587\u6863\u7B2C\u4E00\u884C\u662F\u6807\u9898\u65F6\u7684\u9876\u90E8\u8865\u507F\u3002");
+      const firstHeadingCard = this.createGroupCard(content, "\u6587\u6863\u9996\u884C", "\u4EC5\u5728\u6587\u6863\u7B2C\u4E00\u884C\u5373\u4E3A\u6807\u9898\u65F6\u7684\u4E13\u9879\u8865\u507F\u3002");
+      this.addNumber(firstHeadingCard, ["headingDecoration", "firstHeadingPaddingTopPx"], "\u9996\u884C\u6807\u9898\u9876\u90E8\u8865\u507F", "\u6587\u6863\u7B2C\u4E00\u884C\u662F\u6807\u9898\u65F6\u7684\u9876\u90E8\u5FAE\u8C03\u8865\u507F\u3002");
     }
-    const headings = card.createDiv({ cls: "rl-settings-group-list" });
-    headings.createEl("h4", { text: "\u5404\u7EA7\u6807\u9898" });
-    for (const level of HEADING_LEVELS) {
-      const fields = this.createDisclosureGroup(headings, HEADING_LABELS[level]);
-      this.addNumber(fields, ["headings", level, "lineHeight"], `${HEADING_LABELS[level]} \u884C\u9AD8`, "\u6807\u9898\u884C\u9AD8\u3002");
-      this.addNumber(fields, ["headings", level, "topEm"], `${HEADING_LABELS[level]} \u4E0A\u95F4\u8DDD`, "\u6807\u9898\u9876\u90E8\u95F4\u8DDD\u3002");
-      this.addNumber(fields, ["headings", level, "bottomEm"], `${HEADING_LABELS[level]} \u4E0B\u95F4\u8DDD`, "\u6807\u9898\u5E95\u90E8\u95F4\u8DDD\u3002");
-    }
+    const card = this.createGroupCard(content, "\u5404\u7EA7\u6807\u9898\u6392\u7248\u4E0E\u95F4\u8DDD", "\u5207\u6362\u4E0B\u65B9 H1\u2013H6 \u80F6\u56CA\uFF0C\u5FEB\u901F\u5FAE\u8C03\u5BF9\u5E94\u7EA7\u522B\u6807\u9898\u7684\u884C\u9AD8\u4E0E\u4E0A\u4E0B\u5916\u8FB9\u8DDD\u3002");
+    const pillContainer = card.createDiv({ cls: "rl-settings-pill-container" });
+    const fieldsContainer = card.createDiv({ cls: "rl-settings-heading-fields" });
+    const renderLevelFields = (level) => {
+      fieldsContainer.empty();
+      this.addNumber(fieldsContainer, ["headings", level, "lineHeight"], `${HEADING_LABELS[level]} \u884C\u9AD8`, "\u6807\u9898\u6587\u5B57\u884C\u9AD8\u3002");
+      this.addNumber(fieldsContainer, ["headings", level, "topEm"], `${HEADING_LABELS[level]} \u4E0A\u95F4\u8DDD`, "\u6807\u9898\u9876\u90E8\u95F4\u8DDD\u3002");
+      this.addNumber(fieldsContainer, ["headings", level, "bottomEm"], `${HEADING_LABELS[level]} \u4E0B\u95F4\u8DDD`, "\u6807\u9898\u5E95\u90E8\u95F4\u8DDD\u3002");
+    };
+    this.renderHeadingLevelPills(pillContainer, "headings", (level) => {
+      renderLevelFields(level);
+    });
+    const activeLevel = this.activeHeadingLevelByContext["headings"] ?? "h1";
+    renderLevelFields(activeLevel);
   }
   renderHeadingDecorationSection(container, tab) {
-    const card = this.createModuleCard(container, tab);
-    const appearance = this.createGroup(card, "\u4F4D\u7F6E\u4E0E\u5916\u89C2", "\u8C03\u6574\u4E3B\u9898\u5DF2\u7ECF\u63D0\u4F9B\u7684\u6807\u9898 ::before\uFF1B\u6CA1\u6709\u6807\u9898\u4F2A\u5143\u7D20\u7684\u4E3B\u9898\u4E0D\u4F1A\u65B0\u589E\u88C5\u9970\u3002");
-    this.addNumber(appearance, ["headingDecoration", "leftPx"], "\u6C34\u5E73\u504F\u79FB", "\u4F2A\u5143\u7D20\u76F8\u5BF9\u6807\u9898\u7684\u6C34\u5E73\u4F4D\u7F6E\u3002");
-    this.addNumber(appearance, ["headingDecoration", "widthPx"], "\u5BBD\u5EA6", "\u4F2A\u5143\u7D20\u5BBD\u5EA6\u3002");
-    this.addNumber(appearance, ["headingDecoration", "radiusPx"], "\u5706\u89D2", "\u4F2A\u5143\u7D20\u5706\u89D2\u534A\u5F84\u3002");
-    this.addNumber(appearance, ["headingDecoration", "marginRightPx"], "\u53F3\u95F4\u8DDD", "\u4F2A\u5143\u7D20\u53F3\u4FA7\u95F4\u8DDD\u3002", { min: 0 });
+    const content = this.createModuleCard(container, tab);
+    const appearanceCard = this.createGroupCard(content, "\u4F4D\u7F6E\u4E0E\u5916\u89C2", "\u8C03\u6574\u4E3B\u9898\u5DF2\u7ECF\u63D0\u4F9B\u7684\u6807\u9898 ::before \u4F2A\u5143\u7D20\u88C5\u9970\u7EBF\uFF1B\u6CA1\u6709\u6807\u9898\u4F2A\u5143\u7D20\u7684\u4E3B\u9898\u4E0D\u4F1A\u65B0\u589E\u88C5\u9970\u3002");
+    this.addNumber(appearanceCard, ["headingDecoration", "leftPx"], "\u6C34\u5E73\u504F\u79FB", "\u4F2A\u5143\u7D20\u76F8\u5BF9\u6807\u9898\u6587\u5B57\u7684\u6C34\u5E73\u504F\u79FB\u4F4D\u7F6E\u3002");
+    this.addNumber(appearanceCard, ["headingDecoration", "widthPx"], "\u5BBD\u5EA6", "\u4F2A\u5143\u7D20\u88C5\u9970\u7EBF\u7684\u5BBD\u5EA6\u3002");
+    this.addNumber(appearanceCard, ["headingDecoration", "radiusPx"], "\u5706\u89D2", "\u4F2A\u5143\u7D20\u88C5\u9970\u7EBF\u7684\u5706\u89D2\u534A\u5F84\u3002");
+    this.addNumber(appearanceCard, ["headingDecoration", "marginRightPx"], "\u53F3\u95F4\u8DDD", "\u4F2A\u5143\u7D20\u53F3\u4FA7\u4E0E\u6807\u9898\u6587\u672C\u7684\u8DDD\u79BB\u3002", { min: 0 });
     if (this.mode === "edit") {
-      this.addNumber(appearance, ["headingDecoration", "firstHeadingDecorOffsetPx"], "\u6587\u6863\u9996\u6807\u9898\u989D\u5916\u8865\u507F", "\u4EC5\u5728\u6587\u6863\u7B2C\u4E00\u884C\u5C31\u662F\u6807\u9898\u65F6\u53E0\u52A0\uFF1B\u6B63\u503C\u5411\u4E0B\uFF0C\u8D1F\u503C\u5411\u4E0A\u3002");
+      this.addNumber(appearanceCard, ["headingDecoration", "firstHeadingDecorOffsetPx"], "\u6587\u6863\u9996\u6807\u9898\u989D\u5916\u8865\u507F", "\u4EC5\u5728\u6587\u6863\u7B2C\u4E00\u884C\u5C31\u662F\u6807\u9898\u65F6\u53E0\u52A0\uFF1B\u6B63\u503C\u5411\u4E0B\uFF0C\u8D1F\u503C\u5411\u4E0A\u3002");
     }
-    const headings = card.createDiv({ cls: "rl-settings-group-list" });
-    headings.createEl("h4", { text: "\u5404\u7EA7\u6807\u9898\u88C5\u9970" });
-    for (const level of HEADING_LEVELS) {
-      const fields = this.createDisclosureGroup(headings, HEADING_LABELS[level]);
-      this.addNumber(fields, ["headings", level, "decorHeightPx"], `${HEADING_LABELS[level]} \u9AD8\u5EA6`, "\u4F2A\u5143\u7D20\u9AD8\u5EA6\u3002");
-      this.addNumber(fields, ["headings", level, "decorOffsetPx"], `${HEADING_LABELS[level]} \u5782\u76F4\u8865\u507F`, "\u5728\u7B2C\u4E00\u884C\u5782\u76F4\u5C45\u4E2D\u7684\u57FA\u7840\u4E0A\u5FAE\u8C03\uFF1B\u6B63\u503C\u5411\u4E0B\uFF0C\u8D1F\u503C\u5411\u4E0A\u3002");
-    }
+    const card = this.createGroupCard(content, "\u5404\u7EA7\u6807\u9898\u88C5\u9970\u9AD8\u5EA6\u4E0E\u5782\u76F4\u8865\u507F", "\u5207\u6362\u4E0B\u65B9 H1\u2013H6 \u80F6\u56CA\uFF0C\u5FAE\u8C03\u5404\u7EA7\u6807\u9898\u88C5\u9970\u7EBF\u7684\u9AD8\u5EA6\u548C\u5782\u76F4\u5C45\u4E2D\u8865\u507F\u3002");
+    const pillContainer = card.createDiv({ cls: "rl-settings-pill-container" });
+    const fieldsContainer = card.createDiv({ cls: "rl-settings-heading-fields" });
+    const renderLevelFields = (level) => {
+      fieldsContainer.empty();
+      this.addNumber(fieldsContainer, ["headings", level, "decorHeightPx"], `${HEADING_LABELS[level]} \u9AD8\u5EA6`, "\u4F2A\u5143\u7D20\u9AD8\u5EA6\u3002");
+      this.addNumber(fieldsContainer, ["headings", level, "decorOffsetPx"], `${HEADING_LABELS[level]} \u5782\u76F4\u8865\u507F`, "\u5728\u7B2C\u4E00\u884C\u5782\u76F4\u5C45\u4E2D\u7684\u57FA\u7840\u4E0A\u5FAE\u8C03\uFF1B\u6B63\u503C\u5411\u4E0B\uFF0C\u8D1F\u503C\u5411\u4E0A\u3002");
+    };
+    this.renderHeadingLevelPills(pillContainer, "headingDecoration", (level) => {
+      renderLevelFields(level);
+    });
+    const activeLevel = this.activeHeadingLevelByContext["headingDecoration"] ?? "h1";
+    renderLevelFields(activeLevel);
   }
   renderCalloutSection(container, tab) {
-    const card = this.createModuleCard(container, tab);
-    const appearance = this.createGroup(card, "\u5361\u7247\u5916\u89C2\u4E0E\u95F4\u8DDD");
-    const appearanceFields = [
-      ["radiusPx", "\u5361\u7247\u5706\u89D2", "Callout \u5361\u7247\u5706\u89D2\u3002"],
-      ["paddingTopPx", "\u5361\u7247\u4E0A\u5185\u8FB9\u8DDD", "Callout \u5361\u7247\u4E0A\u5185\u8FB9\u8DDD\u3002"],
-      ["paddingBottomPx", "\u5361\u7247\u4E0B\u5185\u8FB9\u8DDD", "Callout \u5361\u7247\u4E0B\u5185\u8FB9\u8DDD\u3002"],
-      ["paddingLeftPx", "\u5361\u7247\u5DE6\u5185\u8FB9\u8DDD", "Callout \u5361\u7247\u5DE6\u5185\u8FB9\u8DDD\u3002"],
-      ["paddingRightPx", "\u5361\u7247\u53F3\u5185\u8FB9\u8DDD", "Callout \u5361\u7247\u53F3\u5185\u8FB9\u8DDD\u3002"],
-      ["marginTopPx", "\u5361\u7247\u4E0A\u5916\u8FB9\u8DDD", "Callout \u4E0E\u524D\u65B9\u5185\u5BB9\u7684\u8DDD\u79BB\u3002"],
-      ["marginBottomPx", "\u5361\u7247\u4E0B\u5916\u8FB9\u8DDD", "Callout \u4E0E\u540E\u65B9\u5185\u5BB9\u7684\u8DDD\u79BB\u3002"]
-    ];
-    for (const [key, name, description] of appearanceFields) {
-      this.addNumber(appearance, ["callout", key], name, description);
-    }
-    const title = this.createGroup(card, "\u6807\u9898\u680F");
-    const titleFields = [
-      ["titleLineHeight", "Callout \u6807\u9898\u884C\u9AD8", "\u6807\u9898\u680F\u6587\u5B57\u884C\u9AD8\u3002"],
-      ["titlePaddingTopEm", "\u6807\u9898\u4E0A\u5185\u8FB9\u8DDD", "\u6807\u9898\u680F\u9876\u90E8\u5185\u8FB9\u8DDD\u3002"],
-      ["titlePaddingBottomEm", "\u6807\u9898\u4E0B\u5185\u8FB9\u8DDD", "\u6807\u9898\u680F\u5E95\u90E8\u5185\u8FB9\u8DDD\uFF1B\u4EC5\u6807\u9898\u3001\u6298\u53E0\u6216\u540E\u63A5\u6807\u9898\u65F6\u4F1A\u81EA\u52A8\u6291\u5236\u51B2\u7A81\u7A7A\u767D\u3002"],
-      ["titlePaddingLeftPx", "\u6807\u9898\u5DE6\u5185\u8FB9\u8DDD", "\u6807\u9898\u680F\u5DE6\u4FA7\u5185\u8FB9\u8DDD\u3002"],
-      ["titlePaddingRightPx", "\u6807\u9898\u53F3\u5185\u8FB9\u8DDD", "\u6807\u9898\u680F\u53F3\u4FA7\u5185\u8FB9\u8DDD\u3002"],
-      ["titleOnlyPaddingTopEm", "\u4EC5\u6807\u9898\u65F6\u4E0A\u5185\u8FB9\u8DDD", "Callout \u53EA\u6709\u6807\u9898\u65F6\u7684\u9876\u90E8\u5185\u8FB9\u8DDD\u3002"],
-      ["titleOnlyPaddingBottomEm", "\u4EC5\u6807\u9898\u65F6\u4E0B\u5185\u8FB9\u8DDD", "Callout \u53EA\u6709\u6807\u9898\u65F6\u7684\u5E95\u90E8\u5185\u8FB9\u8DDD\uFF1B\u72EC\u7ACB\u4E8E\u6709\u5185\u5BB9 Callout \u7684\u5361\u7247\u4E0B\u5185\u8FB9\u8DDD\u3002"],
-      ["collapsedPaddingTopEm", "\u6298\u53E0\u72B6\u6001\u4E0A\u5185\u8FB9\u8DDD", "\u6298\u53E0 Callout \u7684\u9876\u90E8\u5185\u8FB9\u8DDD\u3002"],
-      ["collapsedPaddingBottomEm", "\u6298\u53E0\u72B6\u6001\u4E0B\u5185\u8FB9\u8DDD", "\u6298\u53E0 Callout \u7684\u5E95\u90E8\u5185\u8FB9\u8DDD\u3002"]
-    ];
-    for (const [key, name, description] of titleFields) {
-      this.addNumber(title, ["callout", key], name, description);
-    }
-    const content = this.createGroup(card, "\u5185\u90E8\u6B63\u6587\u4E0E\u5217\u8868");
-    const contentFields = [
-      ["paragraphLineHeight", "\u5185\u90E8\u6B63\u6587\u884C\u9AD8", "Callout \u6B63\u6587\u884C\u9AD8\uFF0C\u72EC\u7ACB\u4E8E\u666E\u901A\u6B63\u6587\u3002"],
-      ["paragraphSpacingEm", "\u5185\u90E8\u6BB5\u843D\u95F4\u8DDD", "Callout \u6BB5\u843D\u95F4\u8DDD\u3002"],
-      ["listStartEm", "\u5185\u90E8\u5217\u8868\u4E0A\u95F4\u8DDD", "Callout \u5217\u8868\u9876\u90E8\u95F4\u8DDD\u3002"],
-      ["listEndEm", "\u5185\u90E8\u5217\u8868\u4E0B\u95F4\u8DDD", "Callout \u5217\u8868\u5E95\u90E8\u95F4\u8DDD\u3002"],
-      ["lastListEndEm", "\u672B\u5C3E\u5217\u8868\u4E0B\u95F4\u8DDD", "\u5217\u8868\u662F Callout \u6700\u540E\u5143\u7D20\u65F6\u7684\u5E95\u90E8\u95F4\u8DDD\u3002"]
-    ];
-    for (const [key, name, description] of contentFields) {
-      this.addNumber(content, ["callout", key], name, description);
-    }
-    this.renderImageFields(card, ["callout", "image"], "Callout \u56FE\u7247");
-    this.renderContextHeadings(card, "callout", this.mode === "read");
-    this.renderTableFields(card, ["callout", "table"], "Callout \u8868\u683C\uFF08\u72EC\u7ACB\uFF09");
+    const content = this.createModuleCard(container, tab);
+    const appearanceCard = this.createGroupCard(content, "\u5361\u7247\u5916\u89C2\u4E0E\u5916\u8FB9\u8DDD", "Callout \u5361\u7247\u7684\u5706\u89D2\u4EE5\u53CA\u4E0E\u524D\u540E\u5185\u5BB9\u7684\u8DDD\u79BB\u3002");
+    this.addNumber(appearanceCard, ["callout", "radiusPx"], "\u5361\u7247\u5706\u89D2", "Callout \u5361\u7247\u5706\u89D2\u534A\u5F84\u3002");
+    this.addNumber(appearanceCard, ["callout", "marginTopPx"], "\u5361\u7247\u4E0A\u5916\u8FB9\u8DDD", "Callout \u4E0E\u524D\u65B9\u5185\u5BB9\u7684\u8DDD\u79BB\u3002");
+    this.addNumber(appearanceCard, ["callout", "marginBottomPx"], "\u5361\u7247\u4E0B\u5916\u8FB9\u8DDD", "Callout \u4E0E\u540E\u65B9\u5185\u5BB9\u7684\u8DDD\u79BB\u3002");
+    const paddingCard = this.createGroupCard(content, "\u5361\u7247\u5185\u8FB9\u8DDD", "Callout \u5185\u90E8\u5404\u8FB9\u7F18\u4E0E\u5185\u5BB9\u7684\u5185\u8FB9\u8DDD\u3002");
+    this.addNumber(paddingCard, ["callout", "paddingTopPx"], "\u5361\u7247\u4E0A\u5185\u8FB9\u8DDD", "Callout \u5361\u7247\u9876\u90E8\u5185\u8FB9\u8DDD\u3002");
+    this.addNumber(paddingCard, ["callout", "paddingBottomPx"], "\u5361\u7247\u4E0B\u5185\u8FB9\u8DDD", "Callout \u5361\u7247\u5E95\u90E8\u5185\u8FB9\u8DDD\u3002");
+    this.addNumber(paddingCard, ["callout", "paddingLeftPx"], "\u5361\u7247\u5DE6\u5185\u8FB9\u8DDD", "Callout \u5361\u7247\u5DE6\u4FA7\u5185\u8FB9\u8DDD\u3002");
+    this.addNumber(paddingCard, ["callout", "paddingRightPx"], "\u5361\u7247\u53F3\u5185\u8FB9\u8DDD", "Callout \u5361\u7247\u53F3\u4FA7\u5185\u8FB9\u8DDD\u3002");
+    const titleCard = this.createGroupCard(content, "\u6807\u9898\u680F\u6392\u7248\u4E0E\u5E38\u89C4\u5185\u8FB9\u8DDD", "Callout \u6807\u9898\u680F\u6587\u5B57\u53CA\u6807\u51C6\u5185\u8FB9\u8DDD\u3002");
+    this.addNumber(titleCard, ["callout", "titleLineHeight"], "\u6807\u9898\u884C\u9AD8", "\u6807\u9898\u680F\u6587\u5B57\u884C\u9AD8\u3002");
+    this.addNumber(titleCard, ["callout", "titlePaddingTopEm"], "\u6807\u9898\u4E0A\u5185\u8FB9\u8DDD", "\u6807\u9898\u680F\u9876\u90E8\u5185\u8FB9\u8DDD\u3002");
+    this.addNumber(titleCard, ["callout", "titlePaddingBottomEm"], "\u6807\u9898\u4E0B\u5185\u8FB9\u8DDD", "\u6807\u9898\u680F\u5E95\u90E8\u5185\u8FB9\u8DDD\uFF1B\u4EC5\u6807\u9898\u3001\u6298\u53E0\u6216\u540E\u63A5\u6807\u9898\u65F6\u4F1A\u81EA\u52A8\u6291\u5236\u51B2\u7A81\u7A7A\u767D\u3002");
+    this.addNumber(titleCard, ["callout", "titlePaddingLeftPx"], "\u6807\u9898\u5DE6\u5185\u8FB9\u8DDD", "\u6807\u9898\u680F\u5DE6\u4FA7\u5185\u8FB9\u8DDD\u3002");
+    this.addNumber(titleCard, ["callout", "titlePaddingRightPx"], "\u6807\u9898\u53F3\u5185\u8FB9\u8DDD", "\u6807\u9898\u680F\u53F3\u4FA7\u5185\u8FB9\u8DDD\u3002");
+    const specialTitleCard = this.createGroupCard(content, "\u7279\u6B8A\u72B6\u6001\u6807\u9898\u680F\u5185\u8FB9\u8DDD", "\u4EC5\u6807\u9898\u72B6\u6001\u6216\u6298\u53E0\u72B6\u6001\u4E0B\u7684\u4E13\u5C5E\u5185\u8FB9\u8DDD\u63A7\u5236\u3002");
+    this.addNumber(specialTitleCard, ["callout", "titleOnlyPaddingTopEm"], "\u4EC5\u6807\u9898\u65F6\u4E0A\u5185\u8FB9\u8DDD", "Callout \u53EA\u6709\u6807\u9898\u65F6\u7684\u9876\u90E8\u5185\u8FB9\u8DDD\u3002");
+    this.addNumber(specialTitleCard, ["callout", "titleOnlyPaddingBottomEm"], "\u4EC5\u6807\u9898\u65F6\u4E0B\u5185\u8FB9\u8DDD", "Callout \u53EA\u6709\u6807\u9898\u65F6\u7684\u5E95\u90E8\u5185\u8FB9\u8DDD\uFF1B\u72EC\u7ACB\u4E8E\u6709\u5185\u5BB9 Callout \u7684\u5361\u7247\u4E0B\u5185\u8FB9\u8DDD\u3002");
+    this.addNumber(specialTitleCard, ["callout", "collapsedPaddingTopEm"], "\u6298\u53E0\u72B6\u6001\u4E0A\u5185\u8FB9\u8DDD", "\u6298\u53E0 Callout \u7684\u9876\u90E8\u5185\u8FB9\u8DDD\u3002");
+    this.addNumber(specialTitleCard, ["callout", "collapsedPaddingBottomEm"], "\u6298\u53E0\u72B6\u6001\u4E0B\u5185\u8FB9\u8DDD", "\u6298\u53E0 Callout \u7684\u5E95\u90E8\u5185\u8FB9\u8DDD\u3002");
+    const bodyCard = this.createGroupCard(content, "\u5185\u90E8\u6B63\u6587\u4E0E\u5217\u8868", "Callout \u5185\u90E8\u6BB5\u843D\u53CA\u5217\u8868\u7684\u72EC\u7ACB\u95F4\u8DDD\u3002");
+    this.addNumber(bodyCard, ["callout", "paragraphLineHeight"], "\u5185\u90E8\u6B63\u6587\u884C\u9AD8", "Callout \u6B63\u6587\u884C\u9AD8\uFF0C\u72EC\u7ACB\u4E8E\u666E\u901A\u6B63\u6587\u3002");
+    this.addNumber(bodyCard, ["callout", "paragraphSpacingEm"], "\u5185\u90E8\u6BB5\u843D\u95F4\u8DDD", "Callout \u6BB5\u843D\u95F4\u8DDD\u3002");
+    this.addNumber(bodyCard, ["callout", "listStartEm"], "\u5185\u90E8\u5217\u8868\u4E0A\u95F4\u8DDD", "Callout \u5217\u8868\u9876\u90E8\u95F4\u8DDD\u3002");
+    this.addNumber(bodyCard, ["callout", "listEndEm"], "\u5185\u90E8\u5217\u8868\u4E0B\u95F4\u8DDD", "Callout \u5217\u8868\u5E95\u90E8\u95F4\u8DDD\u3002");
+    this.addNumber(bodyCard, ["callout", "lastListEndEm"], "\u672B\u5C3E\u5217\u8868\u4E0B\u95F4\u8DDD", "\u5217\u8868\u662F Callout \u6700\u540E\u5143\u7D20\u65F6\u7684\u5E95\u90E8\u95F4\u8DDD\u3002");
+    this.renderImageFields(content, ["callout", "image"], "Callout \u5185\u90E8\u56FE\u7247", "Callout \u5185\u90E8\u56FE\u7247\u7684\u5C3A\u5BF8\u548C\u5916\u89C2\u8BBE\u7F6E\u3002");
+    this.renderTableFields(content, ["callout", "table"], "Callout \u5185\u90E8\u8868\u683C", "Callout \u5185\u90E8\u8868\u683C\u7684\u5185\u8FB9\u8DDD\u3001\u8FB9\u6846\u548C\u95F4\u8DDD\u3002");
+    this.renderContextHeadings(content, "callout", this.mode === "read");
   }
   renderBlockquoteSection(container, tab) {
-    const card = this.createModuleCard(container, tab);
-    const body = this.createGroup(card, "\u5185\u90E8\u6B63\u6587\u4E0E\u5217\u8868");
-    this.addNumber(body, ["blockquote", "paragraphLineHeight"], "\u5185\u90E8\u6B63\u6587\u884C\u9AD8", "\u5F15\u7528\u5757\u6B63\u6587\u884C\u9AD8\uFF0C\u72EC\u7ACB\u4E8E\u666E\u901A\u6B63\u6587\u3002");
-    this.addNumber(body, ["blockquote", "paragraphSpacingEm"], "\u5185\u90E8\u6BB5\u843D\u95F4\u8DDD", "\u5F15\u7528\u5757\u6BB5\u843D\u95F4\u8DDD\u3002");
-    this.addNumber(body, ["blockquote", "listStartEm"], "\u5185\u90E8\u5217\u8868\u4E0A\u95F4\u8DDD", "\u5F15\u7528\u5757\u5217\u8868\u9876\u90E8\u95F4\u8DDD\u3002");
-    this.addNumber(body, ["blockquote", "listEndEm"], "\u5185\u90E8\u5217\u8868\u4E0B\u95F4\u8DDD", "\u5F15\u7528\u5757\u5217\u8868\u5E95\u90E8\u95F4\u8DDD\u3002");
-    this.renderContextHeadings(card, "blockquote", false);
-    this.renderTableFields(card, ["blockquote", "table"], "\u5F15\u7528\u5757\u8868\u683C");
+    const content = this.createModuleCard(container, tab);
+    const bodyCard = this.createGroupCard(content, "\u5185\u90E8\u6B63\u6587\u4E0E\u5217\u8868", "\u5F15\u7528\u5757\u5185\u90E8\u6BB5\u843D\u53CA\u5217\u8868\u7684\u72EC\u7ACB\u6392\u7248\u4E0E\u95F4\u8DDD\u3002");
+    this.addNumber(bodyCard, ["blockquote", "paragraphLineHeight"], "\u5185\u90E8\u6B63\u6587\u884C\u9AD8", "\u5F15\u7528\u5757\u6B63\u6587\u884C\u9AD8\uFF0C\u72EC\u7ACB\u4E8E\u666E\u901A\u6B63\u6587\u3002");
+    this.addNumber(bodyCard, ["blockquote", "paragraphSpacingEm"], "\u5185\u90E8\u6BB5\u843D\u95F4\u8DDD", "\u5F15\u7528\u5757\u6BB5\u843D\u95F4\u8DDD\u3002");
+    this.addNumber(bodyCard, ["blockquote", "listStartEm"], "\u5185\u90E8\u5217\u8868\u4E0A\u95F4\u8DDD", "\u5F15\u7528\u5757\u5217\u8868\u9876\u90E8\u95F4\u8DDD\u3002");
+    this.addNumber(bodyCard, ["blockquote", "listEndEm"], "\u5185\u90E8\u5217\u8868\u4E0B\u95F4\u8DDD", "\u5F15\u7528\u5757\u5217\u8868\u5E95\u90E8\u95F4\u8DDD\u3002");
+    this.renderTableFields(content, ["blockquote", "table"], "\u5F15\u7528\u5757\u5185\u90E8\u8868\u683C", "\u5F15\u7528\u5757\u5185\u90E8\u8868\u683C\u7684\u5185\u8FB9\u8DDD\u3001\u8FB9\u6846\u548C\u95F4\u8DDD\u3002");
+    this.renderContextHeadings(content, "blockquote", false);
   }
   renderContextHeadings(container, context, bottomUsesPx) {
-    const headings = container.createEl("details", { cls: "rl-settings-disclosure rl-settings-context-headings" });
-    headings.createEl("summary", { text: "\u5185\u90E8\u6807\u9898 H1\u2013H6" });
-    const content = headings.createDiv({ cls: "rl-settings-disclosure-body" });
-    for (const level of HEADING_LEVELS) {
-      const fields = this.createDisclosureGroup(content, HEADING_LABELS[level]);
+    const label = context === "callout" ? "Callout" : "\u5F15\u7528\u5757";
+    const card = this.createGroupCard(
+      container,
+      `${label} \u5185\u90E8\u5404\u7EA7\u6807\u9898 (H1\u2013H6)`,
+      `\u5207\u6362\u4E0B\u65B9 H1\u2013H6 \u80F6\u56CA\uFF0C\u5FAE\u8C03 ${label} \u5185\u90E8\u5404\u7EA7\u6807\u9898\u7684\u884C\u9AD8\u4E0E\u95F4\u8DDD\u3002`
+    );
+    const pillContainer = card.createDiv({ cls: "rl-settings-pill-container" });
+    const fieldsContainer = card.createDiv({ cls: "rl-settings-heading-fields" });
+    const renderLevelFields = (level) => {
+      fieldsContainer.empty();
       const prefix = [context, "headings", level];
-      this.addNumber(fields, [...prefix, "lineHeight"], `${HEADING_LABELS[level]} \u884C\u9AD8`, "\u5185\u90E8\u6807\u9898\u884C\u9AD8\u3002");
-      this.addNumber(fields, [...prefix, "topEm"], `${HEADING_LABELS[level]} \u4E0A\u95F4\u8DDD`, "\u5185\u90E8\u6807\u9898\u9876\u90E8\u95F4\u8DDD\u3002");
+      this.addNumber(fieldsContainer, [...prefix, "lineHeight"], `${HEADING_LABELS[level]} \u884C\u9AD8`, "\u5185\u90E8\u6807\u9898\u884C\u9AD8\u3002");
+      this.addNumber(fieldsContainer, [...prefix, "topEm"], `${HEADING_LABELS[level]} \u4E0A\u95F4\u8DDD`, "\u5185\u90E8\u6807\u9898\u9876\u90E8\u95F4\u8DDD\u3002");
       const bottomKey = bottomUsesPx ? "bottomPx" : "bottomEm";
-      this.addNumber(fields, [...prefix, bottomKey], `${HEADING_LABELS[level]} \u4E0B\u95F4\u8DDD`, "\u5185\u90E8\u6807\u9898\u5E95\u90E8\u95F4\u8DDD\u3002");
-    }
+      this.addNumber(fieldsContainer, [...prefix, bottomKey], `${HEADING_LABELS[level]} \u4E0B\u95F4\u8DDD`, "\u5185\u90E8\u6807\u9898\u5E95\u90E8\u95F4\u8DDD\u3002");
+    };
+    this.renderHeadingLevelPills(pillContainer, `${context}-headings`, (level) => {
+      renderLevelFields(level);
+    });
+    const activeLevel = this.activeHeadingLevelByContext[`${context}-headings`] ?? "h1";
+    renderLevelFields(activeLevel);
   }
   renderImageSection(container, tab) {
-    const card = this.createModuleCard(container, tab);
-    this.renderImageFields(card, ["image"], "\u6B63\u6587\u56FE\u7247");
+    const content = this.createModuleCard(container, tab);
+    this.renderImageFields(content, ["image"], "\u6B63\u6587\u56FE\u7247\u5C3A\u5BF8\u4E0E\u5916\u89C2", "\u666E\u901A\u6B63\u6587\u56FE\u7247\u7684\u5C3A\u5BF8\u3001\u5706\u89D2\u548C\u8FB9\u6846\u8BBE\u7F6E\u3002");
   }
-  renderImageFields(container, prefix, label) {
-    const fields = this.createGroup(container, label, "\u56FE\u7247\u5C3A\u5BF8\u548C\u5916\u89C2\u8BBE\u7F6E\u3002");
-    this.addNumber(fields, [...prefix, "maxWidthPct"], "\u6700\u5927\u5BBD\u5EA6", "\u56FE\u7247\u76F8\u5BF9\u6240\u5728\u5185\u5BB9\u533A\u57DF\u7684\u6700\u5927\u5BBD\u5EA6\u3002");
-    this.addNumber(fields, [...prefix, "radiusPx"], "\u56FE\u7247\u5706\u89D2", "\u56FE\u7247\u5706\u89D2\u534A\u5F84\u3002");
-    this.addNumber(fields, [...prefix, "borderPx"], "\u56FE\u7247\u8FB9\u6846", "\u56FE\u7247\u8FB9\u6846\u5BBD\u5EA6\u3002");
+  renderImageFields(container, prefix, label, description) {
+    const card = this.createGroupCard(container, label, description);
+    this.addNumber(card, [...prefix, "maxWidthPct"], "\u6700\u5927\u5BBD\u5EA6", "\u56FE\u7247\u76F8\u5BF9\u6240\u5728\u5185\u5BB9\u533A\u57DF\u7684\u6700\u5927\u5BBD\u5EA6\u3002");
+    this.addNumber(card, [...prefix, "radiusPx"], "\u56FE\u7247\u5706\u89D2", "\u56FE\u7247\u5706\u89D2\u534A\u5F84\u3002");
+    this.addNumber(card, [...prefix, "borderPx"], "\u56FE\u7247\u8FB9\u6846", "\u56FE\u7247\u8FB9\u6846\u5BBD\u5EA6\u3002");
   }
   renderMermaidSection(container, tab) {
-    const card = this.createModuleCard(container, tab);
-    const fields = this.createGroup(card, "\u56FE\u8868\u5BBD\u5EA6\u89C4\u5219", "\u6309 SVG \u539F\u59CB viewBox \u5BBD\u9AD8\u6BD4\u533A\u5206\u7EB5\u5411\u56FE\u548C\u666E\u901A/\u6A2A\u5411\u56FE\u3002");
-    this.addNumber(fields, ["mermaid", "portraitMaxWidthPct"], "\u7EB5\u5411\u56FE\u6700\u5927\u5BBD\u5EA6", "\u7EB5\u5411 Mermaid \u76F8\u5BF9\u6240\u5728\u5185\u5BB9\u533A\u57DF\u7684\u6700\u5927\u5BBD\u5EA6\uFF1B\u56FE\u8868\u4F1A\u6C34\u5E73\u5C45\u4E2D\u3002");
-    this.addNumber(fields, ["mermaid", "portraitAspectRatio"], "\u7EB5\u5411\u5224\u5B9A\u5BBD\u9AD8\u6BD4", "SVG \u539F\u59CB\u5BBD\u5EA6\u9664\u4EE5\u9AD8\u5EA6\uFF1B\u5C0F\u4E8E\u6216\u7B49\u4E8E\u8BE5\u503C\u65F6\u89C6\u4E3A\u7EB5\u5411\u56FE\u3002", { min: 0.05, max: 5, step: 0.05 });
-    this.addNumber(fields, ["mermaid", "landscapeMinWidthPx"], "\u6A2A\u5411\u56FE\u6700\u5C0F\u5BBD\u5EA6", "\u666E\u901A\u6216\u6A2A\u5411 Mermaid \u7684\u6700\u5C0F\u5BBD\u5EA6\uFF1B\u7A7A\u95F4\u4E0D\u8DB3\u65F6\u5141\u8BB8\u6A2A\u5411\u6EDA\u52A8\u3002", { min: 0, max: 4096, step: 10 });
+    const content = this.createModuleCard(container, tab);
+    const card = this.createGroupCard(content, "\u56FE\u8868\u81EA\u9002\u5E94\u4E0E\u5BBD\u5EA6\u89C4\u5219", "\u6309 SVG \u539F\u59CB viewBox \u5BBD\u9AD8\u6BD4\u533A\u5206\u7EB5\u5411\u56FE\u548C\u666E\u901A/\u6A2A\u5411\u56FE\u3002");
+    this.addNumber(card, ["mermaid", "portraitMaxWidthPct"], "\u7EB5\u5411\u56FE\u6700\u5927\u5BBD\u5EA6", "\u7EB5\u5411 Mermaid \u76F8\u5BF9\u6240\u5728\u5185\u5BB9\u533A\u57DF\u7684\u6700\u5927\u5BBD\u5EA6\uFF1B\u56FE\u8868\u4F1A\u6C34\u5E73\u5C45\u4E2D\u3002");
+    this.addNumber(card, ["mermaid", "portraitAspectRatio"], "\u7EB5\u5411\u5224\u5B9A\u5BBD\u9AD8\u6BD4", "SVG \u539F\u59CB\u5BBD\u5EA6\u9664\u4EE5\u9AD8\u5EA6\uFF1B\u5C0F\u4E8E\u6216\u7B49\u4E8E\u8BE5\u503C\u65F6\u89C6\u4E3A\u7EB5\u5411\u56FE\u3002", { min: 0.05, max: 5, step: 0.05 });
+    this.addNumber(card, ["mermaid", "landscapeMinWidthPx"], "\u6A2A\u5411\u56FE\u6700\u5C0F\u5BBD\u5EA6", "\u666E\u901A\u6216\u6A2A\u5411 Mermaid \u7684\u6700\u5C0F\u5BBD\u5EA6\uFF1B\u7A7A\u95F4\u4E0D\u8DB3\u65F6\u5141\u8BB8\u6A2A\u5411\u6EDA\u52A8\u3002", { min: 0, max: 4096, step: 10 });
   }
   renderTableSection(container, tab) {
-    const card = this.createModuleCard(container, tab);
-    this.renderTableFields(card, ["table"], "\u6B63\u6587\u8868\u683C");
+    const content = this.createModuleCard(container, tab);
+    this.renderTableFields(content, ["table"], "\u6B63\u6587\u8868\u683C\u5916\u89C2\u4E0E\u95F4\u8DDD", "\u6B63\u6587\u8868\u683C\u7684\u5355\u5143\u683C\u5185\u8FB9\u8DDD\u3001\u5185\u5916\u90E8\u8FB9\u6846\u3001\u5706\u89D2\u548C\u4E0A\u4E0B\u95F4\u8DDD\u3002");
   }
-  renderTableFields(container, prefix, label) {
-    const fields = this.createGroup(container, label, "\u8868\u683C\u5355\u5143\u683C\u3001\u8FB9\u6846\u3001\u5706\u89D2\u548C\u4E0A\u4E0B\u95F4\u8DDD\u3002");
-    this.addNumber(fields, [...prefix, "cellPaddingPx"], "\u5355\u5143\u683C\u5185\u8FB9\u8DDD", "\u8868\u683C\u5355\u5143\u683C\u5185\u8FB9\u8DDD\u3002");
-    this.addNumber(fields, [...prefix, "innerBorderPx"], "\u5185\u6846\u7EBF\u5BBD\u5EA6", "\u8868\u683C\u5185\u90E8\u8FB9\u6846\u5BBD\u5EA6\u3002");
-    this.addNumber(fields, [...prefix, "outerBorderPx"], "\u5916\u8FB9\u6846\u5BBD\u5EA6", "\u8868\u683C\u5916\u8FB9\u6846\u5BBD\u5EA6\u3002");
-    this.addNumber(fields, [...prefix, "radiusPx"], "\u8868\u683C\u5706\u89D2", "\u8868\u683C\u6574\u4F53\u5706\u89D2\u3002");
-    this.addNumber(fields, [...prefix, "spacingTopPx"], "\u8868\u683C\u4E0A\u95F4\u8DDD", "\u8868\u683C\u4E0E\u524D\u65B9\u5185\u5BB9\u7684\u8DDD\u79BB\u3002");
-    this.addNumber(fields, [...prefix, "spacingBottomPx"], "\u8868\u683C\u4E0B\u95F4\u8DDD", "\u8868\u683C\u4E0E\u540E\u65B9\u5185\u5BB9\u7684\u8DDD\u79BB\u3002");
+  renderTableFields(container, prefix, label, description) {
+    const card = this.createGroupCard(container, label, description);
+    this.addNumber(card, [...prefix, "cellPaddingPx"], "\u5355\u5143\u683C\u5185\u8FB9\u8DDD", "\u8868\u683C\u5355\u5143\u683C\u5185\u8FB9\u8DDD\u3002");
+    this.addNumber(card, [...prefix, "innerBorderPx"], "\u5185\u6846\u7EBF\u5BBD\u5EA6", "\u8868\u683C\u5185\u90E8\u8FB9\u6846\u5BBD\u5EA6\u3002");
+    this.addNumber(card, [...prefix, "outerBorderPx"], "\u5916\u8FB9\u6846\u5BBD\u5EA6", "\u8868\u683C\u5916\u8FB9\u6846\u5BBD\u5EA6\u3002");
+    this.addNumber(card, [...prefix, "radiusPx"], "\u8868\u683C\u5706\u89D2", "\u8868\u683C\u6574\u4F53\u5706\u89D2\u3002");
+    this.addNumber(card, [...prefix, "spacingTopPx"], "\u8868\u683C\u4E0A\u95F4\u8DDD", "\u8868\u683C\u4E0E\u524D\u65B9\u5185\u5BB9\u7684\u8DDD\u79BB\u3002");
+    this.addNumber(card, [...prefix, "spacingBottomPx"], "\u8868\u683C\u4E0B\u95F4\u8DDD", "\u8868\u683C\u4E0E\u540E\u65B9\u5185\u5BB9\u7684\u8DDD\u79BB\u3002");
   }
   renderCodeBlockSection(container, tab) {
-    const card = this.createModuleCard(container, tab);
-    const fields = this.createGroup(card, "\u4EE3\u7801\u5757\u95F4\u8DDD");
-    this.addNumber(fields, ["codeBlock", "lineHeight"], "\u4EE3\u7801\u884C\u9AD8", "\u4EE3\u7801\u5757\u5185\u90E8\u884C\u9AD8\u3002");
+    const content = this.createModuleCard(container, tab);
+    const card = this.createGroupCard(content, "\u4EE3\u7801\u5757\u6392\u7248\u4E0E\u95F4\u8DDD", "\u4EE3\u7801\u5757\u5185\u90E8\u884C\u9AD8\u53CA\u5728\u4E0D\u540C\u6A21\u5F0F\u4E0B\u7684\u8FB9\u8DDD\u3002");
+    this.addNumber(card, ["codeBlock", "lineHeight"], "\u4EE3\u7801\u884C\u9AD8", "\u4EE3\u7801\u5757\u5185\u90E8\u884C\u9AD8\u3002");
     if (this.mode === "edit") {
-      this.addNumber(fields, ["codeBlock", "innerSpacingEm"], "\u5185\u90E8\u7A7A\u884C\u95F4\u8DDD", "\u7F16\u8F91\u6A21\u5F0F\u4EE3\u7801\u5757\u5185\u90E8\u7A7A\u884C\u7684\u95F4\u8DDD\u3002");
+      this.addNumber(card, ["codeBlock", "innerSpacingEm"], "\u5185\u90E8\u7A7A\u884C\u95F4\u8DDD", "\u7F16\u8F91\u6A21\u5F0F\u4EE3\u7801\u5757\u5185\u90E8\u7A7A\u884C\u7684\u95F4\u8DDD\u3002");
     } else {
-      this.addNumber(fields, ["codeBlock", "marginTopEm"], "\u4EE3\u7801\u5757\u4E0A\u95F4\u8DDD", "\u9605\u8BFB\u6A21\u5F0F\u4EE3\u7801\u5757\u9876\u90E8\u95F4\u8DDD\u3002");
-      this.addNumber(fields, ["codeBlock", "marginBottomEm"], "\u4EE3\u7801\u5757\u4E0B\u95F4\u8DDD", "\u9605\u8BFB\u6A21\u5F0F\u4EE3\u7801\u5757\u5E95\u90E8\u95F4\u8DDD\u3002");
+      this.addNumber(card, ["codeBlock", "marginTopEm"], "\u4EE3\u7801\u5757\u4E0A\u95F4\u8DDD", "\u9605\u8BFB\u6A21\u5F0F\u4EE3\u7801\u5757\u9876\u90E8\u95F4\u8DDD\u3002");
+      this.addNumber(card, ["codeBlock", "marginBottomEm"], "\u4EE3\u7801\u5757\u4E0B\u95F4\u8DDD", "\u9605\u8BFB\u6A21\u5F0F\u4EE3\u7801\u5757\u5E95\u90E8\u95F4\u8DDD\u3002");
     }
   }
   renderHeadingGapSection(container, tab) {
-    const card = this.createModuleCard(container, tab);
-    this.renderHeadingGapGroup(card, "body", "\u6B63\u6587");
-    this.renderHeadingGapGroup(card, "callout", "Callout");
-    this.renderHeadingGapGroup(card, "blockquote", "Quote");
+    const content = this.createModuleCard(container, tab);
+    this.renderHeadingGapGroup(content, "body", "\u6B63\u6587");
+    this.renderHeadingGapGroup(content, "callout", "Callout");
+    this.renderHeadingGapGroup(content, "blockquote", "Quote (\u5F15\u7528\u5757)");
   }
   renderHeadingGapGroup(container, context, label) {
-    const fields = this.createGroup(container, label, `${label} \u5185\u6807\u9898\u540E\u9996\u5143\u7D20\u7684\u9876\u90E8\u95F4\u8DDD\u3002`);
+    const card = this.createGroupCard(container, `${label} \u5185\u6807\u9898\u540E\u9996\u5143\u7D20\u95F4\u8DDD`, `${label} \u5185\u6807\u9898\u540E\u63A5\u4E0D\u540C\u7C7B\u578B\u9996\u5143\u7D20\u65F6\u7684\u9876\u90E8\u8865\u507F\u95F4\u8DDD\u3002`);
     if (context === "body") {
       const bodyFields = [
         ["emptyLineEm", "\u6807\u9898\u540E\u7A7A\u884C\u9AD8\u5EA6", "\u6807\u9898\u3001\u7A7A\u884C\u3001\u975E\u6807\u9898\u5143\u7D20\u7EC4\u5408\u4E2D\u7684\u7A7A\u884C\u9AD8\u5EA6\u3002"],
@@ -918,12 +951,12 @@ var RefinedLayoutSettingTab = class extends import_obsidian.PluginSettingTab {
         ["calloutEm", "\u7D27\u90BB Callout \u95F4\u8DDD", "\u6B63\u6587\u6807\u9898\u540E\u7D27\u90BB Callout \u65F6\u7684\u9876\u90E8\u8865\u507F\u3002"]
       ];
       for (const [key, name, description] of bodyFields) {
-        this.addNumber(fields, ["headingGap", "body", key], name, description);
+        this.addNumber(card, ["headingGap", "body", key], name, description);
       }
       return;
     }
     if (this.mode === "edit") {
-      this.addNumber(fields, ["headingGap", context, "emptyLineEm"], "\u6807\u9898\u540E\u7A7A\u884C\u9AD8\u5EA6", `${label} \u5185\u6807\u9898\u540E\u7A7A\u884C\u7684\u9AD8\u5EA6\u3002`);
+      this.addNumber(card, ["headingGap", context, "emptyLineEm"], "\u6807\u9898\u540E\u7A7A\u884C\u9AD8\u5EA6", `${label} \u5185\u6807\u9898\u540E\u7A7A\u884C\u7684\u9AD8\u5EA6\u3002`);
     }
     const contextFields = [
       ["paragraphPx", "\u7D27\u90BB\u6B63\u6587\u95F4\u8DDD", `${label} \u5185\u6807\u9898\u540E\u7D27\u90BB\u6B63\u6587\u65F6\u7684\u95F4\u8DDD\u3002`],
@@ -935,12 +968,13 @@ var RefinedLayoutSettingTab = class extends import_obsidian.PluginSettingTab {
       ["calloutPx", "\u7D27\u90BB Callout \u95F4\u8DDD", `${label} \u5185\u6807\u9898\u540E\u7D27\u90BB Callout \u65F6\u7684\u95F4\u8DDD\u3002`]
     ];
     for (const [key, name, description] of contextFields) {
-      this.addNumber(fields, ["headingGap", context, key], name, description);
+      this.addNumber(card, ["headingGap", context, key], name, description);
     }
   }
   renderCanvasSection(container, tab) {
-    const card = this.createModuleCard(container, tab);
-    card.createEl("p", {
+    const content = this.createModuleCard(container, tab);
+    const card = this.createGroupCard(content, "Canvas \u6837\u5F0F\u91CD\u7F6E");
+    card.createDiv({
       cls: "rl-settings-card-note",
       text: "\u542F\u7528\u540E\uFF0CCanvas \u5361\u7247\u4F1A\u6062\u590D\u7D27\u51D1\u7684\u9ED8\u8BA4\u6807\u9898\u3001\u6BB5\u843D\u3001Callout\u3001\u8868\u683C\u548C\u56FE\u7247\u5E03\u5C40\u3002"
     });

@@ -1166,38 +1166,42 @@ body.refined-layout-enabled.rl-read-canvas-reset .canvas-node .markdown-rendered
 }
 
 /* --------------------------------------------------------------------------
-   Settings tab: wrapped navigation and grouped cards
+   Settings tab: Easy Typing style horizontal navigation and Notebook Navigator grouped cards
    -------------------------------------------------------------------------- */
+
+.refined-layout-settings {
+  padding: 0 0 60px 0 !important;
+}
 
 .refined-layout-settings .rl-settings-tabs {
   min-width: 0;
-  margin-top: 16px;
+  margin-top: 18px;
+  padding-bottom: 40px;
 }
 
 .refined-layout-settings .rl-settings-tab-nav {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin: 0 0 16px;
-  padding: 0 0 6px;
-  border: 1px solid var(--background-modifier-border);
-  border-top: 0;
-  border-right: 0;
-  border-left: 0;
+  margin: 0 0 16px 0;
+  padding: 0 0 10px 0;
+  border-bottom: 1px solid var(--background-modifier-border);
 }
 
 .refined-layout-settings .rl-settings-tab-button {
   appearance: none;
   min-height: 32px;
-  padding: 6px 12px;
+  padding: 6px 14px;
   border: 1px solid transparent;
-  border-radius: var(--radius-s);
+  border-radius: var(--radius-m, 8px);
   color: var(--text-muted);
   background: transparent;
   cursor: pointer;
   font-size: var(--font-ui-small);
-  line-height: 1.3;
+  font-weight: 500;
+  line-height: 1.35;
   white-space: nowrap;
+  transition: all 0.15s ease;
 }
 
 .refined-layout-settings .rl-settings-tab-button:hover {
@@ -1206,10 +1210,11 @@ body.refined-layout-enabled.rl-read-canvas-reset .canvas-node .markdown-rendered
 }
 
 .refined-layout-settings .rl-settings-tab-button.rl-settings-tab-active {
-  border-color: var(--background-modifier-border-hover);
+  border-color: color-mix(in srgb, var(--interactive-accent) 30%, transparent);
   color: var(--text-accent);
-  background: color-mix(in srgb, var(--interactive-accent) 12%, var(--background-primary));
+  background: color-mix(in srgb, var(--interactive-accent) 14%, var(--background-primary));
   font-weight: var(--font-semibold);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 .refined-layout-settings .rl-settings-tab-button:focus-visible {
@@ -1218,6 +1223,9 @@ body.refined-layout-enabled.rl-read-canvas-reset .canvas-node .markdown-rendered
 }
 
 .refined-layout-settings .rl-settings-tab-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
   min-width: 0;
 }
 
@@ -1225,183 +1233,244 @@ body.refined-layout-enabled.rl-read-canvas-reset .canvas-node .markdown-rendered
   display: none;
 }
 
+.refined-layout-settings .rl-settings-content-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+  transition: opacity 0.2s ease, filter 0.2s ease;
+}
+
+.refined-layout-settings .rl-settings-disabled {
+  opacity: 0.45;
+  pointer-events: none;
+  filter: grayscale(0.5);
+}
+
+.refined-layout-settings .setting-group,
+.refined-layout-settings .rl-settings-group {
+  margin: 16px 0 0 0;
+  padding: 0;
+}
+
+.refined-layout-settings .setting-group:first-child,
+.refined-layout-settings .rl-settings-group:first-child {
+  margin-top: 0;
+}
+
+/* Category header flush with left edge */
+.refined-layout-settings .rl-settings-group-header {
+  margin: 0 0 8px 0;
+  padding: 0;
+}
+
+.refined-layout-settings .rl-settings-group-title {
+  margin: 0;
+  padding: 0;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.refined-layout-settings .rl-settings-group-description {
+  margin: 2px 0 0 0;
+  padding: 0;
+  color: var(--text-faint);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+/* Card: support theme native variables with fallback across all themes */
+.refined-layout-settings .setting-items,
 .refined-layout-settings .rl-settings-card {
   overflow: hidden;
-  margin-block: 10px;
-  border: 1px solid var(--background-modifier-border);
-  border-radius: var(--radius-m);
-  background: var(--background-secondary);
+  background-color: var(--setting-items-background, color-mix(in srgb, var(--background-secondary) 85%, var(--background-primary)));
+  border-radius: var(--setting-items-radius, var(--radius-l, 10px));
+  border: var(--setting-items-border-width, 1px) solid var(--setting-items-border-color, color-mix(in srgb, var(--background-modifier-border) 60%, transparent));
+  box-shadow: var(--setting-items-shadow, none);
+  margin: 0;
+  padding: 0;
+}
+
+.refined-layout-settings .rl-settings-module-card {
+  background-color: var(--setting-items-background, color-mix(in srgb, var(--background-secondary) 90%, var(--background-primary)));
 }
 
 .refined-layout-settings .rl-settings-card-header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 16px 18px 12px;
-  border-bottom: 1px solid var(--background-modifier-border);
-  background: color-mix(in srgb, var(--background-secondary) 72%, var(--background-primary));
-}
-
-.refined-layout-settings .rl-settings-card-heading {
-  min-width: 0;
-  flex: 1 1 240px;
+  padding: 12px 18px;
 }
 
 .refined-layout-settings .rl-settings-card-heading h3 {
   margin: 0;
   color: var(--text-normal);
   font-size: var(--font-ui-medium);
+  font-weight: 600;
 }
 
-.refined-layout-settings .rl-settings-card-description,
-.refined-layout-settings .rl-settings-group-description {
-  margin-top: 5px;
+.refined-layout-settings .rl-settings-card-description {
+  margin-top: 4px;
   color: var(--text-muted);
   font-size: var(--font-ui-small);
   line-height: 1.45;
 }
 
 .refined-layout-settings .rl-settings-card-actions {
-  flex: 0 0 auto;
-  max-width: 100%;
-}
-
-.refined-layout-settings .rl-settings-card-actions .setting-item {
   display: flex;
-  margin: 0;
-  padding: 0;
-  border: 0;
-}
-
-.refined-layout-settings .rl-settings-card-actions .setting-item-info {
-  flex: 0 1 auto;
-  margin-inline-end: 8px;
-}
-
-.refined-layout-settings .rl-settings-card-actions .setting-item-name {
-  white-space: nowrap;
-}
-
-.refined-layout-settings .rl-settings-card-actions .setting-item-control {
-  margin-inline-start: 0;
-}
-
-.refined-layout-settings .rl-settings-card-body {
-  min-width: 0;
-  padding: 4px 0 10px;
-}
-
-.refined-layout-settings .rl-settings-group,
-.refined-layout-settings .rl-settings-group-list,
-.refined-layout-settings .rl-settings-disclosure {
-  margin: 12px 14px;
-}
-
-.refined-layout-settings .rl-settings-group {
-  overflow: hidden;
-  border: 1px solid var(--background-modifier-border);
-  border-radius: var(--radius-s);
-  background: var(--background-primary);
-}
-
-.refined-layout-settings .rl-settings-group-heading,
-.refined-layout-settings .rl-settings-group-list > h4 {
-  margin: 0;
-  padding: 11px 14px 8px;
-  color: var(--text-normal);
-  font-size: var(--font-ui-small);
-  font-weight: var(--font-semibold);
-}
-
-.refined-layout-settings .rl-settings-group-heading {
-  border-bottom: 1px solid var(--background-modifier-border);
-}
-
-.refined-layout-settings .rl-settings-group-heading .rl-settings-group-description {
-  font-weight: 400;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 .refined-layout-settings .rl-settings-fields {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
-  gap: 1px;
-  min-width: 0;
-  background: var(--background-modifier-border);
+  display: flex;
+  flex-direction: column;
 }
 
-.refined-layout-settings .rl-settings-fields > .setting-item {
+/* Unified rows inside card - strictly remove individual border-radius and external borders */
+.refined-layout-settings .rl-settings-card > .setting-item,
+.refined-layout-settings .setting-items > .setting-item,
+.refined-layout-settings .rl-settings-fields > .setting-item,
+.refined-layout-settings .rl-settings-heading-fields > .setting-item {
   min-width: 0;
-  margin: 0;
-  padding: 11px 14px;
-  border: 0;
-  background: var(--background-primary);
+  margin: 0 !important;
+  padding: 12px 18px !important;
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  transition: background-color 0.15s ease;
 }
 
-.refined-layout-settings .rl-settings-fields .setting-item-info {
-  min-width: 0;
+.refined-layout-settings .rl-settings-card > .setting-item:hover,
+.refined-layout-settings .setting-items > .setting-item:hover,
+.refined-layout-settings .rl-settings-fields > .setting-item:hover,
+.refined-layout-settings .rl-settings-heading-fields > .setting-item:hover {
+  background-color: color-mix(in srgb, var(--background-modifier-hover) 35%, transparent) !important;
 }
 
-.refined-layout-settings .rl-settings-fields .setting-item-control {
+.refined-layout-settings .rl-settings-fields > .setting-item + .setting-item,
+.refined-layout-settings .rl-settings-heading-fields > .setting-item + .setting-item,
+.refined-layout-settings .rl-settings-card > .setting-item + .setting-item,
+.refined-layout-settings .setting-items > .setting-item + .setting-item {
+  border-top: 1px solid color-mix(in srgb, var(--background-modifier-border) 45%, transparent) !important;
+}
+
+.refined-layout-settings .rl-settings-fields .setting-item-info,
+.refined-layout-settings .rl-settings-heading-fields .setting-item-info,
+.refined-layout-settings .rl-settings-card .setting-item-info,
+.refined-layout-settings .setting-items .setting-item-info {
+  min-width: 0;
+  padding-left: 0;
+  margin-left: 0;
+}
+
+.refined-layout-settings .rl-settings-fields .setting-item-name,
+.refined-layout-settings .rl-settings-heading-fields .setting-item-name,
+.refined-layout-settings .rl-settings-card .setting-item-name,
+.refined-layout-settings .setting-items .setting-item-name {
+  color: var(--text-normal);
+  font-size: var(--font-ui-small);
+  font-weight: 500;
+}
+
+.refined-layout-settings .rl-settings-fields .setting-item-description,
+.refined-layout-settings .rl-settings-heading-fields .setting-item-description,
+.refined-layout-settings .rl-settings-card .setting-item-description,
+.refined-layout-settings .setting-items .setting-item-description {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.refined-layout-settings .rl-settings-fields .setting-item-control,
+.refined-layout-settings .rl-settings-heading-fields .setting-item-control,
+.refined-layout-settings .rl-settings-card .setting-item-control,
+.refined-layout-settings .setting-items .setting-item-control {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   flex: 0 0 auto;
 }
 
-.refined-layout-settings .rl-settings-group-list {
-  min-width: 0;
+.refined-layout-settings .rl-settings-pill-bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px;
+  margin: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--background-modifier-border) 45%, transparent);
+  background: color-mix(in srgb, var(--background-secondary) 90%, var(--background-primary));
 }
 
-.refined-layout-settings .rl-settings-group-list > h4 {
-  padding-inline: 0;
-}
-
-.refined-layout-settings .rl-settings-disclosure {
-  overflow: hidden;
-  border: 1px solid var(--background-modifier-border);
-  border-radius: var(--radius-s);
-  background: var(--background-primary);
-}
-
-.refined-layout-settings .rl-settings-disclosure > summary {
-  padding: 10px 12px;
-  color: var(--text-normal);
+.refined-layout-settings .rl-settings-pill {
+  flex: 1;
+  padding: 5px 0;
+  border: 1px solid transparent;
+  border-radius: var(--radius-s, 6px);
+  color: var(--text-muted);
+  background: transparent;
   cursor: pointer;
-  font-weight: var(--font-semibold);
-  list-style-position: inside;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  transition: all 0.15s ease;
 }
 
-.refined-layout-settings .rl-settings-disclosure > .rl-settings-fields {
-  border-top: 1px solid var(--background-modifier-border);
+.refined-layout-settings .rl-settings-pill:hover {
+  color: var(--text-normal);
+  background: var(--background-modifier-hover);
 }
 
-.refined-layout-settings .rl-settings-context-headings {
-  padding: 0;
-}
-
-.refined-layout-settings .rl-settings-disclosure-body {
-  padding-top: 2px;
+.refined-layout-settings .rl-settings-pill.rl-settings-pill-active {
+  border-color: color-mix(in srgb, var(--interactive-accent) 35%, transparent);
+  color: var(--text-accent);
+  background: color-mix(in srgb, var(--interactive-accent) 18%, var(--background-primary));
 }
 
 .refined-layout-settings .rl-settings-card-note {
-  margin: 14px;
+  margin: 0;
+  padding: 14px 18px;
   color: var(--text-muted);
+  font-size: var(--font-ui-small);
+  line-height: 1.5;
 }
 
 .refined-layout-settings .rl-settings-number {
-  width: 92px;
+  width: 80px;
+  padding: 4px 8px;
+  border-radius: var(--radius-s, 6px);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 
 .refined-layout-settings .rl-settings-unit {
-  min-width: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  height: 24px;
+  padding: 0 6px;
+  border-radius: var(--radius-s, 6px);
   color: var(--text-muted);
-  text-align: left;
+  background: color-mix(in srgb, var(--background-modifier-border) 50%, transparent);
+  font-size: 11px;
+  font-weight: 600;
 }
 
 @media (max-width: 620px) {
   .refined-layout-settings .rl-settings-card-header {
     flex-direction: column;
+    align-items: flex-start;
   }
 
   .refined-layout-settings .rl-settings-card-actions {
     align-self: flex-end;
   }
 }
+
+
+
