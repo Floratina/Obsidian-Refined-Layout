@@ -27,14 +27,16 @@ body.refined-layout-enabled.rl-edit-body .markdown-source-view.mod-cm6 .cm-conte
    Reading view: body, paragraphs and lists
    -------------------------------------------------------------------------- */
 
-body.refined-layout-enabled.rl-read-body .markdown-rendered p {
+/* DataviewJS blocks own their descendants' layout. The :where() wrapper keeps
+   this boundary from changing selector specificity outside those blocks. */
+body.refined-layout-enabled.rl-read-body .markdown-rendered p:not(:where(.block-language-dataviewjs *)) {
   line-height: var(--rl-read-body-line-height) !important;
   margin-block-start: 0 !important;
   margin-block-end: var(--rl-read-body-paragraph-spacing-em) !important;
 }
 
-body.refined-layout-enabled.rl-read-body .markdown-rendered .el-ol > ol,
-body.refined-layout-enabled.rl-read-body .markdown-rendered .el-ul > ul {
+body.refined-layout-enabled.rl-read-body .markdown-rendered .el-ol > ol:not(:where(.block-language-dataviewjs *)),
+body.refined-layout-enabled.rl-read-body .markdown-rendered .el-ul > ul:not(:where(.block-language-dataviewjs *)) {
   margin-block-start: var(--rl-read-body-list-start-em) !important;
   margin-block-end: var(--rl-read-body-list-end-em) !important;
 }
@@ -145,48 +147,48 @@ body.refined-layout-enabled.rl-edit-headings .markdown-source-view.mod-cm6 .Hype
    Reading view: headings and theme-provided decorations
    -------------------------------------------------------------------------- */
 
-body.refined-layout-enabled.rl-read-headings .markdown-rendered .el-h1 > h1 {
+body.refined-layout-enabled.rl-read-headings .markdown-rendered .el-h1 > h1:not(:where(.block-language-dataviewjs *)) {
   line-height: var(--rl-read-headings-h1-line-height) !important;
   margin-top: var(--rl-read-headings-h1-top-em) !important;
   margin-bottom: var(--rl-read-headings-h1-bottom-em) !important;
 }
 
-body.refined-layout-enabled.rl-read-headings .markdown-rendered .el-h2 > h2 {
+body.refined-layout-enabled.rl-read-headings .markdown-rendered .el-h2 > h2:not(:where(.block-language-dataviewjs *)) {
   line-height: var(--rl-read-headings-h2-line-height) !important;
   margin-top: var(--rl-read-headings-h2-top-em) !important;
   margin-bottom: var(--rl-read-headings-h2-bottom-em) !important;
 }
 
-body.refined-layout-enabled.rl-read-headings .markdown-rendered .el-h3 > h3 {
+body.refined-layout-enabled.rl-read-headings .markdown-rendered .el-h3 > h3:not(:where(.block-language-dataviewjs *)) {
   line-height: var(--rl-read-headings-h3-line-height) !important;
   margin-top: var(--rl-read-headings-h3-top-em) !important;
   margin-bottom: var(--rl-read-headings-h3-bottom-em) !important;
 }
 
-body.refined-layout-enabled.rl-read-headings .markdown-rendered .el-h4 > h4 {
+body.refined-layout-enabled.rl-read-headings .markdown-rendered .el-h4 > h4:not(:where(.block-language-dataviewjs *)) {
   line-height: var(--rl-read-headings-h4-line-height) !important;
   margin-top: var(--rl-read-headings-h4-top-em) !important;
   margin-bottom: var(--rl-read-headings-h4-bottom-em) !important;
 }
 
-body.refined-layout-enabled.rl-read-headings .markdown-rendered .el-h5 > h5 {
+body.refined-layout-enabled.rl-read-headings .markdown-rendered .el-h5 > h5:not(:where(.block-language-dataviewjs *)) {
   line-height: var(--rl-read-headings-h5-line-height) !important;
   margin-top: var(--rl-read-headings-h5-top-em) !important;
   margin-bottom: var(--rl-read-headings-h5-bottom-em) !important;
 }
 
-body.refined-layout-enabled.rl-read-headings .markdown-rendered .el-h6 > h6 {
+body.refined-layout-enabled.rl-read-headings .markdown-rendered .el-h6 > h6:not(:where(.block-language-dataviewjs *)) {
   line-height: var(--rl-read-headings-h6-line-height) !important;
   margin-top: var(--rl-read-headings-h6-top-em) !important;
   margin-bottom: var(--rl-read-headings-h6-bottom-em) !important;
 }
 
-body.refined-layout-enabled.rl-read-headings .markdown-rendered :is(.el-h1, .el-h2, .el-h3, .el-h4, .el-h5, .el-h6) :is(h1, h2, h3, h4, h5, h6) {
+body.refined-layout-enabled.rl-read-headings .markdown-rendered :is(.el-h1, .el-h2, .el-h3, .el-h4, .el-h5, .el-h6) :is(h1, h2, h3, h4, h5, h6):not(:where(.block-language-dataviewjs *)) {
   position: relative;
   text-indent: 0 !important;
 }
 
-body.refined-layout-enabled.rl-read-headings .markdown-rendered :is(.el-h1, .el-h2, .el-h3, .el-h4, .el-h5, .el-h6) :is(h1, h2, h3, h4, h5, h6)::before {
+body.refined-layout-enabled.rl-read-headings .markdown-rendered :is(.el-h1, .el-h2, .el-h3, .el-h4, .el-h5, .el-h6) :is(h1, h2, h3, h4, h5, h6):not(:where(.block-language-dataviewjs *))::before {
   position: absolute !important;
   top: 50% !important;
   left: var(--rl-read-heading-decoration-left-px) !important;
@@ -198,32 +200,32 @@ body.refined-layout-enabled.rl-read-headings .markdown-rendered :is(.el-h1, .el-
   transform: translateY(-50%) !important;
 }
 
-body.refined-layout-enabled.rl-read-headings .markdown-rendered .el-h1 h1::before {
+body.refined-layout-enabled.rl-read-headings .markdown-rendered .el-h1 h1:not(:where(.block-language-dataviewjs *))::before {
   height: var(--rl-read-headings-h1-decor-height-px) !important;
   margin-top: var(--rl-read-headings-h1-decor-offset-px) !important;
 }
 
-body.refined-layout-enabled.rl-read-headings .markdown-rendered .el-h2 h2::before {
+body.refined-layout-enabled.rl-read-headings .markdown-rendered .el-h2 h2:not(:where(.block-language-dataviewjs *))::before {
   height: var(--rl-read-headings-h2-decor-height-px) !important;
   margin-top: var(--rl-read-headings-h2-decor-offset-px) !important;
 }
 
-body.refined-layout-enabled.rl-read-headings .markdown-rendered .el-h3 h3::before {
+body.refined-layout-enabled.rl-read-headings .markdown-rendered .el-h3 h3:not(:where(.block-language-dataviewjs *))::before {
   height: var(--rl-read-headings-h3-decor-height-px) !important;
   margin-top: var(--rl-read-headings-h3-decor-offset-px) !important;
 }
 
-body.refined-layout-enabled.rl-read-headings .markdown-rendered .el-h4 h4::before {
+body.refined-layout-enabled.rl-read-headings .markdown-rendered .el-h4 h4:not(:where(.block-language-dataviewjs *))::before {
   height: var(--rl-read-headings-h4-decor-height-px) !important;
   margin-top: var(--rl-read-headings-h4-decor-offset-px) !important;
 }
 
-body.refined-layout-enabled.rl-read-headings .markdown-rendered .el-h5 h5::before {
+body.refined-layout-enabled.rl-read-headings .markdown-rendered .el-h5 h5:not(:where(.block-language-dataviewjs *))::before {
   height: var(--rl-read-headings-h5-decor-height-px) !important;
   margin-top: var(--rl-read-headings-h5-decor-offset-px) !important;
 }
 
-body.refined-layout-enabled.rl-read-headings .markdown-rendered .el-h6 h6::before {
+body.refined-layout-enabled.rl-read-headings .markdown-rendered .el-h6 h6:not(:where(.block-language-dataviewjs *))::before {
   height: var(--rl-read-headings-h6-decor-height-px) !important;
   margin-top: var(--rl-read-headings-h6-decor-offset-px) !important;
 }
@@ -243,7 +245,7 @@ body.refined-layout-enabled.rl-read-headings .markdown-rendered .el-h6 h6::befor
     transform: translateY(-50%) translateY(var(--rl-edit-heading-decoration-line-padding-top, 0px)) !important;
   }
 
-  body.refined-layout-enabled.rl-read-headings .markdown-rendered :is(.el-h1, .el-h2, .el-h3, .el-h4, .el-h5, .el-h6) :is(h1, h2, h3, h4, h5, h6)::before {
+  body.refined-layout-enabled.rl-read-headings .markdown-rendered :is(.el-h1, .el-h2, .el-h3, .el-h4, .el-h5, .el-h6) :is(h1, h2, h3, h4, h5, h6):not(:where(.block-language-dataviewjs *))::before {
     top: 0.5lh !important;
     transform: translateY(-50%) !important;
   }
@@ -299,7 +301,7 @@ body.refined-layout-enabled.rl-edit-callouts .markdown-source-view.mod-cm6 :is(.
    Callouts: reading view
    -------------------------------------------------------------------------- */
 
-body.refined-layout-enabled.rl-read-callouts .markdown-rendered .callout {
+body.refined-layout-enabled.rl-read-callouts .markdown-rendered .callout:not(:where(.block-language-dataviewjs *)) {
   padding: var(--rl-read-callout-padding-top-px) var(--rl-read-callout-padding-right-px) var(--rl-read-callout-padding-bottom-px) var(--rl-read-callout-padding-left-px) !important;
   margin-top: var(--rl-read-callout-margin-top-px) !important;
   margin-bottom: var(--rl-read-callout-margin-bottom-px) !important;
@@ -307,41 +309,41 @@ body.refined-layout-enabled.rl-read-callouts .markdown-rendered .callout {
   box-shadow: none !important;
 }
 
-body.refined-layout-enabled.rl-read-callouts .markdown-rendered .callout-title {
+body.refined-layout-enabled.rl-read-callouts .markdown-rendered .callout-title:not(:where(.block-language-dataviewjs *)) {
   line-height: var(--rl-read-callout-title-line-height) !important;
   padding: var(--rl-read-callout-title-padding-top-em) var(--rl-read-callout-title-padding-right-px) var(--rl-read-callout-title-padding-bottom-em) var(--rl-read-callout-title-padding-left-px) !important;
 }
 
-body.refined-layout-enabled.rl-read-callouts .markdown-rendered .callout > .callout-title:not(:has(+ .callout-content > *)) {
+body.refined-layout-enabled.rl-read-callouts .markdown-rendered .callout > .callout-title:not(:has(+ .callout-content > *)):not(:where(.block-language-dataviewjs *)) {
   padding-top: var(--rl-read-callout-title-only-padding-top-em) !important;
   padding-bottom: var(--rl-read-callout-title-only-padding-bottom-em) !important;
 }
 
-body.refined-layout-enabled.rl-read-callouts .markdown-rendered .callout.is-collapsible.is-collapsed {
+body.refined-layout-enabled.rl-read-callouts .markdown-rendered .callout.is-collapsible.is-collapsed:not(:where(.block-language-dataviewjs *)) {
   padding-top: var(--rl-read-callout-collapsed-padding-top-em) !important;
   padding-bottom: var(--rl-read-callout-collapsed-padding-bottom-em) !important;
 }
 
-body.refined-layout-enabled.rl-read-callouts .markdown-rendered .callout.is-collapsible.is-collapsed .callout-title {
+body.refined-layout-enabled.rl-read-callouts .markdown-rendered .callout.is-collapsible.is-collapsed .callout-title:not(:where(.block-language-dataviewjs *)) {
   padding-bottom: 0 !important;
 }
 
-body.refined-layout-enabled.rl-read-callouts .markdown-rendered .callout-content p {
+body.refined-layout-enabled.rl-read-callouts .markdown-rendered .callout-content p:not(:where(.block-language-dataviewjs *)) {
   line-height: var(--rl-read-callout-paragraph-line-height) !important;
   margin-block-start: 0 !important;
   margin-block-end: var(--rl-read-callout-paragraph-spacing-em) !important;
 }
 
-body.refined-layout-enabled.rl-read-callouts .markdown-rendered .callout :is(ul, ol) {
+body.refined-layout-enabled.rl-read-callouts .markdown-rendered .callout :is(ul, ol):not(:where(.block-language-dataviewjs *)) {
   margin-block-start: var(--rl-read-callout-list-start-em) !important;
   margin-block-end: var(--rl-read-callout-list-end-em) !important;
 }
 
-body.refined-layout-enabled.rl-read-callouts .markdown-rendered .callout :is(ul, ol):last-child {
+body.refined-layout-enabled.rl-read-callouts .markdown-rendered .callout :is(ul, ol):last-child:not(:where(.block-language-dataviewjs *)) {
   margin-block-end: var(--rl-read-callout-last-list-end-em) !important;
 }
 
-body.refined-layout-enabled.rl-read-callouts .markdown-rendered .callout hr {
+body.refined-layout-enabled.rl-read-callouts .markdown-rendered .callout hr:not(:where(.block-language-dataviewjs *)) {
   margin-top: 0.55em !important;
   margin-bottom: 0.5em !important;
 }
@@ -384,37 +386,37 @@ body.refined-layout-enabled.rl-edit-callouts .markdown-source-view.mod-cm6 :is(.
 }
 
 /* Callout inner headings: reading */
-body.refined-layout-enabled.rl-read-callouts .markdown-rendered .callout-content h1 {
+body.refined-layout-enabled.rl-read-callouts .markdown-rendered .callout-content h1:not(:where(.block-language-dataviewjs *)) {
   line-height: var(--rl-read-callout-headings-h1-line-height) !important;
   margin-top: var(--rl-read-callout-headings-h1-top-em) !important;
   margin-bottom: var(--rl-read-callout-headings-h1-bottom-px) !important;
 }
 
-body.refined-layout-enabled.rl-read-callouts .markdown-rendered .callout-content h2 {
+body.refined-layout-enabled.rl-read-callouts .markdown-rendered .callout-content h2:not(:where(.block-language-dataviewjs *)) {
   line-height: var(--rl-read-callout-headings-h2-line-height) !important;
   margin-top: var(--rl-read-callout-headings-h2-top-em) !important;
   margin-bottom: var(--rl-read-callout-headings-h2-bottom-px) !important;
 }
 
-body.refined-layout-enabled.rl-read-callouts .markdown-rendered .callout-content h3 {
+body.refined-layout-enabled.rl-read-callouts .markdown-rendered .callout-content h3:not(:where(.block-language-dataviewjs *)) {
   line-height: var(--rl-read-callout-headings-h3-line-height) !important;
   margin-top: var(--rl-read-callout-headings-h3-top-em) !important;
   margin-bottom: var(--rl-read-callout-headings-h3-bottom-px) !important;
 }
 
-body.refined-layout-enabled.rl-read-callouts .markdown-rendered .callout-content h4 {
+body.refined-layout-enabled.rl-read-callouts .markdown-rendered .callout-content h4:not(:where(.block-language-dataviewjs *)) {
   line-height: var(--rl-read-callout-headings-h4-line-height) !important;
   margin-top: var(--rl-read-callout-headings-h4-top-em) !important;
   margin-bottom: var(--rl-read-callout-headings-h4-bottom-px) !important;
 }
 
-body.refined-layout-enabled.rl-read-callouts .markdown-rendered .callout-content h5 {
+body.refined-layout-enabled.rl-read-callouts .markdown-rendered .callout-content h5:not(:where(.block-language-dataviewjs *)) {
   line-height: var(--rl-read-callout-headings-h5-line-height) !important;
   margin-top: var(--rl-read-callout-headings-h5-top-em) !important;
   margin-bottom: var(--rl-read-callout-headings-h5-bottom-px) !important;
 }
 
-body.refined-layout-enabled.rl-read-callouts .markdown-rendered .callout-content h6 {
+body.refined-layout-enabled.rl-read-callouts .markdown-rendered .callout-content h6:not(:where(.block-language-dataviewjs *)) {
   line-height: var(--rl-read-callout-headings-h6-line-height) !important;
   margin-top: var(--rl-read-callout-headings-h6-top-em) !important;
   margin-bottom: var(--rl-read-callout-headings-h6-bottom-px) !important;
@@ -428,8 +430,8 @@ body.refined-layout-enabled.rl-edit-callouts .markdown-source-view.mod-cm6 :is(.
   padding-top: 0 !important;
 }
 
-body.refined-layout-enabled.rl-read-callouts .markdown-rendered .callout .callout-title + .callout-content > :is(h1, h2, h3, h4, h5, h6, .el-h1, .el-h2, .el-h3, .el-h4, .el-h5, .el-h6):first-child,
-body.refined-layout-enabled.rl-read-callouts .markdown-rendered .callout .callout-title + .callout-content > :is(.el-h1, .el-h2, .el-h3, .el-h4, .el-h5, .el-h6):first-child > :is(h1, h2, h3, h4, h5, h6) {
+body.refined-layout-enabled.rl-read-callouts .markdown-rendered .callout .callout-title + .callout-content > :is(h1, h2, h3, h4, h5, h6, .el-h1, .el-h2, .el-h3, .el-h4, .el-h5, .el-h6):first-child:not(:where(.block-language-dataviewjs *)),
+body.refined-layout-enabled.rl-read-callouts .markdown-rendered .callout .callout-title + .callout-content > :is(.el-h1, .el-h2, .el-h3, .el-h4, .el-h5, .el-h6):first-child > :is(h1, h2, h3, h4, h5, h6):not(:where(.block-language-dataviewjs *)) {
   margin-top: 0 !important;
   padding-top: 0 !important;
 }
@@ -448,18 +450,18 @@ body.refined-layout-enabled.rl-edit-blockquotes .markdown-source-view.mod-cm6 .c
   margin-block-end: var(--rl-edit-blockquote-list-end-em) !important;
 }
 
-body.refined-layout-enabled.rl-read-blockquotes .markdown-rendered .el-blockquote p {
+body.refined-layout-enabled.rl-read-blockquotes .markdown-rendered .el-blockquote p:not(:where(.block-language-dataviewjs *)) {
   line-height: var(--rl-read-blockquote-paragraph-line-height) !important;
   margin-block-start: 0 !important;
   margin-block-end: var(--rl-read-blockquote-paragraph-spacing-em) !important;
 }
 
-body.refined-layout-enabled.rl-read-blockquotes .markdown-rendered .el-blockquote :is(ul, ol) {
+body.refined-layout-enabled.rl-read-blockquotes .markdown-rendered .el-blockquote :is(ul, ol):not(:where(.block-language-dataviewjs *)) {
   margin-block-start: var(--rl-read-blockquote-list-start-em) !important;
   margin-block-end: var(--rl-read-blockquote-list-end-em) !important;
 }
 
-body.refined-layout-enabled.rl-read-blockquotes .markdown-rendered .el-blockquote hr {
+body.refined-layout-enabled.rl-read-blockquotes .markdown-rendered .el-blockquote hr:not(:where(.block-language-dataviewjs *)) {
   margin-top: 0.55em !important;
   margin-bottom: 0.5em !important;
 }
@@ -508,37 +510,37 @@ body.refined-layout-enabled.rl-edit-blockquotes .markdown-source-view.mod-cm6 .c
 }
 
 /* Blockquote headings: reading */
-body.refined-layout-enabled.rl-read-blockquotes .markdown-rendered .el-blockquote h1 {
+body.refined-layout-enabled.rl-read-blockquotes .markdown-rendered .el-blockquote h1:not(:where(.block-language-dataviewjs *)) {
   line-height: var(--rl-read-blockquote-headings-h1-line-height) !important;
   margin-top: var(--rl-read-blockquote-headings-h1-top-em) !important;
   margin-bottom: var(--rl-read-blockquote-headings-h1-bottom-em) !important;
 }
 
-body.refined-layout-enabled.rl-read-blockquotes .markdown-rendered .el-blockquote h2 {
+body.refined-layout-enabled.rl-read-blockquotes .markdown-rendered .el-blockquote h2:not(:where(.block-language-dataviewjs *)) {
   line-height: var(--rl-read-blockquote-headings-h2-line-height) !important;
   margin-top: var(--rl-read-blockquote-headings-h2-top-em) !important;
   margin-bottom: var(--rl-read-blockquote-headings-h2-bottom-em) !important;
 }
 
-body.refined-layout-enabled.rl-read-blockquotes .markdown-rendered .el-blockquote h3 {
+body.refined-layout-enabled.rl-read-blockquotes .markdown-rendered .el-blockquote h3:not(:where(.block-language-dataviewjs *)) {
   line-height: var(--rl-read-blockquote-headings-h3-line-height) !important;
   margin-top: var(--rl-read-blockquote-headings-h3-top-em) !important;
   margin-bottom: var(--rl-read-blockquote-headings-h3-bottom-em) !important;
 }
 
-body.refined-layout-enabled.rl-read-blockquotes .markdown-rendered .el-blockquote h4 {
+body.refined-layout-enabled.rl-read-blockquotes .markdown-rendered .el-blockquote h4:not(:where(.block-language-dataviewjs *)) {
   line-height: var(--rl-read-blockquote-headings-h4-line-height) !important;
   margin-top: var(--rl-read-blockquote-headings-h4-top-em) !important;
   margin-bottom: var(--rl-read-blockquote-headings-h4-bottom-em) !important;
 }
 
-body.refined-layout-enabled.rl-read-blockquotes .markdown-rendered .el-blockquote h5 {
+body.refined-layout-enabled.rl-read-blockquotes .markdown-rendered .el-blockquote h5:not(:where(.block-language-dataviewjs *)) {
   line-height: var(--rl-read-blockquote-headings-h5-line-height) !important;
   margin-top: var(--rl-read-blockquote-headings-h5-top-em) !important;
   margin-bottom: var(--rl-read-blockquote-headings-h5-bottom-em) !important;
 }
 
-body.refined-layout-enabled.rl-read-blockquotes .markdown-rendered .el-blockquote h6 {
+body.refined-layout-enabled.rl-read-blockquotes .markdown-rendered .el-blockquote h6:not(:where(.block-language-dataviewjs *)) {
   line-height: var(--rl-read-blockquote-headings-h6-line-height) !important;
   margin-top: var(--rl-read-blockquote-headings-h6-top-em) !important;
   margin-bottom: var(--rl-read-blockquote-headings-h6-bottom-em) !important;
@@ -584,7 +586,7 @@ body.refined-layout-enabled.rl-edit-images .markdown-source-view.mod-cm6 :is(
   object-fit: cover;
 }
 
-body.refined-layout-enabled.rl-read-images .markdown-preview-view.markdown-rendered .markdown-preview-section > .el-p > p > img[src] {
+body.refined-layout-enabled.rl-read-images .markdown-preview-view.markdown-rendered .markdown-preview-section > .el-p > p > img[src]:not(:where(.block-language-dataviewjs *)) {
   display: block !important;
   width: auto !important;
   max-width: var(--rl-read-image-max-width-pct) !important;
@@ -622,11 +624,11 @@ body.refined-layout-enabled.rl-edit-callouts .markdown-source-view.mod-cm6 :is(.
   object-fit: cover;
 }
 
-body.refined-layout-enabled.rl-read-callouts .markdown-rendered .callout .callout-content p:has(> img[src]) {
+body.refined-layout-enabled.rl-read-callouts .markdown-rendered .callout .callout-content p:has(> img[src]):not(:where(.block-language-dataviewjs *)) {
   text-align: center !important;
 }
 
-body.refined-layout-enabled.rl-read-callouts .markdown-rendered .callout .callout-content p > img[src] {
+body.refined-layout-enabled.rl-read-callouts .markdown-rendered .callout .callout-content p > img[src]:not(:where(.block-language-dataviewjs *)) {
   display: block !important;
   width: auto !important;
   max-width: var(--rl-read-callout-image-max-width-pct) !important;
@@ -643,11 +645,11 @@ body.refined-layout-enabled.rl-read-callouts .markdown-rendered .callout .callou
    -------------------------------------------------------------------------- */
 
 body.refined-layout-enabled.rl-edit-tables .markdown-source-view.mod-cm6 .cm-content table:not(.callout *):not(blockquote *),
-body.refined-layout-enabled.rl-read-tables .markdown-rendered table:not(.callout *):not(.el-blockquote *),
+body.refined-layout-enabled.rl-read-tables .markdown-rendered table:not(.callout *):not(.el-blockquote *):not(:where(.block-language-dataviewjs *)),
 body.refined-layout-enabled.rl-edit-callouts .markdown-source-view.mod-cm6 :is(.callout, .callout-content) table,
-body.refined-layout-enabled.rl-read-callouts .markdown-rendered :is(.callout, .callout-content) table,
+body.refined-layout-enabled.rl-read-callouts .markdown-rendered :is(.callout, .callout-content) table:not(:where(.block-language-dataviewjs *)),
 body.refined-layout-enabled.rl-edit-blockquotes .markdown-source-view.mod-cm6 blockquote table,
-body.refined-layout-enabled.rl-read-blockquotes .markdown-rendered .el-blockquote table {
+body.refined-layout-enabled.rl-read-blockquotes .markdown-rendered .el-blockquote table:not(:where(.block-language-dataviewjs *)) {
   overflow: hidden !important;
   border-collapse: separate !important;
   border-spacing: 0 !important;
@@ -658,7 +660,7 @@ body.refined-layout-enabled.rl-edit-tables .markdown-source-view.mod-cm6 .cm-con
   border-radius: var(--rl-edit-table-radius-px) !important;
 }
 
-body.refined-layout-enabled.rl-read-tables .markdown-rendered table:not(.callout *):not(.el-blockquote *) {
+body.refined-layout-enabled.rl-read-tables .markdown-rendered table:not(.callout *):not(.el-blockquote *):not(:where(.block-language-dataviewjs *)) {
   border: var(--rl-read-table-outer-border-px) solid var(--background-modifier-border) !important;
   border-radius: var(--rl-read-table-radius-px) !important;
 }
@@ -670,7 +672,7 @@ body.refined-layout-enabled.rl-edit-callouts .markdown-source-view.mod-cm6 :is(.
   border-radius: var(--rl-edit-callout-table-radius-px) !important;
 }
 
-body.refined-layout-enabled.rl-read-callouts .markdown-rendered :is(.callout, .callout-content) table {
+body.refined-layout-enabled.rl-read-callouts .markdown-rendered :is(.callout, .callout-content) table:not(:where(.block-language-dataviewjs *)) {
   margin-top: var(--rl-read-callout-table-spacing-top-px) !important;
   margin-bottom: var(--rl-read-callout-table-spacing-bottom-px) !important;
   border: var(--rl-read-callout-table-outer-border-px) solid var(--background-modifier-border) !important;
@@ -684,7 +686,7 @@ body.refined-layout-enabled.rl-edit-blockquotes .markdown-source-view.mod-cm6 bl
   border-radius: var(--rl-edit-blockquote-table-radius-px) !important;
 }
 
-body.refined-layout-enabled.rl-read-blockquotes .markdown-rendered .el-blockquote table {
+body.refined-layout-enabled.rl-read-blockquotes .markdown-rendered .el-blockquote table:not(:where(.block-language-dataviewjs *)) {
   margin-top: var(--rl-read-blockquote-table-spacing-top-px) !important;
   margin-bottom: var(--rl-read-blockquote-table-spacing-bottom-px) !important;
   border: var(--rl-read-blockquote-table-outer-border-px) solid var(--background-modifier-border) !important;
@@ -698,7 +700,7 @@ body.refined-layout-enabled.rl-edit-tables .markdown-source-view.mod-cm6 .cm-con
   border-left: var(--rl-edit-table-inner-border-px) solid var(--background-modifier-border) !important;
 }
 
-body.refined-layout-enabled.rl-read-tables .markdown-rendered table:not(.callout *):not(.el-blockquote *) :is(th, td) {
+body.refined-layout-enabled.rl-read-tables .markdown-rendered table:not(.callout *):not(.el-blockquote *):not(:where(.block-language-dataviewjs *)) :is(th, td) {
   padding: var(--rl-read-table-cell-padding-px) !important;
   border-right: var(--rl-read-table-inner-border-px) solid var(--background-modifier-border) !important;
   border-bottom: var(--rl-read-table-inner-border-px) solid var(--background-modifier-border) !important;
@@ -712,7 +714,7 @@ body.refined-layout-enabled.rl-edit-callouts .markdown-source-view.mod-cm6 :is(.
   border-left: var(--rl-edit-callout-table-inner-border-px) solid var(--background-modifier-border) !important;
 }
 
-body.refined-layout-enabled.rl-read-callouts .markdown-rendered :is(.callout, .callout-content) table :is(th, td) {
+body.refined-layout-enabled.rl-read-callouts .markdown-rendered :is(.callout, .callout-content) table:not(:where(.block-language-dataviewjs *)) :is(th, td) {
   padding: var(--rl-read-callout-table-cell-padding-px) !important;
   border-right: var(--rl-read-callout-table-inner-border-px) solid var(--background-modifier-border) !important;
   border-bottom: var(--rl-read-callout-table-inner-border-px) solid var(--background-modifier-border) !important;
@@ -726,7 +728,7 @@ body.refined-layout-enabled.rl-edit-blockquotes .markdown-source-view.mod-cm6 bl
   border-left: var(--rl-edit-blockquote-table-inner-border-px) solid var(--background-modifier-border) !important;
 }
 
-body.refined-layout-enabled.rl-read-blockquotes .markdown-rendered .el-blockquote table :is(th, td) {
+body.refined-layout-enabled.rl-read-blockquotes .markdown-rendered .el-blockquote table:not(:where(.block-language-dataviewjs *)) :is(th, td) {
   padding: var(--rl-read-blockquote-table-cell-padding-px) !important;
   border-right: var(--rl-read-blockquote-table-inner-border-px) solid var(--background-modifier-border) !important;
   border-bottom: var(--rl-read-blockquote-table-inner-border-px) solid var(--background-modifier-border) !important;
@@ -736,18 +738,18 @@ body.refined-layout-enabled.rl-read-blockquotes .markdown-rendered .el-blockquot
 /* All enabled table contexts share the same edge cleanup behavior. */
 :is(
   body.refined-layout-enabled.rl-edit-tables .markdown-source-view.mod-cm6 .cm-content table:not(.callout *):not(blockquote *),
-  body.refined-layout-enabled.rl-read-tables .markdown-rendered table:not(.callout *):not(.el-blockquote *),
+  body.refined-layout-enabled.rl-read-tables .markdown-rendered table:not(.callout *):not(.el-blockquote *):not(:where(.block-language-dataviewjs *)),
   body.refined-layout-enabled.rl-edit-callouts .markdown-source-view.mod-cm6 :is(.callout, .callout-content) table,
-  body.refined-layout-enabled.rl-read-callouts .markdown-rendered :is(.callout, .callout-content) table,
+  body.refined-layout-enabled.rl-read-callouts .markdown-rendered :is(.callout, .callout-content) table:not(:where(.block-language-dataviewjs *)),
   body.refined-layout-enabled.rl-edit-blockquotes .markdown-source-view.mod-cm6 blockquote table,
-  body.refined-layout-enabled.rl-read-blockquotes .markdown-rendered .el-blockquote table
+  body.refined-layout-enabled.rl-read-blockquotes .markdown-rendered .el-blockquote table:not(:where(.block-language-dataviewjs *))
 ) :is(td, th) {
   border-top: none !important;
 }
 
 :is(
   body.refined-layout-enabled.rl-edit-tables .markdown-source-view.mod-cm6 .cm-content table:not(.callout *):not(blockquote *),
-  body.refined-layout-enabled.rl-read-tables .markdown-rendered table:not(.callout *):not(.el-blockquote *)
+  body.refined-layout-enabled.rl-read-tables .markdown-rendered table:not(.callout *):not(.el-blockquote *):not(:where(.block-language-dataviewjs *))
 ) th {
   border-radius: 0 !important;
 }
@@ -755,14 +757,14 @@ body.refined-layout-enabled.rl-read-blockquotes .markdown-rendered .el-blockquot
 /* Baseline and similar themes can put radius on the first visible row. */
 :is(
   body.refined-layout-enabled.rl-edit-tables .markdown-source-view.mod-cm6 .cm-content table:not(.callout *):not(blockquote *),
-  body.refined-layout-enabled.rl-read-tables .markdown-rendered table:not(.callout *):not(.el-blockquote *)
+  body.refined-layout-enabled.rl-read-tables .markdown-rendered table:not(.callout *):not(.el-blockquote *):not(:where(.block-language-dataviewjs *))
 ) :is(thead, tbody) > tr:first-child > :is(th, td):first-child {
   border-top-left-radius: 0 !important;
 }
 
 :is(
   body.refined-layout-enabled.rl-edit-tables .markdown-source-view.mod-cm6 .cm-content table:not(.callout *):not(blockquote *),
-  body.refined-layout-enabled.rl-read-tables .markdown-rendered table:not(.callout *):not(.el-blockquote *)
+  body.refined-layout-enabled.rl-read-tables .markdown-rendered table:not(.callout *):not(.el-blockquote *):not(:where(.block-language-dataviewjs *))
 ) :is(thead, tbody) > tr:first-child > :is(th, td):last-child {
   border-top-right-radius: 0 !important;
 }
@@ -771,7 +773,7 @@ body.refined-layout-enabled.rl-read-blockquotes .markdown-rendered .el-blockquot
    outer radius and the final data row radius intact. */
 :is(
   body.refined-layout-enabled.rl-edit-callouts .markdown-source-view.mod-cm6 :is(.callout, .callout-content) table,
-  body.refined-layout-enabled.rl-read-callouts .markdown-rendered :is(.callout, .callout-content) table
+  body.refined-layout-enabled.rl-read-callouts .markdown-rendered :is(.callout, .callout-content) table:not(:where(.block-language-dataviewjs *))
 ) :is(thead > tr:first-child, tbody > tr:first-child) > :is(th, td) {
   border-bottom-left-radius: 0 !important;
   border-bottom-right-radius: 0 !important;
@@ -781,21 +783,21 @@ body.refined-layout-enabled.rl-read-blockquotes .markdown-rendered .el-blockquot
    preserving the table's two outer top corners. */
 :is(
   body.refined-layout-enabled.rl-edit-callouts .markdown-source-view.mod-cm6 :is(.callout, .callout-content) table,
-  body.refined-layout-enabled.rl-read-callouts .markdown-rendered :is(.callout, .callout-content) table
+  body.refined-layout-enabled.rl-read-callouts .markdown-rendered :is(.callout, .callout-content) table:not(:where(.block-language-dataviewjs *))
 ) :is(thead > tr:first-child, tbody:only-child > tr:first-child) > :is(th, td):first-child:not(:last-child) {
   border-top-right-radius: 0 !important;
 }
 
 :is(
   body.refined-layout-enabled.rl-edit-callouts .markdown-source-view.mod-cm6 :is(.callout, .callout-content) table,
-  body.refined-layout-enabled.rl-read-callouts .markdown-rendered :is(.callout, .callout-content) table
+  body.refined-layout-enabled.rl-read-callouts .markdown-rendered :is(.callout, .callout-content) table:not(:where(.block-language-dataviewjs *))
 ) :is(thead > tr:first-child, tbody:only-child > tr:first-child) > :is(th, td):last-child:not(:first-child) {
   border-top-left-radius: 0 !important;
 }
 
 :is(
   body.refined-layout-enabled.rl-edit-callouts .markdown-source-view.mod-cm6 :is(.callout, .callout-content) table,
-  body.refined-layout-enabled.rl-read-callouts .markdown-rendered :is(.callout, .callout-content) table
+  body.refined-layout-enabled.rl-read-callouts .markdown-rendered :is(.callout, .callout-content) table:not(:where(.block-language-dataviewjs *))
 ) :is(thead > tr:first-child, tbody:only-child > tr:first-child) > :is(th, td):not(:first-child):not(:last-child) {
   border-top-left-radius: 0 !important;
   border-top-right-radius: 0 !important;
@@ -803,22 +805,22 @@ body.refined-layout-enabled.rl-read-blockquotes .markdown-rendered .el-blockquot
 
 :is(
   body.refined-layout-enabled.rl-edit-tables .markdown-source-view.mod-cm6 .cm-content table:not(.callout *):not(blockquote *),
-  body.refined-layout-enabled.rl-read-tables .markdown-rendered table:not(.callout *):not(.el-blockquote *),
+  body.refined-layout-enabled.rl-read-tables .markdown-rendered table:not(.callout *):not(.el-blockquote *):not(:where(.block-language-dataviewjs *)),
   body.refined-layout-enabled.rl-edit-callouts .markdown-source-view.mod-cm6 :is(.callout, .callout-content) table,
-  body.refined-layout-enabled.rl-read-callouts .markdown-rendered :is(.callout, .callout-content) table,
+  body.refined-layout-enabled.rl-read-callouts .markdown-rendered :is(.callout, .callout-content) table:not(:where(.block-language-dataviewjs *)),
   body.refined-layout-enabled.rl-edit-blockquotes .markdown-source-view.mod-cm6 blockquote table,
-  body.refined-layout-enabled.rl-read-blockquotes .markdown-rendered .el-blockquote table
+  body.refined-layout-enabled.rl-read-blockquotes .markdown-rendered .el-blockquote table:not(:where(.block-language-dataviewjs *))
 ) :is(th, td):first-child {
   border-left: none !important;
 }
 
 :is(
   body.refined-layout-enabled.rl-edit-tables .markdown-source-view.mod-cm6 .cm-content table:not(.callout *):not(blockquote *),
-  body.refined-layout-enabled.rl-read-tables .markdown-rendered table:not(.callout *):not(.el-blockquote *),
+  body.refined-layout-enabled.rl-read-tables .markdown-rendered table:not(.callout *):not(.el-blockquote *):not(:where(.block-language-dataviewjs *)),
   body.refined-layout-enabled.rl-edit-callouts .markdown-source-view.mod-cm6 :is(.callout, .callout-content) table,
-  body.refined-layout-enabled.rl-read-callouts .markdown-rendered :is(.callout, .callout-content) table,
+  body.refined-layout-enabled.rl-read-callouts .markdown-rendered :is(.callout, .callout-content) table:not(:where(.block-language-dataviewjs *)),
   body.refined-layout-enabled.rl-edit-blockquotes .markdown-source-view.mod-cm6 blockquote table,
-  body.refined-layout-enabled.rl-read-blockquotes .markdown-rendered .el-blockquote table
+  body.refined-layout-enabled.rl-read-blockquotes .markdown-rendered .el-blockquote table:not(:where(.block-language-dataviewjs *))
 ) :is(th, td):last-child {
   border-right: none !important;
   border-left: none !important;
@@ -826,19 +828,19 @@ body.refined-layout-enabled.rl-read-blockquotes .markdown-rendered .el-blockquot
 
 :is(
   body.refined-layout-enabled.rl-edit-tables .markdown-source-view.mod-cm6 .cm-content table:not(.callout *):not(blockquote *),
-  body.refined-layout-enabled.rl-read-tables .markdown-rendered table:not(.callout *):not(.el-blockquote *),
+  body.refined-layout-enabled.rl-read-tables .markdown-rendered table:not(.callout *):not(.el-blockquote *):not(:where(.block-language-dataviewjs *)),
   body.refined-layout-enabled.rl-edit-callouts .markdown-source-view.mod-cm6 :is(.callout, .callout-content) table,
-  body.refined-layout-enabled.rl-read-callouts .markdown-rendered :is(.callout, .callout-content) table,
+  body.refined-layout-enabled.rl-read-callouts .markdown-rendered :is(.callout, .callout-content) table:not(:where(.block-language-dataviewjs *)),
   body.refined-layout-enabled.rl-edit-blockquotes .markdown-source-view.mod-cm6 blockquote table,
-  body.refined-layout-enabled.rl-read-blockquotes .markdown-rendered .el-blockquote table
+  body.refined-layout-enabled.rl-read-blockquotes .markdown-rendered .el-blockquote table:not(:where(.block-language-dataviewjs *))
 ) tbody tr:last-child :is(th, td),
 :is(
   body.refined-layout-enabled.rl-edit-tables .markdown-source-view.mod-cm6 .cm-content table:not(.callout *):not(blockquote *),
-  body.refined-layout-enabled.rl-read-tables .markdown-rendered table:not(.callout *):not(.el-blockquote *),
+  body.refined-layout-enabled.rl-read-tables .markdown-rendered table:not(.callout *):not(.el-blockquote *):not(:where(.block-language-dataviewjs *)),
   body.refined-layout-enabled.rl-edit-callouts .markdown-source-view.mod-cm6 :is(.callout, .callout-content) table,
-  body.refined-layout-enabled.rl-read-callouts .markdown-rendered :is(.callout, .callout-content) table,
+  body.refined-layout-enabled.rl-read-callouts .markdown-rendered :is(.callout, .callout-content) table:not(:where(.block-language-dataviewjs *)),
   body.refined-layout-enabled.rl-edit-blockquotes .markdown-source-view.mod-cm6 blockquote table,
-  body.refined-layout-enabled.rl-read-blockquotes .markdown-rendered .el-blockquote table
+  body.refined-layout-enabled.rl-read-blockquotes .markdown-rendered .el-blockquote table:not(:where(.block-language-dataviewjs *))
 ) thead:only-child tr :is(th, td) {
   border-bottom: none !important;
 }
@@ -848,7 +850,7 @@ body.refined-layout-enabled.rl-edit-tables .markdown-source-view.mod-cm6 .cm-emb
   padding-bottom: var(--rl-edit-table-spacing-bottom-px) !important;
 }
 
-body.refined-layout-enabled.rl-read-tables .markdown-rendered .el-table > table:not(.callout *):not(.el-blockquote *) {
+body.refined-layout-enabled.rl-read-tables .markdown-rendered .el-table > table:not(.callout *):not(.el-blockquote *):not(:where(.block-language-dataviewjs *)) {
   margin-top: var(--rl-read-table-spacing-top-px) !important;
   margin-bottom: var(--rl-read-table-spacing-bottom-px) !important;
 }
@@ -962,89 +964,89 @@ body.refined-layout-enabled.rl-edit-heading-gaps .markdown-source-view.mod-cm6 .
 }
 
 /* Reading view: top-level body headings. */
-body.refined-layout-enabled.rl-read-heading-gaps .markdown-rendered .markdown-preview-section > :is(.el-h1, .el-h2, .el-h3, .el-h4, .el-h5, .el-h6) + .el-p {
+body.refined-layout-enabled.rl-read-heading-gaps .markdown-rendered .markdown-preview-section > :is(.el-h1, .el-h2, .el-h3, .el-h4, .el-h5, .el-h6) + .el-p:not(:where(.block-language-dataviewjs *)) {
   margin-top: var(--rl-read-heading-gap-body-paragraph-em) !important;
 }
 
-body.refined-layout-enabled.rl-read-heading-gaps .markdown-rendered .markdown-preview-section > :is(.el-h1, .el-h2, .el-h3, .el-h4, .el-h5, .el-h6) + :is(.el-ul, .el-ol) {
+body.refined-layout-enabled.rl-read-heading-gaps .markdown-rendered .markdown-preview-section > :is(.el-h1, .el-h2, .el-h3, .el-h4, .el-h5, .el-h6) + :is(.el-ul, .el-ol):not(:where(.block-language-dataviewjs *)) {
   margin-top: var(--rl-read-heading-gap-body-list-em) !important;
 }
 
-body.refined-layout-enabled.rl-read-heading-gaps .markdown-rendered .markdown-preview-section > :is(.el-h1, .el-h2, .el-h3, .el-h4, .el-h5, .el-h6) + .el-blockquote {
+body.refined-layout-enabled.rl-read-heading-gaps .markdown-rendered .markdown-preview-section > :is(.el-h1, .el-h2, .el-h3, .el-h4, .el-h5, .el-h6) + .el-blockquote:not(:where(.block-language-dataviewjs *)) {
   margin-top: var(--rl-read-heading-gap-body-quote-em) !important;
 }
 
-body.refined-layout-enabled.rl-read-heading-gaps .markdown-rendered .markdown-preview-section > :is(.el-h1, .el-h2, .el-h3, .el-h4, .el-h5, .el-h6) + .el-pre {
+body.refined-layout-enabled.rl-read-heading-gaps .markdown-rendered .markdown-preview-section > :is(.el-h1, .el-h2, .el-h3, .el-h4, .el-h5, .el-h6) + .el-pre:not(:where(.block-language-dataviewjs *)) {
   margin-top: var(--rl-read-heading-gap-body-code-em) !important;
 }
 
-body.refined-layout-enabled.rl-read-heading-gaps .markdown-rendered .markdown-preview-section > :is(.el-h1, .el-h2, .el-h3, .el-h4, .el-h5, .el-h6) + .el-table {
+body.refined-layout-enabled.rl-read-heading-gaps .markdown-rendered .markdown-preview-section > :is(.el-h1, .el-h2, .el-h3, .el-h4, .el-h5, .el-h6) + .el-table:not(:where(.block-language-dataviewjs *)) {
   margin-top: var(--rl-read-heading-gap-body-table-em) !important;
 }
 
-body.refined-layout-enabled.rl-read-heading-gaps .markdown-rendered .markdown-preview-section > :is(.el-h1, .el-h2, .el-h3, .el-h4, .el-h5, .el-h6) + .el-p:has(> p > img[src]) {
+body.refined-layout-enabled.rl-read-heading-gaps .markdown-rendered .markdown-preview-section > :is(.el-h1, .el-h2, .el-h3, .el-h4, .el-h5, .el-h6) + .el-p:has(> p > img[src]):not(:where(.block-language-dataviewjs *)) {
   margin-top: var(--rl-read-heading-gap-body-image-em) !important;
 }
 
-body.refined-layout-enabled.rl-read-heading-gaps .markdown-rendered .markdown-preview-section > :is(.el-h1, .el-h2, .el-h3, .el-h4, .el-h5, .el-h6) + .callout {
+body.refined-layout-enabled.rl-read-heading-gaps .markdown-rendered .markdown-preview-section > :is(.el-h1, .el-h2, .el-h3, .el-h4, .el-h5, .el-h6) + .callout:not(:where(.block-language-dataviewjs *)) {
   margin-top: var(--rl-read-heading-gap-body-callout-em) !important;
 }
 
 /* Reading view: Callout context. */
-body.refined-layout-enabled.rl-read-heading-gaps .markdown-rendered .callout-content > :is(h1, h2, h3, h4, h5, h6) + p {
+body.refined-layout-enabled.rl-read-heading-gaps .markdown-rendered .callout-content > :is(h1, h2, h3, h4, h5, h6) + p:not(:where(.block-language-dataviewjs *)) {
   margin-top: var(--rl-read-heading-gap-callout-paragraph-px) !important;
 }
 
-body.refined-layout-enabled.rl-read-heading-gaps .markdown-rendered .callout-content > :is(h1, h2, h3, h4, h5, h6) + :is(ul, ol) {
+body.refined-layout-enabled.rl-read-heading-gaps .markdown-rendered .callout-content > :is(h1, h2, h3, h4, h5, h6) + :is(ul, ol):not(:where(.block-language-dataviewjs *)) {
   margin-top: var(--rl-read-heading-gap-callout-list-px) !important;
 }
 
-body.refined-layout-enabled.rl-read-heading-gaps .markdown-rendered .callout-content > :is(h1, h2, h3, h4, h5, h6) + blockquote {
+body.refined-layout-enabled.rl-read-heading-gaps .markdown-rendered .callout-content > :is(h1, h2, h3, h4, h5, h6) + blockquote:not(:where(.block-language-dataviewjs *)) {
   margin-top: var(--rl-read-heading-gap-callout-quote-px) !important;
 }
 
-body.refined-layout-enabled.rl-read-heading-gaps .markdown-rendered .callout-content > :is(h1, h2, h3, h4, h5, h6) + pre {
+body.refined-layout-enabled.rl-read-heading-gaps .markdown-rendered .callout-content > :is(h1, h2, h3, h4, h5, h6) + pre:not(:where(.block-language-dataviewjs *)) {
   margin-top: var(--rl-read-heading-gap-callout-code-px) !important;
 }
 
-body.refined-layout-enabled.rl-read-heading-gaps .markdown-rendered .callout-content > :is(h1, h2, h3, h4, h5, h6) + table {
+body.refined-layout-enabled.rl-read-heading-gaps .markdown-rendered .callout-content > :is(h1, h2, h3, h4, h5, h6) + table:not(:where(.block-language-dataviewjs *)) {
   margin-top: var(--rl-read-heading-gap-callout-table-px) !important;
 }
 
-body.refined-layout-enabled.rl-read-heading-gaps .markdown-rendered .callout-content > :is(h1, h2, h3, h4, h5, h6) + p:has(> img[src]) {
+body.refined-layout-enabled.rl-read-heading-gaps .markdown-rendered .callout-content > :is(h1, h2, h3, h4, h5, h6) + p:has(> img[src]):not(:where(.block-language-dataviewjs *)) {
   margin-top: var(--rl-read-heading-gap-callout-image-px) !important;
 }
 
-body.refined-layout-enabled.rl-read-heading-gaps .markdown-rendered .callout-content > :is(h1, h2, h3, h4, h5, h6) + .callout {
+body.refined-layout-enabled.rl-read-heading-gaps .markdown-rendered .callout-content > :is(h1, h2, h3, h4, h5, h6) + .callout:not(:where(.block-language-dataviewjs *)) {
   margin-top: var(--rl-read-heading-gap-callout-callout-px) !important;
 }
 
 /* Reading view: Quote context. */
-body.refined-layout-enabled.rl-read-heading-gaps .markdown-rendered .el-blockquote > :is(h1, h2, h3, h4, h5, h6) + p {
+body.refined-layout-enabled.rl-read-heading-gaps .markdown-rendered .el-blockquote > :is(h1, h2, h3, h4, h5, h6) + p:not(:where(.block-language-dataviewjs *)) {
   margin-top: var(--rl-read-heading-gap-blockquote-paragraph-px) !important;
 }
 
-body.refined-layout-enabled.rl-read-heading-gaps .markdown-rendered .el-blockquote > :is(h1, h2, h3, h4, h5, h6) + :is(ul, ol) {
+body.refined-layout-enabled.rl-read-heading-gaps .markdown-rendered .el-blockquote > :is(h1, h2, h3, h4, h5, h6) + :is(ul, ol):not(:where(.block-language-dataviewjs *)) {
   margin-top: var(--rl-read-heading-gap-blockquote-list-px) !important;
 }
 
-body.refined-layout-enabled.rl-read-heading-gaps .markdown-rendered .el-blockquote > :is(h1, h2, h3, h4, h5, h6) + blockquote {
+body.refined-layout-enabled.rl-read-heading-gaps .markdown-rendered .el-blockquote > :is(h1, h2, h3, h4, h5, h6) + blockquote:not(:where(.block-language-dataviewjs *)) {
   margin-top: var(--rl-read-heading-gap-blockquote-quote-px) !important;
 }
 
-body.refined-layout-enabled.rl-read-heading-gaps .markdown-rendered .el-blockquote > :is(h1, h2, h3, h4, h5, h6) + pre {
+body.refined-layout-enabled.rl-read-heading-gaps .markdown-rendered .el-blockquote > :is(h1, h2, h3, h4, h5, h6) + pre:not(:where(.block-language-dataviewjs *)) {
   margin-top: var(--rl-read-heading-gap-blockquote-code-px) !important;
 }
 
-body.refined-layout-enabled.rl-read-heading-gaps .markdown-rendered .el-blockquote > :is(h1, h2, h3, h4, h5, h6) + table {
+body.refined-layout-enabled.rl-read-heading-gaps .markdown-rendered .el-blockquote > :is(h1, h2, h3, h4, h5, h6) + table:not(:where(.block-language-dataviewjs *)) {
   margin-top: var(--rl-read-heading-gap-blockquote-table-px) !important;
 }
 
-body.refined-layout-enabled.rl-read-heading-gaps .markdown-rendered .el-blockquote > :is(h1, h2, h3, h4, h5, h6) + p:has(> img[src]) {
+body.refined-layout-enabled.rl-read-heading-gaps .markdown-rendered .el-blockquote > :is(h1, h2, h3, h4, h5, h6) + p:has(> img[src]):not(:where(.block-language-dataviewjs *)) {
   margin-top: var(--rl-read-heading-gap-blockquote-image-px) !important;
 }
 
-body.refined-layout-enabled.rl-read-heading-gaps .markdown-rendered .el-blockquote > :is(h1, h2, h3, h4, h5, h6) + .callout {
+body.refined-layout-enabled.rl-read-heading-gaps .markdown-rendered .el-blockquote > :is(h1, h2, h3, h4, h5, h6) + .callout:not(:where(.block-language-dataviewjs *)) {
   margin-top: var(--rl-read-heading-gap-blockquote-callout-px) !important;
 }
 
@@ -1060,13 +1062,13 @@ body.refined-layout-enabled.rl-edit-code-blocks .markdown-source-view.mod-cm6 .c
   line-height: var(--rl-edit-code-block-inner-spacing-em) !important;
 }
 
-body.refined-layout-enabled.rl-read-code-blocks .markdown-rendered pre[class*="language-"] {
+body.refined-layout-enabled.rl-read-code-blocks .markdown-rendered pre[class*="language-"]:not(:where(.block-language-dataviewjs *)) {
   line-height: var(--rl-read-code-block-line-height) !important;
   margin-top: var(--rl-read-code-block-margin-top-em) !important;
   margin-bottom: var(--rl-read-code-block-margin-bottom-em) !important;
 }
 
-body.refined-layout-enabled.rl-read-code-blocks .markdown-rendered code[class*="language-"] {
+body.refined-layout-enabled.rl-read-code-blocks .markdown-rendered code[class*="language-"]:not(:where(.block-language-dataviewjs *)) {
   line-height: var(--rl-read-code-block-line-height) !important;
 }
 
@@ -1074,7 +1076,7 @@ body.refined-layout-enabled.rl-read-code-blocks .markdown-rendered code[class*="
    Canvas reset
    -------------------------------------------------------------------------- */
 
-body.refined-layout-enabled.rl-read-canvas-reset .canvas-node .markdown-rendered :is(h1, h2, h3, h4, h5, h6) {
+body.refined-layout-enabled.rl-read-canvas-reset .canvas-node .markdown-rendered :is(h1, h2, h3, h4, h5, h6):not(:where(.block-language-dataviewjs *)) {
   line-height: normal !important;
   margin-top: 0 !important;
   margin-bottom: 0 !important;
@@ -1082,32 +1084,32 @@ body.refined-layout-enabled.rl-read-canvas-reset .canvas-node .markdown-rendered
   padding-bottom: 0 !important;
 }
 
-body.refined-layout-enabled.rl-read-canvas-reset .canvas-node .markdown-rendered p {
+body.refined-layout-enabled.rl-read-canvas-reset .canvas-node .markdown-rendered p:not(:where(.block-language-dataviewjs *)) {
   line-height: normal !important;
   margin-block: revert !important;
 }
 
-body.refined-layout-enabled.rl-read-canvas-reset .canvas-node .markdown-rendered :is(ul, ol) {
+body.refined-layout-enabled.rl-read-canvas-reset .canvas-node .markdown-rendered :is(ul, ol):not(:where(.block-language-dataviewjs *)) {
   margin-block-start: revert !important;
   margin-block-end: revert !important;
 }
 
-body.refined-layout-enabled.rl-read-canvas-reset .canvas-node .markdown-rendered :is(h1, h2, h3, h4, h5, h6)::before {
+body.refined-layout-enabled.rl-read-canvas-reset .canvas-node .markdown-rendered :is(h1, h2, h3, h4, h5, h6):not(:where(.block-language-dataviewjs *))::before {
   display: none !important;
 }
 
-body.refined-layout-enabled.rl-read-canvas-reset .canvas-node .markdown-rendered .callout {
+body.refined-layout-enabled.rl-read-canvas-reset .canvas-node .markdown-rendered .callout:not(:where(.block-language-dataviewjs *)) {
   padding: revert !important;
   margin: revert !important;
   border-radius: revert !important;
 }
 
-body.refined-layout-enabled.rl-read-canvas-reset .canvas-node .markdown-rendered .callout-title {
+body.refined-layout-enabled.rl-read-canvas-reset .canvas-node .markdown-rendered .callout-title:not(:where(.block-language-dataviewjs *)) {
   line-height: normal !important;
   padding: revert !important;
 }
 
-body.refined-layout-enabled.rl-read-canvas-reset .canvas-node .markdown-rendered table {
+body.refined-layout-enabled.rl-read-canvas-reset .canvas-node .markdown-rendered table:not(:where(.block-language-dataviewjs *)) {
   overflow: revert !important;
   border: revert !important;
   border-collapse: revert !important;
@@ -1115,12 +1117,12 @@ body.refined-layout-enabled.rl-read-canvas-reset .canvas-node .markdown-rendered
   border-radius: revert !important;
 }
 
-body.refined-layout-enabled.rl-read-canvas-reset .canvas-node .markdown-rendered table :is(th, td) {
+body.refined-layout-enabled.rl-read-canvas-reset .canvas-node .markdown-rendered table:not(:where(.block-language-dataviewjs *)) :is(th, td) {
   padding: revert !important;
   border: revert !important;
 }
 
-body.refined-layout-enabled.rl-read-canvas-reset .canvas-node .markdown-rendered img {
+body.refined-layout-enabled.rl-read-canvas-reset .canvas-node .markdown-rendered img:not(:where(.block-language-dataviewjs *)) {
   display: revert !important;
   max-width: revert !important;
   margin: revert !important;

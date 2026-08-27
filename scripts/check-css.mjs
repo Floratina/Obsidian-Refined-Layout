@@ -36,6 +36,20 @@ if (openingBraces !== closingBraces) {
   failures.push(`花括号数量不平衡：${openingBraces} / ${closingBraces}`);
 }
 
+const dataviewJsBoundary = ":not(:where(.block-language-dataviewjs *))";
+const unguardedReadingSelectors = css
+  .split(/\r?\n/)
+  .map((line, index) => ({ line, lineNumber: index + 1 }))
+  .filter(({ line }) => /^\s*body\.refined-layout-enabled\.rl-read/.test(line))
+  .filter(({ line }) => !line.includes(dataviewJsBoundary));
+if (unguardedReadingSelectors.length > 0) {
+  failures.push(
+    `阅读模式选择器缺少 DataviewJS 边界：${unguardedReadingSelectors
+      .map(({ lineNumber }) => lineNumber)
+      .join(", ")}`,
+  );
+}
+
 const requiredCalloutRules = [
   "callout-title:not(:has(+ .callout-content > *))",
   "--rl-edit-callout-title-only-padding-bottom-em",
