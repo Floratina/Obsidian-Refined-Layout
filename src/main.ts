@@ -1,4 +1,5 @@
 import { Plugin } from "obsidian";
+import { isPortraitMermaid, isPositiveFiniteNumber } from "./mermaid";
 import {
   cloneDefaultSettings,
   HEADING_LEVELS,
@@ -11,6 +12,9 @@ import {
 import { RefinedLayoutSettingTab, type ResettableSection } from "./settings-tab";
 
 const ROOT_CLASS = "refined-layout-enabled";
+const MERMAID_PORTRAIT_CLASS = "rl-mermaid-portrait";
+const MERMAID_SVG_SELECTOR = ".mermaid > svg";
+const DATAVIEW_JS_SELECTOR = ".block-language-dataviewjs";
 
 function toKebabCase(value: string): string {
   return value
@@ -91,14 +95,18 @@ export default class RefinedLayoutPlugin extends Plugin {
   private appliedProperties = new Set<string>();
   private appliedModuleClasses = new Set<string>();
   private saveTimer: number | null = null;
+  private mermaidObserver: MutationObserver | null = null;
+  private invalidMermaidSvgs = new WeakSet<SVGSVGElement>();
 
   async onload(): Promise<void> {
     this.settings = mergeSettings(await this.loadData());
     this.applySettings();
+    this.startMermaidObserver();
     this.addSettingTab(new RefinedLayoutSettingTab(this.app, this));
   }
 
   onunload(): void {
+    this.stopMermaidObserver();
     if (this.saveTimer !== null) {
       window.clearTimeout(this.saveTimer);
       this.saveTimer = null;
@@ -198,6 +206,84 @@ export default class RefinedLayoutPlugin extends Plugin {
       body.style.setProperty(property, value);
     }
     this.appliedProperties = new Set(variables.keys());
+    this.refreshMermaidClassifications();
+  }
+
+  private startMermaidObserver(): void {
+    this.mermaidObserver = new MutationObserver((records) => {
+      for (const record of records) {
+        for (const node of record.addedNodes) {
+          if (!(node instanceof Element)) {
+            continue;
+          }
+          if (node.matches(MERMAID_SVG_SELECTOR)) {
+            this.classifyMermaid(node as SVGSVGElement);
+          }
+          for (const svg of node.querySelectorAll<SVGSVGElement>(MERMAID_SVG_SELECTOR)) {
+            this.classifyMermaid(svg);
+          }
+        }
+      }
+    });
+    this.mermaidObserver.observe(document.body, { childList: true, subtree: true });
+    this.refreshMermaidClassifications();
+  }
+
+  private stopMermaidObserver(): void {
+    this.mermaidObserver?.disconnect();
+    this.mermaidObserver = null;
+  }
+
+  private refreshMermaidClassifications(): void {
+    for (const svg of document.querySelectorAll<SVGSVGElement>(MERMAID_SVG_SELECTOR)) {
+      this.classifyMermaid(svg);
+    }
+  }
+
+  private classifyMermaid(svg: SVGSVGElement): void {
+    const container = svg.parentElement;
+    if (container === null || !container.classList.contains("mermaid")) {
+      throw new Error("Mermaid SVG is missing its .mermaid parent container");
+    }
+
+    if (container.closest(DATAVIEW_JS_SELECTOR) !== null) {
+      container.classList.remove(MERMAID_PORTRAIT_CLASS);
+      return;
+    }
+
+    const mode: ModeKey | null = container.closest(".markdown-source-view.mod-cm6") !== null
+      ? "edit"
+      : container.closest(".markdown-preview-view.markdown-rendered") !== null
+        ? "read"
+        : null;
+    if (mode === null || !this.settings[mode].modules.mermaid) {
+      container.classList.remove(MERMAID_PORTRAIT_CLASS);
+      return;
+    }
+
+    const { width, height } = svg.viewBox.baseVal;
+    const portraitAspectRatio = this.settings[mode].mermaid.portraitAspectRatio;
+    if (
+      !isPositiveFiniteNumber(width)
+      || !isPositiveFiniteNumber(height)
+      || !isPositiveFiniteNumber(portraitAspectRatio)
+    ) {
+      container.classList.remove(MERMAID_PORTRAIT_CLASS);
+      if (!this.invalidMermaidSvgs.has(svg)) {
+        console.error(
+          "[Refined Layout] Mermaid SVG has an invalid viewBox or portrait aspect-ratio setting; diagram left unclassified.",
+          { width, height, portraitAspectRatio, svg },
+        );
+        this.invalidMermaidSvgs.add(svg);
+      }
+      return;
+    }
+
+    this.invalidMermaidSvgs.delete(svg);
+    container.classList.toggle(
+      MERMAID_PORTRAIT_CLASS,
+      isPortraitMermaid(width, height, portraitAspectRatio),
+    );
   }
 
   private clearAppliedStyles(): void {
@@ -211,5 +297,8 @@ export default class RefinedLayoutPlugin extends Plugin {
     }
     this.appliedModuleClasses.clear();
     this.appliedProperties.clear();
+    for (const container of document.querySelectorAll(`.mermaid.${MERMAID_PORTRAIT_CLASS}`)) {
+      container.classList.remove(MERMAID_PORTRAIT_CLASS);
+    }
   }
 }

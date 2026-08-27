@@ -75,6 +75,55 @@ if (unscopedDefinitions.length > 0) {
   failures.push(`发现未使用 --rl- 命名空间的变量：${unscopedDefinitions.join(", ")}`);
 }
 
+const requiredMermaidRules = [
+  ".rl-mermaid-portrait",
+  "--rl-edit-mermaid-portrait-max-width-pct",
+  "--rl-read-mermaid-portrait-max-width-pct",
+  "--rl-edit-mermaid-landscape-min-width-px",
+  "--rl-read-mermaid-landscape-min-width-px",
+  ".markdown-source-view.mod-cm6 .mermaid",
+  ".markdown-preview-view.markdown-rendered .mermaid",
+];
+for (const rule of requiredMermaidRules) {
+  if (!css.includes(rule)) {
+    failures.push(`缺少 Mermaid 自适应宽度规则：${rule}`);
+  }
+}
+
+const mermaidBuild = await esbuild.build({
+  entryPoints: [fileURLToPath(new URL("../src/mermaid.ts", import.meta.url))],
+  bundle: true,
+  format: "esm",
+  platform: "node",
+  target: "es2021",
+  write: false,
+});
+const mermaidSource = mermaidBuild.outputFiles[0]?.text;
+if (mermaidSource === undefined) {
+  failures.push("无法读取 Mermaid 分类模块的构建输出");
+} else {
+  const mermaidModule = await import(
+    `data:text/javascript;base64,${Buffer.from(mermaidSource).toString("base64")}`
+  );
+  if (
+    !mermaidModule.isPortraitMermaid(276, 1251, 0.75)
+    || !mermaidModule.isPortraitMermaid(750, 1000, 0.75)
+    || mermaidModule.isPortraitMermaid(751, 1000, 0.75)
+  ) {
+    failures.push("Mermaid 纵向宽高比分类边界检查失败");
+  }
+  for (const dimensions of [[0, 100], [100, 0], [Number.NaN, 100]]) {
+    try {
+      mermaidModule.isPortraitMermaid(dimensions[0], dimensions[1], 0.75);
+      failures.push(`Mermaid 无效尺寸未被拒绝：${dimensions.join(" x ")}`);
+    } catch (error) {
+      if (!(error instanceof RangeError)) {
+        failures.push(`Mermaid 无效尺寸抛出了错误类型：${error}`);
+      }
+    }
+  }
+}
+
 const settingsBuild = await esbuild.build({
   entryPoints: [fileURLToPath(new URL("../src/settings.ts", import.meta.url))],
   bundle: true,
@@ -113,6 +162,18 @@ if (settingsSource === undefined) {
 
   collect("edit", settingsModule.DEFAULT_SETTINGS.edit);
   collect("read", settingsModule.DEFAULT_SETTINGS.read);
+
+  for (const mode of ["edit", "read"]) {
+    const defaults = settingsModule.DEFAULT_SETTINGS[mode];
+    if (
+      defaults.modules.mermaid !== true
+      || defaults.mermaid.portraitMaxWidthPct !== 50
+      || defaults.mermaid.portraitAspectRatio !== 0.75
+      || defaults.mermaid.landscapeMinWidthPx !== 450
+    ) {
+      failures.push(`${mode} Mermaid 默认设置检查失败`);
+    }
+  }
 
   const referencedVariables = new Set(
     [...css.matchAll(/var\((--rl-[a-z0-9-]+)/g)].map((match) => match[1]),
@@ -182,8 +243,25 @@ if (settingsSource === undefined) {
     || migrated.edit.headingGap.callout.listPx !== -5
     || migrated.read.headingGap.callout.tablePx !== 8
     || migrated.edit.callout.image.maxWidthPct !== settingsModule.DEFAULT_SETTINGS.edit.image.maxWidthPct
+    || migrated.edit.modules.mermaid !== true
+    || migrated.edit.mermaid.portraitMaxWidthPct !== 50
+    || migrated.read.mermaid.landscapeMinWidthPx !== 450
   ) {
     failures.push("schemaVersion 1 设置迁移检查失败");
+  }
+
+  const mergedSchemaTwo = settingsModule.mergeSettings({
+    schemaVersion: 2,
+    edit: { modules: { body: false } },
+    read: {},
+  });
+  if (
+    mergedSchemaTwo.edit.modules.body !== false
+    || mergedSchemaTwo.edit.modules.mermaid !== true
+    || mergedSchemaTwo.edit.mermaid.portraitAspectRatio !== 0.75
+    || mergedSchemaTwo.read.mermaid.portraitMaxWidthPct !== 50
+  ) {
+    failures.push("schemaVersion 2 设置补全 Mermaid 默认值检查失败");
   }
 }
 

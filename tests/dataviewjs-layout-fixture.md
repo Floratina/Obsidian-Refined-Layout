@@ -46,6 +46,16 @@ pre.style.lineHeight = "18px";
 pre.style.margin = "0";
 pre.createEl("code", { cls: "language-text", text: "custom code" });
 
+const mermaid = root.createDiv("mermaid");
+const mermaidSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+mermaidSvg.setAttribute("viewBox", "0 0 100 500");
+mermaidSvg.style.display = "block";
+mermaidSvg.style.width = "123px";
+mermaidSvg.style.height = "615px";
+mermaidSvg.style.minWidth = "0";
+mermaidSvg.style.maxWidth = "none";
+mermaid.appendChild(mermaidSvg);
+
 await new Promise(requestAnimationFrame);
 
 const checks = [
@@ -57,6 +67,8 @@ const checks = [
   ["引用段落行高", getComputedStyle(quoteParagraph).lineHeight, "19px"],
   ["表格单元格内边距", getComputedStyle(cell).paddingTop, "2px"],
   ["代码行高", getComputedStyle(pre).lineHeight, "18px"],
+  ["Mermaid 宽度", getComputedStyle(mermaidSvg).width, "123px"],
+  ["Mermaid 分类", mermaid.classList.contains("rl-mermaid-portrait") ? "portrait" : "unclassified", "unclassified"],
 ];
 const failures = checks.filter(([, actual, expected]) => actual !== expected);
 root.createEl("strong", {

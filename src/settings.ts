@@ -7,6 +7,7 @@ export const MODULE_KEYS = [
   "callouts",
   "blockquotes",
   "images",
+  "mermaid",
   "tables",
   "codeBlocks",
   "headingGaps",
@@ -23,6 +24,7 @@ export interface ModuleSettings {
   callouts: boolean;
   blockquotes: boolean;
   images: boolean;
+  mermaid: boolean;
   tables: boolean;
   codeBlocks: boolean;
   headingGaps: boolean;
@@ -112,6 +114,12 @@ export interface ImageSettings {
   borderPx: number;
 }
 
+export interface MermaidSettings {
+  portraitMaxWidthPct: number;
+  portraitAspectRatio: number;
+  landscapeMinWidthPx: number;
+}
+
 export interface CodeBlockSettings {
   lineHeight: number;
   innerSpacingEm: number;
@@ -155,6 +163,7 @@ export interface ModeSettings {
   callout: CalloutSettings;
   blockquote: BlockquoteSettings;
   image: ImageSettings;
+  mermaid: MermaidSettings;
   table: TableSettings;
   codeBlock: CodeBlockSettings;
   headingGap: HeadingGapSettings;
@@ -247,6 +256,7 @@ const ALL_MODULES: ModuleSettings = {
   callouts: true,
   blockquotes: true,
   images: true,
+  mermaid: true,
   tables: true,
   codeBlocks: true,
   headingGaps: true,
@@ -308,6 +318,11 @@ export const DEFAULT_SETTINGS: RefinedLayoutSettings = {
       table: { ...EDIT_TABLE },
     },
     image: { ...EDIT_IMAGE },
+    mermaid: {
+      portraitMaxWidthPct: 50,
+      portraitAspectRatio: 0.75,
+      landscapeMinWidthPx: 450,
+    },
     table: { ...EDIT_TABLE },
     codeBlock: {
       lineHeight: 1.62,
@@ -401,6 +416,11 @@ export const DEFAULT_SETTINGS: RefinedLayoutSettings = {
       table: { ...READ_TABLE },
     },
     image: { ...READ_IMAGE },
+    mermaid: {
+      portraitMaxWidthPct: 50,
+      portraitAspectRatio: 0.75,
+      landscapeMinWidthPx: 450,
+    },
     table: { ...READ_TABLE },
     codeBlock: {
       lineHeight: 1.35,

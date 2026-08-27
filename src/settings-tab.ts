@@ -18,6 +18,7 @@ export type ResettableSection =
   | "callout"
   | "blockquote"
   | "image"
+  | "mermaid"
   | "table"
   | "codeBlock"
   | "headingGap"
@@ -112,6 +113,7 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
     this.renderCalloutSection(containerEl);
     this.renderBlockquoteSection(containerEl);
     this.renderImageSection(containerEl);
+    this.renderMermaidSection(containerEl);
     this.renderTableSection(containerEl);
     this.renderCodeBlockSection(containerEl);
     this.renderHeadingGapSection(containerEl);
@@ -360,6 +362,30 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
     this.addNumber(group, [...prefix, "maxWidthPct"], "最大宽度", "图片相对所在内容区域的最大宽度。");
     this.addNumber(group, [...prefix, "radiusPx"], "图片圆角", "图片圆角半径。");
     this.addNumber(group, [...prefix, "borderPx"], "图片边框", "图片边框宽度。");
+  }
+
+  private renderMermaidSection(container: HTMLElement): void {
+    const section = this.createSection(container, "Mermaid 图表", "mermaid", "mermaid");
+    this.addNumber(
+      section,
+      ["mermaid", "portraitMaxWidthPct"],
+      "纵向图最大宽度",
+      "纵向 Mermaid 相对所在内容区域的最大宽度；图表会水平居中。",
+    );
+    this.addNumber(
+      section,
+      ["mermaid", "portraitAspectRatio"],
+      "纵向判定宽高比",
+      "SVG 原始宽度除以高度；小于或等于该值时视为纵向图。",
+      { min: 0.05, max: 5, step: 0.05 },
+    );
+    this.addNumber(
+      section,
+      ["mermaid", "landscapeMinWidthPx"],
+      "横向图最小宽度",
+      "普通或横向 Mermaid 的最小宽度；空间不足时允许横向滚动。",
+      { min: 0, max: 4096, step: 10 },
+    );
   }
 
   private renderTableSection(container: HTMLElement): void {

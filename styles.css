@@ -641,6 +641,41 @@ body.refined-layout-enabled.rl-read-callouts .markdown-rendered .callout .callou
 }
 
 /* --------------------------------------------------------------------------
+   Mermaid: aspect-ratio-aware sizing
+   -------------------------------------------------------------------------- */
+
+body.refined-layout-enabled.rl-edit-mermaid .markdown-source-view.mod-cm6 .mermaid:not(:where(.block-language-dataviewjs *)),
+body.refined-layout-enabled.rl-read-mermaid .markdown-preview-view.markdown-rendered .mermaid:not(:where(.block-language-dataviewjs *)) {
+  width: 100% !important;
+  overflow-x: auto !important;
+}
+
+body.refined-layout-enabled.rl-edit-mermaid .markdown-source-view.mod-cm6 .mermaid:not(:where(.block-language-dataviewjs *)) > svg,
+body.refined-layout-enabled.rl-read-mermaid .markdown-preview-view.markdown-rendered .mermaid:not(:where(.block-language-dataviewjs *)) > svg {
+  display: block !important;
+  width: 100% !important;
+  min-width: var(--rl-edit-mermaid-landscape-min-width-px) !important;
+  max-width: none !important;
+  height: auto !important;
+  margin-right: auto !important;
+  margin-left: auto !important;
+}
+
+body.refined-layout-enabled.rl-read-mermaid .markdown-preview-view.markdown-rendered .mermaid:not(:where(.block-language-dataviewjs *)) > svg {
+  min-width: var(--rl-read-mermaid-landscape-min-width-px) !important;
+}
+
+body.refined-layout-enabled.rl-edit-mermaid .markdown-source-view.mod-cm6 .mermaid.rl-mermaid-portrait:not(:where(.block-language-dataviewjs *)) > svg {
+  min-width: 0 !important;
+  max-width: var(--rl-edit-mermaid-portrait-max-width-pct) !important;
+}
+
+body.refined-layout-enabled.rl-read-mermaid .markdown-preview-view.markdown-rendered .mermaid.rl-mermaid-portrait:not(:where(.block-language-dataviewjs *)) > svg {
+  min-width: 0 !important;
+  max-width: var(--rl-read-mermaid-portrait-max-width-pct) !important;
+}
+
+/* --------------------------------------------------------------------------
    Tables: top-level body, Callout and blockquote contexts
    -------------------------------------------------------------------------- */
 

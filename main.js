@@ -26,6 +26,20 @@ __export(main_exports, {
 module.exports = __toCommonJS(main_exports);
 var import_obsidian2 = require("obsidian");
 
+// src/mermaid.ts
+function isPositiveFiniteNumber(value) {
+  return Number.isFinite(value) && value > 0;
+}
+function isPortraitMermaid(width, height, portraitAspectRatio) {
+  if (!isPositiveFiniteNumber(width) || !isPositiveFiniteNumber(height)) {
+    throw new RangeError(`Mermaid viewBox dimensions must be positive finite numbers: ${width} x ${height}`);
+  }
+  if (!isPositiveFiniteNumber(portraitAspectRatio)) {
+    throw new RangeError(`Mermaid portrait aspect ratio must be a positive finite number: ${portraitAspectRatio}`);
+  }
+  return width / height <= portraitAspectRatio;
+}
+
 // src/settings.ts
 var MODE_KEYS = ["edit", "read"];
 var MODULE_KEYS = [
@@ -34,6 +48,7 @@ var MODULE_KEYS = [
   "callouts",
   "blockquotes",
   "images",
+  "mermaid",
   "tables",
   "codeBlocks",
   "headingGaps",
@@ -112,6 +127,7 @@ var ALL_MODULES = {
   callouts: true,
   blockquotes: true,
   images: true,
+  mermaid: true,
   tables: true,
   codeBlocks: true,
   headingGaps: true,
@@ -172,6 +188,11 @@ var DEFAULT_SETTINGS = {
       table: { ...EDIT_TABLE }
     },
     image: { ...EDIT_IMAGE },
+    mermaid: {
+      portraitMaxWidthPct: 50,
+      portraitAspectRatio: 0.75,
+      landscapeMinWidthPx: 450
+    },
     table: { ...EDIT_TABLE },
     codeBlock: {
       lineHeight: 1.62,
@@ -265,6 +286,11 @@ var DEFAULT_SETTINGS = {
       table: { ...READ_TABLE }
     },
     image: { ...READ_IMAGE },
+    mermaid: {
+      portraitMaxWidthPct: 50,
+      portraitAspectRatio: 0.75,
+      landscapeMinWidthPx: 450
+    },
     table: { ...READ_TABLE },
     codeBlock: {
       lineHeight: 1.35,
@@ -447,6 +473,7 @@ var RefinedLayoutSettingTab = class extends import_obsidian.PluginSettingTab {
     this.renderCalloutSection(containerEl);
     this.renderBlockquoteSection(containerEl);
     this.renderImageSection(containerEl);
+    this.renderMermaidSection(containerEl);
     this.renderTableSection(containerEl);
     this.renderCodeBlockSection(containerEl);
     this.renderHeadingGapSection(containerEl);
@@ -638,6 +665,29 @@ var RefinedLayoutSettingTab = class extends import_obsidian.PluginSettingTab {
     this.addNumber(group, [...prefix, "radiusPx"], "\u56FE\u7247\u5706\u89D2", "\u56FE\u7247\u5706\u89D2\u534A\u5F84\u3002");
     this.addNumber(group, [...prefix, "borderPx"], "\u56FE\u7247\u8FB9\u6846", "\u56FE\u7247\u8FB9\u6846\u5BBD\u5EA6\u3002");
   }
+  renderMermaidSection(container) {
+    const section = this.createSection(container, "Mermaid \u56FE\u8868", "mermaid", "mermaid");
+    this.addNumber(
+      section,
+      ["mermaid", "portraitMaxWidthPct"],
+      "\u7EB5\u5411\u56FE\u6700\u5927\u5BBD\u5EA6",
+      "\u7EB5\u5411 Mermaid \u76F8\u5BF9\u6240\u5728\u5185\u5BB9\u533A\u57DF\u7684\u6700\u5927\u5BBD\u5EA6\uFF1B\u56FE\u8868\u4F1A\u6C34\u5E73\u5C45\u4E2D\u3002"
+    );
+    this.addNumber(
+      section,
+      ["mermaid", "portraitAspectRatio"],
+      "\u7EB5\u5411\u5224\u5B9A\u5BBD\u9AD8\u6BD4",
+      "SVG \u539F\u59CB\u5BBD\u5EA6\u9664\u4EE5\u9AD8\u5EA6\uFF1B\u5C0F\u4E8E\u6216\u7B49\u4E8E\u8BE5\u503C\u65F6\u89C6\u4E3A\u7EB5\u5411\u56FE\u3002",
+      { min: 0.05, max: 5, step: 0.05 }
+    );
+    this.addNumber(
+      section,
+      ["mermaid", "landscapeMinWidthPx"],
+      "\u6A2A\u5411\u56FE\u6700\u5C0F\u5BBD\u5EA6",
+      "\u666E\u901A\u6216\u6A2A\u5411 Mermaid \u7684\u6700\u5C0F\u5BBD\u5EA6\uFF1B\u7A7A\u95F4\u4E0D\u8DB3\u65F6\u5141\u8BB8\u6A2A\u5411\u6EDA\u52A8\u3002",
+      { min: 0, max: 4096, step: 10 }
+    );
+  }
   renderTableSection(container) {
     const section = this.createSection(container, "\u6B63\u6587\u8868\u683C", "tables", "table");
     this.renderTableFields(section, ["table"], "\u6B63\u6587\u8868\u683C");
@@ -716,6 +766,9 @@ var RefinedLayoutSettingTab = class extends import_obsidian.PluginSettingTab {
 
 // src/main.ts
 var ROOT_CLASS = "refined-layout-enabled";
+var MERMAID_PORTRAIT_CLASS = "rl-mermaid-portrait";
+var MERMAID_SVG_SELECTOR = ".mermaid > svg";
+var DATAVIEW_JS_SELECTOR = ".block-language-dataviewjs";
 function toKebabCase(value) {
   return value.replace(/([a-z0-9])([A-Z])/g, "$1-$2").replace(/_/g, "-").toLowerCase();
 }
@@ -783,13 +836,17 @@ var RefinedLayoutPlugin = class extends import_obsidian2.Plugin {
     this.appliedProperties = /* @__PURE__ */ new Set();
     this.appliedModuleClasses = /* @__PURE__ */ new Set();
     this.saveTimer = null;
+    this.mermaidObserver = null;
+    this.invalidMermaidSvgs = /* @__PURE__ */ new WeakSet();
   }
   async onload() {
     this.settings = mergeSettings(await this.loadData());
     this.applySettings();
+    this.startMermaidObserver();
     this.addSettingTab(new RefinedLayoutSettingTab(this.app, this));
   }
   onunload() {
+    this.stopMermaidObserver();
     if (this.saveTimer !== null) {
       window.clearTimeout(this.saveTimer);
       this.saveTimer = null;
@@ -877,6 +934,68 @@ var RefinedLayoutPlugin = class extends import_obsidian2.Plugin {
       body.style.setProperty(property, value);
     }
     this.appliedProperties = new Set(variables.keys());
+    this.refreshMermaidClassifications();
+  }
+  startMermaidObserver() {
+    this.mermaidObserver = new MutationObserver((records) => {
+      for (const record of records) {
+        for (const node of record.addedNodes) {
+          if (!(node instanceof Element)) {
+            continue;
+          }
+          if (node.matches(MERMAID_SVG_SELECTOR)) {
+            this.classifyMermaid(node);
+          }
+          for (const svg of node.querySelectorAll(MERMAID_SVG_SELECTOR)) {
+            this.classifyMermaid(svg);
+          }
+        }
+      }
+    });
+    this.mermaidObserver.observe(document.body, { childList: true, subtree: true });
+    this.refreshMermaidClassifications();
+  }
+  stopMermaidObserver() {
+    this.mermaidObserver?.disconnect();
+    this.mermaidObserver = null;
+  }
+  refreshMermaidClassifications() {
+    for (const svg of document.querySelectorAll(MERMAID_SVG_SELECTOR)) {
+      this.classifyMermaid(svg);
+    }
+  }
+  classifyMermaid(svg) {
+    const container = svg.parentElement;
+    if (container === null || !container.classList.contains("mermaid")) {
+      throw new Error("Mermaid SVG is missing its .mermaid parent container");
+    }
+    if (container.closest(DATAVIEW_JS_SELECTOR) !== null) {
+      container.classList.remove(MERMAID_PORTRAIT_CLASS);
+      return;
+    }
+    const mode = container.closest(".markdown-source-view.mod-cm6") !== null ? "edit" : container.closest(".markdown-preview-view.markdown-rendered") !== null ? "read" : null;
+    if (mode === null || !this.settings[mode].modules.mermaid) {
+      container.classList.remove(MERMAID_PORTRAIT_CLASS);
+      return;
+    }
+    const { width, height } = svg.viewBox.baseVal;
+    const portraitAspectRatio = this.settings[mode].mermaid.portraitAspectRatio;
+    if (!isPositiveFiniteNumber(width) || !isPositiveFiniteNumber(height) || !isPositiveFiniteNumber(portraitAspectRatio)) {
+      container.classList.remove(MERMAID_PORTRAIT_CLASS);
+      if (!this.invalidMermaidSvgs.has(svg)) {
+        console.error(
+          "[Refined Layout] Mermaid SVG has an invalid viewBox or portrait aspect-ratio setting; diagram left unclassified.",
+          { width, height, portraitAspectRatio, svg }
+        );
+        this.invalidMermaidSvgs.add(svg);
+      }
+      return;
+    }
+    this.invalidMermaidSvgs.delete(svg);
+    container.classList.toggle(
+      MERMAID_PORTRAIT_CLASS,
+      isPortraitMermaid(width, height, portraitAspectRatio)
+    );
   }
   clearAppliedStyles() {
     const body = document.body;
@@ -889,5 +1008,8 @@ var RefinedLayoutPlugin = class extends import_obsidian2.Plugin {
     }
     this.appliedModuleClasses.clear();
     this.appliedProperties.clear();
+    for (const container of document.querySelectorAll(`.mermaid.${MERMAID_PORTRAIT_CLASS}`)) {
+      container.classList.remove(MERMAID_PORTRAIT_CLASS);
+    }
   }
 };
