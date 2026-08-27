@@ -23,6 +23,76 @@ const productionSources = [
   [new URL("../styles.css", import.meta.url), css],
   ...await readTypeScriptSources(new URL("../src/", import.meta.url)),
 ];
+const settingsTabEntry = productionSources.find(([sourceUrl]) => sourceUrl.pathname.endsWith("/settings-tab.ts"));
+const settingsTabSource = settingsTabEntry?.[1];
+if (settingsTabSource === undefined) {
+  failures.push("无法读取设置页源码");
+} else {
+  const removedNotice = "首次测试插件前，请在“外观 → CSS 代码片段”中关闭同名的【基础修改】refined-layout";
+  if (settingsTabSource.includes(removedNotice) || css.includes(".rl-settings-notice")) {
+    failures.push("设置页仍包含旧 CSS 代码片段提示");
+  }
+
+  const requiredTabMarkup = [
+    'role: "tablist"',
+    'role: "tab"',
+    'role: "tabpanel"',
+    '"aria-selected"',
+    '"aria-controls"',
+    '"aria-labelledby"',
+    'case "ArrowRight"',
+    'case "ArrowLeft"',
+    'case "Home"',
+    'case "End"',
+  ];
+  for (const markup of requiredTabMarkup) {
+    if (!settingsTabSource.includes(markup)) {
+      failures.push(`设置页缺少标签导航结构：${markup}`);
+    }
+  }
+
+  for (const tabId of [
+    "body",
+    "headings",
+    "headingDecoration",
+    "callout",
+    "blockquote",
+    "image",
+    "mermaid",
+    "table",
+    "codeBlock",
+    "headingGap",
+    "canvasReset",
+  ]) {
+    if (!settingsTabSource.includes(`id: "${tabId}"`)) {
+      failures.push(`设置页缺少标签定义：${tabId}`);
+    }
+  }
+
+  if (
+    !settingsTabSource.includes('tab.id !== "canvasReset" || this.mode === "read"')
+    || !settingsTabSource.includes('id: "canvasReset"')
+  ) {
+    failures.push("Canvas 设置标签未限定为阅读模式");
+  }
+}
+
+const requiredSettingsStyles = [
+  ".rl-settings-tab-nav",
+  "flex-wrap: wrap",
+  ".rl-settings-tab-active",
+  ".rl-settings-tab-hidden",
+  ".rl-settings-card-header",
+  ".rl-settings-card-actions",
+  ".rl-settings-fields",
+  "grid-template-columns: repeat(auto-fit",
+  "@media (max-width: 620px)",
+];
+for (const rule of requiredSettingsStyles) {
+  if (!css.includes(rule)) {
+    failures.push(`缺少设置页标签或卡片样式：${rule}`);
+  }
+}
 
 for (const [sourceUrl, source] of productionSources) {
   if (source.includes("calc(")) {
