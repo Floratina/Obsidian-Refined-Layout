@@ -1,10 +1,11 @@
-import { Plugin } from "obsidian";
+import { Notice, Plugin } from "obsidian";
 import { isPortraitMermaid, isPositiveFiniteNumber } from "./mermaid";
 import {
   cloneDefaultSettings,
   HEADING_LEVELS,
   mergeSettings,
   MODULE_KEYS,
+  parseSettingsJson,
   type ModeKey,
   type ModuleKey,
   type RefinedLayoutSettings,
@@ -160,6 +161,45 @@ export default class RefinedLayoutPlugin extends Plugin {
   resetAll(): void {
     this.settings = cloneDefaultSettings();
     this.applyAndScheduleSave();
+  }
+
+  exportSettings(): void {
+    const blob = new Blob([JSON.stringify(this.settings, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = "refined-layout-settings.json";
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 0);
+    new Notice("Refined Layout：配置已导出。");
+  }
+
+  async importSettings(file: File): Promise<boolean> {
+    let json: string;
+    try {
+      json = await file.text();
+    } catch (error) {
+      console.error("[Refined Layout] Failed to read settings file.", error);
+      new Notice("Refined Layout：无法读取配置文件。");
+      return false;
+    }
+
+    let imported: RefinedLayoutSettings;
+    try {
+      imported = parseSettingsJson(json);
+    } catch (error) {
+      console.error("[Refined Layout] Invalid settings file.", error);
+      const detail = error instanceof Error ? error.message : "文件格式无效";
+      new Notice(`Refined Layout：导入失败，${detail}。`);
+      return false;
+    }
+
+    this.settings = imported;
+    this.applyAndScheduleSave();
+    new Notice("Refined Layout：配置已导入。");
+    return true;
   }
 
   private applyAndScheduleSave(): void {

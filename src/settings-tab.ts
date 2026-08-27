@@ -107,6 +107,7 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
 
     this.renderModeSwitcher(containerEl);
     this.renderGlobalReset(containerEl);
+    this.renderConfigTransfer(containerEl);
     this.renderBodySection(containerEl);
     this.renderHeadingsSection(containerEl);
     this.renderHeadingDecorationSection(containerEl);
@@ -150,6 +151,39 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
           .onClick(() => {
             this.plugin.resetAll();
             this.display();
+          });
+      });
+  }
+
+  private renderConfigTransfer(container: HTMLElement): void {
+    new Setting(container)
+      .setName("配置文件")
+      .setDesc("导出当前全部编辑/阅读设置，或从 JSON 文件导入；导入成功后会立即替换当前配置。")
+      .addButton((button) => {
+        button.setButtonText("导出配置").onClick(() => {
+          this.plugin.exportSettings();
+        });
+      })
+      .addButton((button) => {
+        button
+          .setButtonText("导入配置")
+          .setWarning()
+          .onClick(() => {
+            const input = document.createElement("input");
+            input.type = "file";
+            input.accept = ".json,application/json";
+            input.addEventListener("change", () => {
+              const file = input.files?.[0];
+              if (file === undefined) {
+                return;
+              }
+              void this.plugin.importSettings(file).then((imported) => {
+                if (imported) {
+                  this.display();
+                }
+              });
+            });
+            input.click();
           });
       });
   }

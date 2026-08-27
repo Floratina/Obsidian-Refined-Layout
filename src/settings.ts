@@ -201,17 +201,17 @@ const EDIT_HEADINGS: Record<HeadingLevel, HeadingSettings> = {
   h2: { lineHeight: 1.4, topEm: 0.4, bottomEm: 0.004, decorHeightPx: 19.5, decorOffsetPx: 0 },
   h3: { lineHeight: 1.4, topEm: 0.4, bottomEm: 0.004, decorHeightPx: 19, decorOffsetPx: 0 },
   h4: { lineHeight: 1.4, topEm: 0.4, bottomEm: 0.004, decorHeightPx: 18.5, decorOffsetPx: 0 },
-  h5: { lineHeight: 1.38, topEm: 0.35, bottomEm: 0.0035, decorHeightPx: 17, decorOffsetPx: -1 },
-  h6: { lineHeight: 1.36, topEm: 0.35, bottomEm: 0.0035, decorHeightPx: 16, decorOffsetPx: -1 },
+  h5: { lineHeight: 1.38, topEm: 0.35, bottomEm: 0.0035, decorHeightPx: 17, decorOffsetPx: 0 },
+  h6: { lineHeight: 1.36, topEm: 0.35, bottomEm: 0.0035, decorHeightPx: 16, decorOffsetPx: 0.5 },
 };
 
 const READ_HEADINGS: Record<HeadingLevel, HeadingSettings> = {
-  h1: { lineHeight: 1.47, topEm: 0.6, bottomEm: 0.32, decorHeightPx: 20, decorOffsetPx: -5 },
-  h2: { lineHeight: 1.47, topEm: 0.6, bottomEm: 0.32, decorHeightPx: 19.5, decorOffsetPx: -5 },
-  h3: { lineHeight: 1.47, topEm: 0.6, bottomEm: 0.32, decorHeightPx: 19, decorOffsetPx: -5 },
-  h4: { lineHeight: 1.47, topEm: 0.6, bottomEm: 0.32, decorHeightPx: 18.5, decorOffsetPx: -4 },
-  h5: { lineHeight: 1.449, topEm: 0.7, bottomEm: 0.28, decorHeightPx: 17, decorOffsetPx: -3 },
-  h6: { lineHeight: 1.428, topEm: 0.7, bottomEm: 0.28, decorHeightPx: 16, decorOffsetPx: -2.5 },
+  h1: { lineHeight: 1.47, topEm: 0.6, bottomEm: 0.32, decorHeightPx: 20, decorOffsetPx: 0 },
+  h2: { lineHeight: 1.47, topEm: 0.6, bottomEm: 0.32, decorHeightPx: 19.5, decorOffsetPx: 0 },
+  h3: { lineHeight: 1.47, topEm: 0.6, bottomEm: 0.32, decorHeightPx: 19, decorOffsetPx: 0 },
+  h4: { lineHeight: 1.47, topEm: 0.6, bottomEm: 0.32, decorHeightPx: 18.5, decorOffsetPx: 0 },
+  h5: { lineHeight: 1.449, topEm: 0.7, bottomEm: 0.28, decorHeightPx: 17, decorOffsetPx: 0 },
+  h6: { lineHeight: 1.428, topEm: 0.7, bottomEm: 0.28, decorHeightPx: 16, decorOffsetPx: 0.5 },
 };
 
 const EDIT_CALLOUT_HEADINGS: Record<HeadingLevel, ContextHeadingSettings> = {
@@ -227,7 +227,7 @@ const READ_CALLOUT_HEADINGS: Record<HeadingLevel, ContextHeadingSettings> = {
   h1: { lineHeight: 1.372, topEm: 0.4, bottomEm: 0, bottomPx: 4 },
   h2: { lineHeight: 1.372, topEm: 0.4, bottomEm: 0, bottomPx: 1 },
   h3: { lineHeight: 1.372, topEm: 0.4, bottomEm: 0, bottomPx: 0 },
-  h4: { lineHeight: 1.372, topEm: 0.4, bottomEm: 0, bottomPx: -2 },
+  h4: { lineHeight: 1.372, topEm: 0.4, bottomEm: 0, bottomPx: 8 },
   h5: { lineHeight: 1.3524, topEm: 0.35, bottomEm: 0, bottomPx: -4 },
   h6: { lineHeight: 1.3328, topEm: 0.35, bottomEm: 0, bottomPx: -2 },
 };
@@ -277,7 +277,7 @@ export const DEFAULT_SETTINGS: RefinedLayoutSettings = {
     headings: EDIT_HEADINGS,
     headingDecoration: {
       leftPx: -8,
-      widthPx: 2.5,
+      widthPx: 2,
       radiusPx: 1,
       marginRightPx: 0,
       firstHeadingPaddingTopPx: 7.5,
@@ -286,20 +286,20 @@ export const DEFAULT_SETTINGS: RefinedLayoutSettings = {
     callout: {
       radiusPx: 10,
       paddingTopPx: 12,
-      paddingBottomPx: 13,
+      paddingBottomPx: 7,
       paddingLeftPx: 18,
       paddingRightPx: 18,
       marginTopPx: 4,
       marginBottomPx: 2,
       titleLineHeight: 1.4,
-      titlePaddingTopEm: 0.25,
-      titlePaddingBottomEm: 0,
+      titlePaddingTopEm: 0.15,
+      titlePaddingBottomEm: 0.35,
       titlePaddingLeftPx: 0,
       titlePaddingRightPx: 0,
-      titleOnlyPaddingTopEm: 0.15,
-      titleOnlyPaddingBottomEm: 0.2625,
+      titleOnlyPaddingTopEm: 0.05,
+      titleOnlyPaddingBottomEm: 0.4,
       collapsedPaddingTopEm: 0.75,
-      collapsedPaddingBottomEm: 0.9,
+      collapsedPaddingBottomEm: 0.95,
       paragraphLineHeight: 1.64825,
       paragraphSpacingEm: 0.33,
       listStartEm: 0,
@@ -307,7 +307,7 @@ export const DEFAULT_SETTINGS: RefinedLayoutSettings = {
       lastListEndEm: 0,
       headings: EDIT_CALLOUT_HEADINGS,
       image: { ...EDIT_IMAGE },
-      table: { ...EDIT_TABLE },
+      table: { ...EDIT_TABLE, cellPaddingPx: 8 },
     },
     blockquote: {
       paragraphLineHeight: 1.735,
@@ -319,7 +319,7 @@ export const DEFAULT_SETTINGS: RefinedLayoutSettings = {
     },
     image: { ...EDIT_IMAGE },
     mermaid: {
-      portraitMaxWidthPct: 50,
+      portraitMaxWidthPct: 35,
       portraitAspectRatio: 0.75,
       landscapeMinWidthPx: 450,
     },
@@ -375,7 +375,7 @@ export const DEFAULT_SETTINGS: RefinedLayoutSettings = {
     headings: READ_HEADINGS,
     headingDecoration: {
       leftPx: -8,
-      widthPx: 2.5,
+      widthPx: 2,
       radiusPx: 1,
       marginRightPx: 0,
       firstHeadingPaddingTopPx: 0,
@@ -384,14 +384,14 @@ export const DEFAULT_SETTINGS: RefinedLayoutSettings = {
     callout: {
       radiusPx: 10,
       paddingTopPx: 12,
-      paddingBottomPx: 11.05,
+      paddingBottomPx: 5,
       paddingLeftPx: 18,
       paddingRightPx: 18,
-      marginTopPx: 8,
+      marginTopPx: 10,
       marginBottomPx: 9,
       titleLineHeight: 1.4,
       titlePaddingTopEm: 0.25,
-      titlePaddingBottomEm: 0,
+      titlePaddingBottomEm: 0.55,
       titlePaddingLeftPx: 0,
       titlePaddingRightPx: 0,
       titleOnlyPaddingTopEm: 0.15,
@@ -417,7 +417,7 @@ export const DEFAULT_SETTINGS: RefinedLayoutSettings = {
     },
     image: { ...READ_IMAGE },
     mermaid: {
-      portraitMaxWidthPct: 50,
+      portraitMaxWidthPct: 35,
       portraitAspectRatio: 0.75,
       landscapeMinWidthPx: 450,
     },
@@ -553,4 +553,18 @@ function migrateSettings(candidate: unknown): unknown {
 
 export function mergeSettings(candidate: unknown): RefinedLayoutSettings {
   return mergeKnown(cloneDefaultSettings(), migrateSettings(candidate));
+}
+
+export function parseSettingsJson(json: string): RefinedLayoutSettings {
+  const candidate = JSON.parse(json) as unknown;
+  if (typeof candidate !== "object" || candidate === null || Array.isArray(candidate)) {
+    throw new Error("配置文件根节点必须是对象");
+  }
+
+  const schemaVersion = (candidate as Record<string, unknown>).schemaVersion;
+  if (schemaVersion !== 1 && schemaVersion !== 2) {
+    throw new Error("配置文件的 schemaVersion 必须是 1 或 2");
+  }
+
+  return mergeSettings(candidate);
 }

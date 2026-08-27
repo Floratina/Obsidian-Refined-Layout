@@ -167,7 +167,7 @@ if (settingsSource === undefined) {
     const defaults = settingsModule.DEFAULT_SETTINGS[mode];
     if (
       defaults.modules.mermaid !== true
-      || defaults.mermaid.portraitMaxWidthPct !== 50
+      || defaults.mermaid.portraitMaxWidthPct !== 35
       || defaults.mermaid.portraitAspectRatio !== 0.75
       || defaults.mermaid.landscapeMinWidthPx !== 450
     ) {
@@ -244,10 +244,19 @@ if (settingsSource === undefined) {
     || migrated.read.headingGap.callout.tablePx !== 8
     || migrated.edit.callout.image.maxWidthPct !== settingsModule.DEFAULT_SETTINGS.edit.image.maxWidthPct
     || migrated.edit.modules.mermaid !== true
-    || migrated.edit.mermaid.portraitMaxWidthPct !== 50
+    || migrated.edit.mermaid.portraitMaxWidthPct !== 35
     || migrated.read.mermaid.landscapeMinWidthPx !== 450
   ) {
     failures.push("schemaVersion 1 设置迁移检查失败");
+  }
+
+  const importedLegacy = settingsModule.parseSettingsJson(JSON.stringify(legacySettings));
+  if (
+    importedLegacy.schemaVersion !== 2
+    || importedLegacy.read.headingGap.callout.listPx !== 6
+    || importedLegacy.edit.mermaid.portraitMaxWidthPct !== 35
+  ) {
+    failures.push("schemaVersion 1 配置导入检查失败");
   }
 
   const mergedSchemaTwo = settingsModule.mergeSettings({
@@ -259,9 +268,25 @@ if (settingsSource === undefined) {
     mergedSchemaTwo.edit.modules.body !== false
     || mergedSchemaTwo.edit.modules.mermaid !== true
     || mergedSchemaTwo.edit.mermaid.portraitAspectRatio !== 0.75
-    || mergedSchemaTwo.read.mermaid.portraitMaxWidthPct !== 50
+    || mergedSchemaTwo.read.mermaid.portraitMaxWidthPct !== 35
   ) {
     failures.push("schemaVersion 2 设置补全 Mermaid 默认值检查失败");
+  }
+
+  const importedDefaults = settingsModule.parseSettingsJson(JSON.stringify(settingsModule.DEFAULT_SETTINGS));
+  if (JSON.stringify(importedDefaults) !== JSON.stringify(settingsModule.DEFAULT_SETTINGS)) {
+    failures.push("导出配置 JSON 无法无损导入");
+  }
+
+  for (const invalidJson of ["{", "{}", "[]", JSON.stringify({ schemaVersion: 3 })]) {
+    try {
+      settingsModule.parseSettingsJson(invalidJson);
+      failures.push(`无效配置未被拒绝：${invalidJson}`);
+    } catch (error) {
+      if (!(error instanceof Error)) {
+        failures.push(`无效配置抛出了不可识别的错误：${invalidJson}`);
+      }
+    }
   }
 }
 

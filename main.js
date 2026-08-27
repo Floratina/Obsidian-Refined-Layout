@@ -78,16 +78,16 @@ var EDIT_HEADINGS = {
   h2: { lineHeight: 1.4, topEm: 0.4, bottomEm: 4e-3, decorHeightPx: 19.5, decorOffsetPx: 0 },
   h3: { lineHeight: 1.4, topEm: 0.4, bottomEm: 4e-3, decorHeightPx: 19, decorOffsetPx: 0 },
   h4: { lineHeight: 1.4, topEm: 0.4, bottomEm: 4e-3, decorHeightPx: 18.5, decorOffsetPx: 0 },
-  h5: { lineHeight: 1.38, topEm: 0.35, bottomEm: 35e-4, decorHeightPx: 17, decorOffsetPx: -1 },
-  h6: { lineHeight: 1.36, topEm: 0.35, bottomEm: 35e-4, decorHeightPx: 16, decorOffsetPx: -1 }
+  h5: { lineHeight: 1.38, topEm: 0.35, bottomEm: 35e-4, decorHeightPx: 17, decorOffsetPx: 0 },
+  h6: { lineHeight: 1.36, topEm: 0.35, bottomEm: 35e-4, decorHeightPx: 16, decorOffsetPx: 0.5 }
 };
 var READ_HEADINGS = {
-  h1: { lineHeight: 1.47, topEm: 0.6, bottomEm: 0.32, decorHeightPx: 20, decorOffsetPx: -5 },
-  h2: { lineHeight: 1.47, topEm: 0.6, bottomEm: 0.32, decorHeightPx: 19.5, decorOffsetPx: -5 },
-  h3: { lineHeight: 1.47, topEm: 0.6, bottomEm: 0.32, decorHeightPx: 19, decorOffsetPx: -5 },
-  h4: { lineHeight: 1.47, topEm: 0.6, bottomEm: 0.32, decorHeightPx: 18.5, decorOffsetPx: -4 },
-  h5: { lineHeight: 1.449, topEm: 0.7, bottomEm: 0.28, decorHeightPx: 17, decorOffsetPx: -3 },
-  h6: { lineHeight: 1.428, topEm: 0.7, bottomEm: 0.28, decorHeightPx: 16, decorOffsetPx: -2.5 }
+  h1: { lineHeight: 1.47, topEm: 0.6, bottomEm: 0.32, decorHeightPx: 20, decorOffsetPx: 0 },
+  h2: { lineHeight: 1.47, topEm: 0.6, bottomEm: 0.32, decorHeightPx: 19.5, decorOffsetPx: 0 },
+  h3: { lineHeight: 1.47, topEm: 0.6, bottomEm: 0.32, decorHeightPx: 19, decorOffsetPx: 0 },
+  h4: { lineHeight: 1.47, topEm: 0.6, bottomEm: 0.32, decorHeightPx: 18.5, decorOffsetPx: 0 },
+  h5: { lineHeight: 1.449, topEm: 0.7, bottomEm: 0.28, decorHeightPx: 17, decorOffsetPx: 0 },
+  h6: { lineHeight: 1.428, topEm: 0.7, bottomEm: 0.28, decorHeightPx: 16, decorOffsetPx: 0.5 }
 };
 var EDIT_CALLOUT_HEADINGS = {
   h1: { lineHeight: 1.372, topEm: 0.4, bottomEm: 0.4, bottomPx: 0 },
@@ -101,7 +101,7 @@ var READ_CALLOUT_HEADINGS = {
   h1: { lineHeight: 1.372, topEm: 0.4, bottomEm: 0, bottomPx: 4 },
   h2: { lineHeight: 1.372, topEm: 0.4, bottomEm: 0, bottomPx: 1 },
   h3: { lineHeight: 1.372, topEm: 0.4, bottomEm: 0, bottomPx: 0 },
-  h4: { lineHeight: 1.372, topEm: 0.4, bottomEm: 0, bottomPx: -2 },
+  h4: { lineHeight: 1.372, topEm: 0.4, bottomEm: 0, bottomPx: 8 },
   h5: { lineHeight: 1.3524, topEm: 0.35, bottomEm: 0, bottomPx: -4 },
   h6: { lineHeight: 1.3328, topEm: 0.35, bottomEm: 0, bottomPx: -2 }
 };
@@ -147,7 +147,7 @@ var DEFAULT_SETTINGS = {
     headings: EDIT_HEADINGS,
     headingDecoration: {
       leftPx: -8,
-      widthPx: 2.5,
+      widthPx: 2,
       radiusPx: 1,
       marginRightPx: 0,
       firstHeadingPaddingTopPx: 7.5,
@@ -156,20 +156,20 @@ var DEFAULT_SETTINGS = {
     callout: {
       radiusPx: 10,
       paddingTopPx: 12,
-      paddingBottomPx: 13,
+      paddingBottomPx: 7,
       paddingLeftPx: 18,
       paddingRightPx: 18,
       marginTopPx: 4,
       marginBottomPx: 2,
       titleLineHeight: 1.4,
-      titlePaddingTopEm: 0.25,
-      titlePaddingBottomEm: 0,
+      titlePaddingTopEm: 0.15,
+      titlePaddingBottomEm: 0.35,
       titlePaddingLeftPx: 0,
       titlePaddingRightPx: 0,
-      titleOnlyPaddingTopEm: 0.15,
-      titleOnlyPaddingBottomEm: 0.2625,
+      titleOnlyPaddingTopEm: 0.05,
+      titleOnlyPaddingBottomEm: 0.4,
       collapsedPaddingTopEm: 0.75,
-      collapsedPaddingBottomEm: 0.9,
+      collapsedPaddingBottomEm: 0.95,
       paragraphLineHeight: 1.64825,
       paragraphSpacingEm: 0.33,
       listStartEm: 0,
@@ -177,7 +177,7 @@ var DEFAULT_SETTINGS = {
       lastListEndEm: 0,
       headings: EDIT_CALLOUT_HEADINGS,
       image: { ...EDIT_IMAGE },
-      table: { ...EDIT_TABLE }
+      table: { ...EDIT_TABLE, cellPaddingPx: 8 }
     },
     blockquote: {
       paragraphLineHeight: 1.735,
@@ -189,7 +189,7 @@ var DEFAULT_SETTINGS = {
     },
     image: { ...EDIT_IMAGE },
     mermaid: {
-      portraitMaxWidthPct: 50,
+      portraitMaxWidthPct: 35,
       portraitAspectRatio: 0.75,
       landscapeMinWidthPx: 450
     },
@@ -245,7 +245,7 @@ var DEFAULT_SETTINGS = {
     headings: READ_HEADINGS,
     headingDecoration: {
       leftPx: -8,
-      widthPx: 2.5,
+      widthPx: 2,
       radiusPx: 1,
       marginRightPx: 0,
       firstHeadingPaddingTopPx: 0,
@@ -254,14 +254,14 @@ var DEFAULT_SETTINGS = {
     callout: {
       radiusPx: 10,
       paddingTopPx: 12,
-      paddingBottomPx: 11.05,
+      paddingBottomPx: 5,
       paddingLeftPx: 18,
       paddingRightPx: 18,
-      marginTopPx: 8,
+      marginTopPx: 10,
       marginBottomPx: 9,
       titleLineHeight: 1.4,
       titlePaddingTopEm: 0.25,
-      titlePaddingBottomEm: 0,
+      titlePaddingBottomEm: 0.55,
       titlePaddingLeftPx: 0,
       titlePaddingRightPx: 0,
       titleOnlyPaddingTopEm: 0.15,
@@ -287,7 +287,7 @@ var DEFAULT_SETTINGS = {
     },
     image: { ...READ_IMAGE },
     mermaid: {
-      portraitMaxWidthPct: 50,
+      portraitMaxWidthPct: 35,
       portraitAspectRatio: 0.75,
       landscapeMinWidthPx: 450
     },
@@ -410,6 +410,17 @@ function migrateSettings(candidate) {
 function mergeSettings(candidate) {
   return mergeKnown(cloneDefaultSettings(), migrateSettings(candidate));
 }
+function parseSettingsJson(json) {
+  const candidate = JSON.parse(json);
+  if (typeof candidate !== "object" || candidate === null || Array.isArray(candidate)) {
+    throw new Error("\u914D\u7F6E\u6587\u4EF6\u6839\u8282\u70B9\u5FC5\u987B\u662F\u5BF9\u8C61");
+  }
+  const schemaVersion = candidate.schemaVersion;
+  if (schemaVersion !== 1 && schemaVersion !== 2) {
+    throw new Error("\u914D\u7F6E\u6587\u4EF6\u7684 schemaVersion \u5FC5\u987B\u662F 1 \u6216 2");
+  }
+  return mergeSettings(candidate);
+}
 
 // src/settings-tab.ts
 var import_obsidian = require("obsidian");
@@ -467,6 +478,7 @@ var RefinedLayoutSettingTab = class extends import_obsidian.PluginSettingTab {
     });
     this.renderModeSwitcher(containerEl);
     this.renderGlobalReset(containerEl);
+    this.renderConfigTransfer(containerEl);
     this.renderBodySection(containerEl);
     this.renderHeadingsSection(containerEl);
     this.renderHeadingDecorationSection(containerEl);
@@ -499,6 +511,31 @@ var RefinedLayoutSettingTab = class extends import_obsidian.PluginSettingTab {
       button.setWarning().setButtonText("\u5168\u90E8\u91CD\u7F6E").onClick(() => {
         this.plugin.resetAll();
         this.display();
+      });
+    });
+  }
+  renderConfigTransfer(container) {
+    new import_obsidian.Setting(container).setName("\u914D\u7F6E\u6587\u4EF6").setDesc("\u5BFC\u51FA\u5F53\u524D\u5168\u90E8\u7F16\u8F91/\u9605\u8BFB\u8BBE\u7F6E\uFF0C\u6216\u4ECE JSON \u6587\u4EF6\u5BFC\u5165\uFF1B\u5BFC\u5165\u6210\u529F\u540E\u4F1A\u7ACB\u5373\u66FF\u6362\u5F53\u524D\u914D\u7F6E\u3002").addButton((button) => {
+      button.setButtonText("\u5BFC\u51FA\u914D\u7F6E").onClick(() => {
+        this.plugin.exportSettings();
+      });
+    }).addButton((button) => {
+      button.setButtonText("\u5BFC\u5165\u914D\u7F6E").setWarning().onClick(() => {
+        const input = document.createElement("input");
+        input.type = "file";
+        input.accept = ".json,application/json";
+        input.addEventListener("change", () => {
+          const file = input.files?.[0];
+          if (file === void 0) {
+            return;
+          }
+          void this.plugin.importSettings(file).then((imported) => {
+            if (imported) {
+              this.display();
+            }
+          });
+        });
+        input.click();
       });
     });
   }
@@ -894,6 +931,41 @@ var RefinedLayoutPlugin = class extends import_obsidian2.Plugin {
   resetAll() {
     this.settings = cloneDefaultSettings();
     this.applyAndScheduleSave();
+  }
+  exportSettings() {
+    const blob = new Blob([JSON.stringify(this.settings, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = "refined-layout-settings.json";
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 0);
+    new import_obsidian2.Notice("Refined Layout\uFF1A\u914D\u7F6E\u5DF2\u5BFC\u51FA\u3002");
+  }
+  async importSettings(file) {
+    let json;
+    try {
+      json = await file.text();
+    } catch (error) {
+      console.error("[Refined Layout] Failed to read settings file.", error);
+      new import_obsidian2.Notice("Refined Layout\uFF1A\u65E0\u6CD5\u8BFB\u53D6\u914D\u7F6E\u6587\u4EF6\u3002");
+      return false;
+    }
+    let imported;
+    try {
+      imported = parseSettingsJson(json);
+    } catch (error) {
+      console.error("[Refined Layout] Invalid settings file.", error);
+      const detail = error instanceof Error ? error.message : "\u6587\u4EF6\u683C\u5F0F\u65E0\u6548";
+      new import_obsidian2.Notice(`Refined Layout\uFF1A\u5BFC\u5165\u5931\u8D25\uFF0C${detail}\u3002`);
+      return false;
+    }
+    this.settings = imported;
+    this.applyAndScheduleSave();
+    new import_obsidian2.Notice("Refined Layout\uFF1A\u914D\u7F6E\u5DF2\u5BFC\u5165\u3002");
+    return true;
   }
   applyAndScheduleSave() {
     this.applySettings();

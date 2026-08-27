@@ -10,6 +10,7 @@ Refined Layout 将原来的 Obsidian CSS snippet 改造成可独立配置的本�
 4. 在插件设置中分别调整“编辑模式”和“阅读模式”。
 
 插件不会修改 `.obsidian/appearance.json`。用户设置保存在未纳入 Git 的 `data.json` 中。
+设置页顶部提供“导出配置”和“导入配置”，可将两种模式的完整设置保存为 JSON 或从 JSON 恢复。
 
 ## 开发检查
 
