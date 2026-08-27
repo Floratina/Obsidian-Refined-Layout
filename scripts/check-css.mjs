@@ -78,20 +78,46 @@ if (settingsTabSource === undefined) {
 }
 
 const requiredSettingsStyles = [
+  ".rl-settings-page-content",
+  "max-width: 720px !important",
+  "margin-inline: auto !important",
+  "padding: 32px 0 60px 0 !important",
+  "padding-inline: 18px !important",
   ".rl-settings-tab-nav",
+  ".rl-settings-tab-panels",
   "flex-wrap: wrap",
+  "min-width: 0",
   ".rl-settings-tab-active",
   ".rl-settings-tab-hidden",
-  ".rl-settings-card-header",
-  ".rl-settings-card-actions",
   ".rl-settings-fields",
-  ".rl-settings-pill-bar",
-  "@media (max-width: 620px)",
+  ".rl-settings-module-card",
+  ".rl-settings-heading-fields-card",
+  ".rl-settings-subtab-container",
+  ".rl-settings-subtab-nav",
 ];
 for (const rule of requiredSettingsStyles) {
   if (!css.includes(rule)) {
     failures.push(`缺少设置页标签或卡片样式：${rule}`);
   }
+}
+
+for (const legacyClass of [
+  ".rl-settings-card-header",
+  ".rl-settings-card-heading",
+  ".rl-settings-card-description",
+  ".rl-settings-card-actions",
+  ".rl-settings-pill-container",
+  ".rl-settings-pill-bar",
+  ".rl-settings-pill",
+]) {
+  if (css.includes(legacyClass)) {
+    failures.push(`设置页仍包含已移除的旧类名：${legacyClass}`);
+  }
+}
+
+const unitRule = css.match(/\.refined-layout-settings \.rl-settings-unit\s*\{([\s\S]*?)\}/);
+if (unitRule === null || !/background:\s*transparent\s*;/.test(unitRule[1]) || !/border-radius:\s*0\s*;/.test(unitRule[1])) {
+  failures.push("设置页单位标签仍包含底纹或圆角");
 }
 
 for (const [sourceUrl, source] of productionSources) {

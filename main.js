@@ -457,7 +457,7 @@ function inferNumberOptions(path) {
     return { unit, min: 10, max: 100, step: 1 };
   }
   if (key.toLowerCase().includes("lineheight")) {
-    return { unit, min: 0.5, max: 3, step: 0.01 };
+    return { unit: "\u500D", min: 0.5, max: 3, step: 0.01 };
   }
   const allowsNegative = joined.includes("margin") || joined.includes("offset") || joined.includes("headinggap") || key === "topEm" || key === "bottomEm" || key === "bottomPx" || key === "leftPx";
   const isSize = joined.includes("radius") || joined.includes("border") || joined.includes("width") || joined.includes("height") || joined.includes("padding");
@@ -494,14 +494,16 @@ var RefinedLayoutSettingTab = class extends import_obsidian.PluginSettingTab {
     const { containerEl } = this;
     containerEl.empty();
     containerEl.addClass("refined-layout-settings");
-    containerEl.createEl("h2", { text: "Refined Layout" });
-    this.renderModeSwitcher(containerEl);
-    this.renderGlobalReset(containerEl);
-    this.renderConfigTransfer(containerEl);
-    this.renderSettingsTabs(containerEl);
+    const page = containerEl.createDiv({ cls: "rl-settings-page-content" });
+    this.renderModeSwitcher(page);
+    this.renderGlobalReset(page);
+    this.renderConfigTransfer(page);
+    this.renderSettingsTabs(page);
   }
   renderModeSwitcher(container) {
-    const setting = new import_obsidian.Setting(container).setName("\u8BBE\u7F6E\u6A21\u5F0F").setDesc("\u7F16\u8F91\u6A21\u5F0F\u4E0E\u9605\u8BFB\u6A21\u5F0F\u7684\u53C2\u6570\u548C\u6A21\u5757\u5F00\u5173\u5B8C\u5168\u72EC\u7ACB\u3002");
+    const group = container.createDiv({ cls: "setting-group rl-settings-group" });
+    const card = group.createDiv({ cls: "setting-items rl-settings-card" });
+    const setting = new import_obsidian.Setting(card).setName("\u8BBE\u7F6E\u6A21\u5F0F").setDesc("\u7F16\u8F91\u6A21\u5F0F\u4E0E\u9605\u8BFB\u6A21\u5F0F\u7684\u53C2\u6570\u548C\u6A21\u5757\u5F00\u5173\u5B8C\u5168\u72EC\u7ACB\u3002");
     for (const mode of ["edit", "read"]) {
       setting.addButton((button) => {
         button.setButtonText(MODE_LABELS[mode]);
@@ -516,7 +518,9 @@ var RefinedLayoutSettingTab = class extends import_obsidian.PluginSettingTab {
     }
   }
   renderGlobalReset(container) {
-    new import_obsidian.Setting(container).setName(`${MODE_LABELS[this.mode]} \xB7 \u5168\u90E8\u6062\u590D\u9ED8\u8BA4`).setDesc("\u6062\u590D\u7F16\u8F91\u548C\u9605\u8BFB\u4E24\u5957\u8BBE\u7F6E\u4EE5\u53CA\u5168\u90E8\u6A21\u5757\u5F00\u5173\u3002").addButton((button) => {
+    const group = container.createDiv({ cls: "setting-group rl-settings-group" });
+    const card = group.createDiv({ cls: "setting-items rl-settings-card" });
+    new import_obsidian.Setting(card).setName(`${MODE_LABELS[this.mode]} \xB7 \u5168\u90E8\u6062\u590D\u9ED8\u8BA4`).setDesc("\u6062\u590D\u7F16\u8F91\u548C\u9605\u8BFB\u4E24\u5957\u8BBE\u7F6E\u4EE5\u53CA\u5168\u90E8\u6A21\u5757\u5F00\u5173\u3002").addButton((button) => {
       button.setWarning().setButtonText("\u5168\u90E8\u91CD\u7F6E").onClick(() => {
         this.plugin.resetAll();
         this.display();
@@ -524,7 +528,9 @@ var RefinedLayoutSettingTab = class extends import_obsidian.PluginSettingTab {
     });
   }
   renderConfigTransfer(container) {
-    new import_obsidian.Setting(container).setName("\u914D\u7F6E\u6587\u4EF6").setDesc("\u5BFC\u51FA\u5F53\u524D\u5168\u90E8\u7F16\u8F91/\u9605\u8BFB\u8BBE\u7F6E\uFF0C\u6216\u4ECE JSON \u6587\u4EF6\u5BFC\u5165\uFF1B\u5BFC\u5165\u6210\u529F\u540E\u4F1A\u7ACB\u5373\u66FF\u6362\u5F53\u524D\u914D\u7F6E\u3002").addButton((button) => {
+    const group = container.createDiv({ cls: "setting-group rl-settings-group" });
+    const card = group.createDiv({ cls: "setting-items rl-settings-card" });
+    new import_obsidian.Setting(card).setName("\u914D\u7F6E\u6587\u4EF6").setDesc("\u5BFC\u51FA\u5F53\u524D\u5168\u90E8\u7F16\u8F91/\u9605\u8BFB\u8BBE\u7F6E\uFF0C\u6216\u4ECE JSON \u6587\u4EF6\u5BFC\u5165\uFF1B\u5BFC\u5165\u6210\u529F\u540E\u4F1A\u7ACB\u5373\u66FF\u6362\u5F53\u524D\u914D\u7F6E\u3002").addButton((button) => {
       button.setButtonText("\u5BFC\u51FA\u914D\u7F6E").onClick(() => {
         this.plugin.exportSettings();
       });
@@ -714,6 +720,10 @@ var RefinedLayoutSettingTab = class extends import_obsidian.PluginSettingTab {
     return contentContainer;
   }
   createGroupCard(container, title, description) {
+    const group = this.createSettingsGroup(container, title, description);
+    return group.createDiv({ cls: "setting-items rl-settings-card rl-settings-fields" });
+  }
+  createSettingsGroup(container, title, description) {
     const group = container.createDiv({ cls: "setting-group rl-settings-group" });
     if (title !== void 0) {
       const header = group.createDiv({ cls: "rl-settings-group-header" });
@@ -722,26 +732,97 @@ var RefinedLayoutSettingTab = class extends import_obsidian.PluginSettingTab {
         header.createDiv({ cls: "rl-settings-group-description", text: description });
       }
     }
-    const card = group.createDiv({ cls: "setting-items rl-settings-card rl-settings-fields" });
-    return card;
+    return group;
   }
-  renderHeadingLevelPills(container, contextKey, onLevelChange) {
+  createHeadingLevelCard(container, title, description) {
+    const group = this.createSettingsGroup(container, title, description);
+    const subtabContainer = group.createDiv({ cls: "rl-settings-subtab-container" });
+    const card = group.createDiv({ cls: "setting-items rl-settings-card rl-settings-heading-fields-card" });
+    const fieldsContainer = card.createDiv({ cls: "rl-settings-heading-fields" });
+    return { subtabContainer, fieldsPanel: card, fieldsContainer };
+  }
+  renderHeadingLevelTabs(container, contextKey, panel, onLevelChange) {
     const currentLevel = this.activeHeadingLevelByContext[contextKey] ?? "h1";
-    const pillBar = container.createDiv({ cls: "rl-settings-pill-bar" });
-    for (const level of HEADING_LEVELS) {
-      const pill = pillBar.createEl("button", {
-        cls: `rl-settings-pill ${level === currentLevel ? "rl-settings-pill-active" : ""}`,
-        text: HEADING_LABELS[level],
-        attr: { type: "button" }
+    const idBase = `refined-layout-settings-${this.mode}-${contextKey.replace(/[^a-zA-Z0-9_-]/g, "-")}`;
+    const panelId = `${idBase}-panel`;
+    panel.id = panelId;
+    panel.setAttribute("role", "tabpanel");
+    panel.setAttribute("tabindex", "0");
+    const nav = container.createEl("nav", {
+      cls: "rl-settings-subtab-nav",
+      attr: {
+        "aria-label": "\u6807\u9898\u7EA7\u522B",
+        role: "tablist",
+        "aria-orientation": "horizontal"
+      }
+    });
+    const buttons = [];
+    const activateLevel = (level, focusButton = false) => {
+      this.activeHeadingLevelByContext[contextKey] = level;
+      const activeButtonId = `${idBase}-tab-${level}`;
+      panel.setAttribute("aria-labelledby", activeButtonId);
+      HEADING_LEVELS.forEach((candidate, index) => {
+        const button = buttons[index];
+        if (button === void 0) {
+          throw new Error(`Heading level tab DOM is incomplete for ${candidate}`);
+        }
+        const isActive = candidate === level;
+        button.classList.toggle("rl-settings-tab-active", isActive);
+        button.setAttribute("aria-selected", String(isActive));
+        button.tabIndex = isActive ? 0 : -1;
+        if (focusButton && isActive) {
+          button.focus();
+        }
       });
-      pill.addEventListener("click", () => {
-        this.activeHeadingLevelByContext[contextKey] = level;
-        pillBar.querySelectorAll(".rl-settings-pill").forEach((btn, idx) => {
-          btn.classList.toggle("rl-settings-pill-active", HEADING_LEVELS[idx] === level);
-        });
-        onLevelChange(level);
+      onLevelChange(level);
+    };
+    for (const level of HEADING_LEVELS) {
+      const button = nav.createEl("button", {
+        cls: `rl-settings-tab-button rl-settings-subtab-button ${level === currentLevel ? "rl-settings-tab-active" : ""}`,
+        text: HEADING_LABELS[level],
+        attr: {
+          id: `${idBase}-tab-${level}`,
+          type: "button",
+          role: "tab",
+          "aria-selected": String(level === currentLevel),
+          "aria-controls": panelId
+        }
+      });
+      button.tabIndex = level === currentLevel ? 0 : -1;
+      buttons.push(button);
+      button.addEventListener("click", () => {
+        activateLevel(level);
+      });
+      button.addEventListener("keydown", (event) => {
+        const currentIndex = HEADING_LEVELS.indexOf(level);
+        let targetIndex;
+        switch (event.key) {
+          case "ArrowRight":
+          case "ArrowDown":
+            targetIndex = (currentIndex + 1) % HEADING_LEVELS.length;
+            break;
+          case "ArrowLeft":
+          case "ArrowUp":
+            targetIndex = (currentIndex - 1 + HEADING_LEVELS.length) % HEADING_LEVELS.length;
+            break;
+          case "Home":
+            targetIndex = 0;
+            break;
+          case "End":
+            targetIndex = HEADING_LEVELS.length - 1;
+            break;
+          default:
+            return;
+        }
+        event.preventDefault();
+        const targetLevel = HEADING_LEVELS[targetIndex];
+        if (targetLevel === void 0) {
+          throw new Error(`Heading level tab target is missing at index ${targetIndex}`);
+        }
+        activateLevel(targetLevel, true);
       });
     }
+    activateLevel(currentLevel);
   }
   addNumber(container, path, name, description, options = {}) {
     const inferred = inferNumberOptions(path);
@@ -786,20 +867,20 @@ var RefinedLayoutSettingTab = class extends import_obsidian.PluginSettingTab {
       const firstHeadingCard = this.createGroupCard(content, "\u6587\u6863\u9996\u884C", "\u4EC5\u5728\u6587\u6863\u7B2C\u4E00\u884C\u5373\u4E3A\u6807\u9898\u65F6\u7684\u4E13\u9879\u8865\u507F\u3002");
       this.addNumber(firstHeadingCard, ["headingDecoration", "firstHeadingPaddingTopPx"], "\u9996\u884C\u6807\u9898\u9876\u90E8\u8865\u507F", "\u6587\u6863\u7B2C\u4E00\u884C\u662F\u6807\u9898\u65F6\u7684\u9876\u90E8\u5FAE\u8C03\u8865\u507F\u3002");
     }
-    const card = this.createGroupCard(content, "\u5404\u7EA7\u6807\u9898\u6392\u7248\u4E0E\u95F4\u8DDD", "\u5207\u6362\u4E0B\u65B9 H1\u2013H6 \u80F6\u56CA\uFF0C\u5FEB\u901F\u5FAE\u8C03\u5BF9\u5E94\u7EA7\u522B\u6807\u9898\u7684\u884C\u9AD8\u4E0E\u4E0A\u4E0B\u5916\u8FB9\u8DDD\u3002");
-    const pillContainer = card.createDiv({ cls: "rl-settings-pill-container" });
-    const fieldsContainer = card.createDiv({ cls: "rl-settings-heading-fields" });
+    const { subtabContainer, fieldsPanel, fieldsContainer } = this.createHeadingLevelCard(
+      content,
+      "\u5404\u7EA7\u6807\u9898\u6392\u7248\u4E0E\u95F4\u8DDD",
+      "\u5207\u6362\u4E0B\u65B9 H1\u2013H6 \u6807\u7B7E\u9875\uFF0C\u5FAE\u8C03\u5BF9\u5E94\u7EA7\u522B\u6807\u9898\u7684\u884C\u9AD8\u4E0E\u4E0A\u4E0B\u5916\u8FB9\u8DDD\u3002"
+    );
     const renderLevelFields = (level) => {
       fieldsContainer.empty();
       this.addNumber(fieldsContainer, ["headings", level, "lineHeight"], `${HEADING_LABELS[level]} \u884C\u9AD8`, "\u6807\u9898\u6587\u5B57\u884C\u9AD8\u3002");
       this.addNumber(fieldsContainer, ["headings", level, "topEm"], `${HEADING_LABELS[level]} \u4E0A\u95F4\u8DDD`, "\u6807\u9898\u9876\u90E8\u95F4\u8DDD\u3002");
       this.addNumber(fieldsContainer, ["headings", level, "bottomEm"], `${HEADING_LABELS[level]} \u4E0B\u95F4\u8DDD`, "\u6807\u9898\u5E95\u90E8\u95F4\u8DDD\u3002");
     };
-    this.renderHeadingLevelPills(pillContainer, "headings", (level) => {
+    this.renderHeadingLevelTabs(subtabContainer, "headings", fieldsPanel, (level) => {
       renderLevelFields(level);
     });
-    const activeLevel = this.activeHeadingLevelByContext["headings"] ?? "h1";
-    renderLevelFields(activeLevel);
   }
   renderHeadingDecorationSection(container, tab) {
     const content = this.createModuleCard(container, tab);
@@ -811,19 +892,19 @@ var RefinedLayoutSettingTab = class extends import_obsidian.PluginSettingTab {
     if (this.mode === "edit") {
       this.addNumber(appearanceCard, ["headingDecoration", "firstHeadingDecorOffsetPx"], "\u6587\u6863\u9996\u6807\u9898\u989D\u5916\u8865\u507F", "\u4EC5\u5728\u6587\u6863\u7B2C\u4E00\u884C\u5C31\u662F\u6807\u9898\u65F6\u53E0\u52A0\uFF1B\u6B63\u503C\u5411\u4E0B\uFF0C\u8D1F\u503C\u5411\u4E0A\u3002");
     }
-    const card = this.createGroupCard(content, "\u5404\u7EA7\u6807\u9898\u88C5\u9970\u9AD8\u5EA6\u4E0E\u5782\u76F4\u8865\u507F", "\u5207\u6362\u4E0B\u65B9 H1\u2013H6 \u80F6\u56CA\uFF0C\u5FAE\u8C03\u5404\u7EA7\u6807\u9898\u88C5\u9970\u7EBF\u7684\u9AD8\u5EA6\u548C\u5782\u76F4\u5C45\u4E2D\u8865\u507F\u3002");
-    const pillContainer = card.createDiv({ cls: "rl-settings-pill-container" });
-    const fieldsContainer = card.createDiv({ cls: "rl-settings-heading-fields" });
+    const { subtabContainer, fieldsPanel, fieldsContainer } = this.createHeadingLevelCard(
+      content,
+      "\u5404\u7EA7\u6807\u9898\u88C5\u9970\u9AD8\u5EA6\u4E0E\u5782\u76F4\u8865\u507F",
+      "\u5207\u6362\u4E0B\u65B9 H1\u2013H6 \u6807\u7B7E\u9875\uFF0C\u5FAE\u8C03\u5404\u7EA7\u6807\u9898\u88C5\u9970\u7EBF\u7684\u9AD8\u5EA6\u548C\u5782\u76F4\u5C45\u4E2D\u8865\u507F\u3002"
+    );
     const renderLevelFields = (level) => {
       fieldsContainer.empty();
       this.addNumber(fieldsContainer, ["headings", level, "decorHeightPx"], `${HEADING_LABELS[level]} \u9AD8\u5EA6`, "\u4F2A\u5143\u7D20\u9AD8\u5EA6\u3002");
       this.addNumber(fieldsContainer, ["headings", level, "decorOffsetPx"], `${HEADING_LABELS[level]} \u5782\u76F4\u8865\u507F`, "\u5728\u7B2C\u4E00\u884C\u5782\u76F4\u5C45\u4E2D\u7684\u57FA\u7840\u4E0A\u5FAE\u8C03\uFF1B\u6B63\u503C\u5411\u4E0B\uFF0C\u8D1F\u503C\u5411\u4E0A\u3002");
     };
-    this.renderHeadingLevelPills(pillContainer, "headingDecoration", (level) => {
+    this.renderHeadingLevelTabs(subtabContainer, "headingDecoration", fieldsPanel, (level) => {
       renderLevelFields(level);
     });
-    const activeLevel = this.activeHeadingLevelByContext["headingDecoration"] ?? "h1";
-    renderLevelFields(activeLevel);
   }
   renderCalloutSection(container, tab) {
     const content = this.createModuleCard(container, tab);
@@ -869,13 +950,11 @@ var RefinedLayoutSettingTab = class extends import_obsidian.PluginSettingTab {
   }
   renderContextHeadings(container, context, bottomUsesPx) {
     const label = context === "callout" ? "Callout" : "\u5F15\u7528\u5757";
-    const card = this.createGroupCard(
+    const { subtabContainer, fieldsPanel, fieldsContainer } = this.createHeadingLevelCard(
       container,
       `${label} \u5185\u90E8\u5404\u7EA7\u6807\u9898 (H1\u2013H6)`,
-      `\u5207\u6362\u4E0B\u65B9 H1\u2013H6 \u80F6\u56CA\uFF0C\u5FAE\u8C03 ${label} \u5185\u90E8\u5404\u7EA7\u6807\u9898\u7684\u884C\u9AD8\u4E0E\u95F4\u8DDD\u3002`
+      `\u5207\u6362\u4E0B\u65B9 H1\u2013H6 \u6807\u7B7E\u9875\uFF0C\u5FAE\u8C03 ${label} \u5185\u90E8\u5404\u7EA7\u6807\u9898\u7684\u884C\u9AD8\u4E0E\u95F4\u8DDD\u3002`
     );
-    const pillContainer = card.createDiv({ cls: "rl-settings-pill-container" });
-    const fieldsContainer = card.createDiv({ cls: "rl-settings-heading-fields" });
     const renderLevelFields = (level) => {
       fieldsContainer.empty();
       const prefix = [context, "headings", level];
@@ -884,11 +963,9 @@ var RefinedLayoutSettingTab = class extends import_obsidian.PluginSettingTab {
       const bottomKey = bottomUsesPx ? "bottomPx" : "bottomEm";
       this.addNumber(fieldsContainer, [...prefix, bottomKey], `${HEADING_LABELS[level]} \u4E0B\u95F4\u8DDD`, "\u5185\u90E8\u6807\u9898\u5E95\u90E8\u95F4\u8DDD\u3002");
     };
-    this.renderHeadingLevelPills(pillContainer, `${context}-headings`, (level) => {
+    this.renderHeadingLevelTabs(subtabContainer, `${context}-headings`, fieldsPanel, (level) => {
       renderLevelFields(level);
     });
-    const activeLevel = this.activeHeadingLevelByContext[`${context}-headings`] ?? "h1";
-    renderLevelFields(activeLevel);
   }
   renderImageSection(container, tab) {
     const content = this.createModuleCard(container, tab);

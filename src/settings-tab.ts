@@ -47,8 +47,14 @@ interface SettingsTabDefinition {
   reset: ResetTarget;
 }
 
+interface HeadingLevelCard {
+  subtabContainer: HTMLElement;
+  fieldsPanel: HTMLElement;
+  fieldsContainer: HTMLElement;
+}
+
 interface NumberOptions {
-  unit?: "" | "em" | "px" | "%";
+  unit?: "" | "em" | "px" | "%" | "倍";
   min?: number;
   max?: number;
   step?: number;
@@ -94,7 +100,7 @@ function inferNumberOptions(path: string[]): Required<NumberOptions> {
     return { unit, min: 10, max: 100, step: 1 };
   }
   if (key.toLowerCase().includes("lineheight")) {
-    return { unit, min: 0.5, max: 3, step: 0.01 };
+    return { unit: "倍", min: 0.5, max: 3, step: 0.01 };
   }
 
   const allowsNegative = joined.includes("margin")
@@ -146,15 +152,17 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
     containerEl.empty();
     containerEl.addClass("refined-layout-settings");
 
-    containerEl.createEl("h2", { text: "Refined Layout" });
-    this.renderModeSwitcher(containerEl);
-    this.renderGlobalReset(containerEl);
-    this.renderConfigTransfer(containerEl);
-    this.renderSettingsTabs(containerEl);
+    const page = containerEl.createDiv({ cls: "rl-settings-page-content" });
+    this.renderModeSwitcher(page);
+    this.renderGlobalReset(page);
+    this.renderConfigTransfer(page);
+    this.renderSettingsTabs(page);
   }
 
   private renderModeSwitcher(container: HTMLElement): void {
-    const setting = new Setting(container)
+    const group = container.createDiv({ cls: "setting-group rl-settings-group" });
+    const card = group.createDiv({ cls: "setting-items rl-settings-card" });
+    const setting = new Setting(card)
       .setName("设置模式")
       .setDesc("编辑模式与阅读模式的参数和模块开关完全独立。");
 
@@ -173,7 +181,9 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
   }
 
   private renderGlobalReset(container: HTMLElement): void {
-    new Setting(container)
+    const group = container.createDiv({ cls: "setting-group rl-settings-group" });
+    const card = group.createDiv({ cls: "setting-items rl-settings-card" });
+    new Setting(card)
       .setName(`${MODE_LABELS[this.mode]} · 全部恢复默认`)
       .setDesc("恢复编辑和阅读两套设置以及全部模块开关。")
       .addButton((button) => {
@@ -188,7 +198,9 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
   }
 
   private renderConfigTransfer(container: HTMLElement): void {
-    new Setting(container)
+    const group = container.createDiv({ cls: "setting-group rl-settings-group" });
+    const card = group.createDiv({ cls: "setting-items rl-settings-card" });
+    new Setting(card)
       .setName("配置文件")
       .setDesc("导出当前全部编辑/阅读设置，或从 JSON 文件导入；导入成功后会立即替换当前配置。")
       .addButton((button) => {
@@ -409,6 +421,11 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
   }
 
   private createGroupCard(container: HTMLElement, title?: string, description?: string): HTMLElement {
+    const group = this.createSettingsGroup(container, title, description);
+    return group.createDiv({ cls: "setting-items rl-settings-card rl-settings-fields" });
+  }
+
+  private createSettingsGroup(container: HTMLElement, title?: string, description?: string): HTMLElement {
     const group = container.createDiv({ cls: "setting-group rl-settings-group" });
     if (title !== undefined) {
       const header = group.createDiv({ cls: "rl-settings-group-header" });
@@ -417,31 +434,112 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
         header.createDiv({ cls: "rl-settings-group-description", text: description });
       }
     }
-    const card = group.createDiv({ cls: "setting-items rl-settings-card rl-settings-fields" });
-    return card;
+    return group;
   }
 
-  private renderHeadingLevelPills(
+  private createHeadingLevelCard(
+    container: HTMLElement,
+    title: string,
+    description: string,
+  ): HeadingLevelCard {
+    const group = this.createSettingsGroup(container, title, description);
+    const subtabContainer = group.createDiv({ cls: "rl-settings-subtab-container" });
+    const card = group.createDiv({ cls: "setting-items rl-settings-card rl-settings-heading-fields-card" });
+    const fieldsContainer = card.createDiv({ cls: "rl-settings-heading-fields" });
+    return { subtabContainer, fieldsPanel: card, fieldsContainer };
+  }
+
+  private renderHeadingLevelTabs(
     container: HTMLElement,
     contextKey: string,
+    panel: HTMLElement,
     onLevelChange: (level: HeadingLevel) => void,
   ): void {
     const currentLevel = this.activeHeadingLevelByContext[contextKey] ?? "h1";
-    const pillBar = container.createDiv({ cls: "rl-settings-pill-bar" });
-    for (const level of HEADING_LEVELS) {
-      const pill = pillBar.createEl("button", {
-        cls: `rl-settings-pill ${level === currentLevel ? "rl-settings-pill-active" : ""}`,
-        text: HEADING_LABELS[level],
-        attr: { type: "button" },
+    const idBase = `refined-layout-settings-${this.mode}-${contextKey.replace(/[^a-zA-Z0-9_-]/g, "-")}`;
+    const panelId = `${idBase}-panel`;
+    panel.id = panelId;
+    panel.setAttribute("role", "tabpanel");
+    panel.setAttribute("tabindex", "0");
+
+    const nav = container.createEl("nav", {
+      cls: "rl-settings-subtab-nav",
+      attr: {
+        "aria-label": "标题级别",
+        role: "tablist",
+        "aria-orientation": "horizontal",
+      },
+    });
+    const buttons: HTMLButtonElement[] = [];
+
+    const activateLevel = (level: HeadingLevel, focusButton = false): void => {
+      this.activeHeadingLevelByContext[contextKey] = level;
+      const activeButtonId = `${idBase}-tab-${level}`;
+      panel.setAttribute("aria-labelledby", activeButtonId);
+      HEADING_LEVELS.forEach((candidate, index) => {
+        const button = buttons[index];
+        if (button === undefined) {
+          throw new Error(`Heading level tab DOM is incomplete for ${candidate}`);
+        }
+        const isActive = candidate === level;
+        button.classList.toggle("rl-settings-tab-active", isActive);
+        button.setAttribute("aria-selected", String(isActive));
+        button.tabIndex = isActive ? 0 : -1;
+        if (focusButton && isActive) {
+          button.focus();
+        }
       });
-      pill.addEventListener("click", () => {
-        this.activeHeadingLevelByContext[contextKey] = level;
-        pillBar.querySelectorAll(".rl-settings-pill").forEach((btn, idx) => {
-          btn.classList.toggle("rl-settings-pill-active", HEADING_LEVELS[idx] === level);
-        });
-        onLevelChange(level);
+      onLevelChange(level);
+    };
+
+    for (const level of HEADING_LEVELS) {
+      const button = nav.createEl("button", {
+        cls: `rl-settings-tab-button rl-settings-subtab-button ${level === currentLevel ? "rl-settings-tab-active" : ""}`,
+        text: HEADING_LABELS[level],
+        attr: {
+          id: `${idBase}-tab-${level}`,
+          type: "button",
+          role: "tab",
+          "aria-selected": String(level === currentLevel),
+          "aria-controls": panelId,
+        },
+      });
+      button.tabIndex = level === currentLevel ? 0 : -1;
+      buttons.push(button);
+      button.addEventListener("click", () => {
+        activateLevel(level);
+      });
+      button.addEventListener("keydown", (event: KeyboardEvent) => {
+        const currentIndex = HEADING_LEVELS.indexOf(level);
+        let targetIndex: number;
+        switch (event.key) {
+          case "ArrowRight":
+          case "ArrowDown":
+            targetIndex = (currentIndex + 1) % HEADING_LEVELS.length;
+            break;
+          case "ArrowLeft":
+          case "ArrowUp":
+            targetIndex = (currentIndex - 1 + HEADING_LEVELS.length) % HEADING_LEVELS.length;
+            break;
+          case "Home":
+            targetIndex = 0;
+            break;
+          case "End":
+            targetIndex = HEADING_LEVELS.length - 1;
+            break;
+          default:
+            return;
+        }
+        event.preventDefault();
+        const targetLevel = HEADING_LEVELS[targetIndex];
+        if (targetLevel === undefined) {
+          throw new Error(`Heading level tab target is missing at index ${targetIndex}`);
+        }
+        activateLevel(targetLevel, true);
       });
     }
+
+    activateLevel(currentLevel);
   }
 
   private addNumber(
@@ -500,9 +598,11 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
       this.addNumber(firstHeadingCard, ["headingDecoration", "firstHeadingPaddingTopPx"], "首行标题顶部补偿", "文档第一行是标题时的顶部微调补偿。");
     }
 
-    const card = this.createGroupCard(content, "各级标题排版与间距", "切换下方 H1–H6 胶囊，快速微调对应级别标题的行高与上下外边距。");
-    const pillContainer = card.createDiv({ cls: "rl-settings-pill-container" });
-    const fieldsContainer = card.createDiv({ cls: "rl-settings-heading-fields" });
+    const { subtabContainer, fieldsPanel, fieldsContainer } = this.createHeadingLevelCard(
+      content,
+      "各级标题排版与间距",
+      "切换下方 H1–H6 标签页，微调对应级别标题的行高与上下外边距。",
+    );
 
     const renderLevelFields = (level: HeadingLevel): void => {
       fieldsContainer.empty();
@@ -511,12 +611,9 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
       this.addNumber(fieldsContainer, ["headings", level, "bottomEm"], `${HEADING_LABELS[level]} 下间距`, "标题底部间距。");
     };
 
-    this.renderHeadingLevelPills(pillContainer, "headings", (level) => {
+    this.renderHeadingLevelTabs(subtabContainer, "headings", fieldsPanel, (level) => {
       renderLevelFields(level);
     });
-
-    const activeLevel = this.activeHeadingLevelByContext["headings"] ?? "h1";
-    renderLevelFields(activeLevel);
   }
 
   private renderHeadingDecorationSection(container: HTMLElement, tab: SettingsTabDefinition): void {
@@ -530,9 +627,11 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
       this.addNumber(appearanceCard, ["headingDecoration", "firstHeadingDecorOffsetPx"], "文档首标题额外补偿", "仅在文档第一行就是标题时叠加；正值向下，负值向上。");
     }
 
-    const card = this.createGroupCard(content, "各级标题装饰高度与垂直补偿", "切换下方 H1–H6 胶囊，微调各级标题装饰线的高度和垂直居中补偿。");
-    const pillContainer = card.createDiv({ cls: "rl-settings-pill-container" });
-    const fieldsContainer = card.createDiv({ cls: "rl-settings-heading-fields" });
+    const { subtabContainer, fieldsPanel, fieldsContainer } = this.createHeadingLevelCard(
+      content,
+      "各级标题装饰高度与垂直补偿",
+      "切换下方 H1–H6 标签页，微调各级标题装饰线的高度和垂直居中补偿。",
+    );
 
     const renderLevelFields = (level: HeadingLevel): void => {
       fieldsContainer.empty();
@@ -540,12 +639,9 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
       this.addNumber(fieldsContainer, ["headings", level, "decorOffsetPx"], `${HEADING_LABELS[level]} 垂直补偿`, "在第一行垂直居中的基础上微调；正值向下，负值向上。");
     };
 
-    this.renderHeadingLevelPills(pillContainer, "headingDecoration", (level) => {
+    this.renderHeadingLevelTabs(subtabContainer, "headingDecoration", fieldsPanel, (level) => {
       renderLevelFields(level);
     });
-
-    const activeLevel = this.activeHeadingLevelByContext["headingDecoration"] ?? "h1";
-    renderLevelFields(activeLevel);
   }
 
   private renderCalloutSection(container: HTMLElement, tab: SettingsTabDefinition): void {
@@ -606,13 +702,11 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
     bottomUsesPx: boolean,
   ): void {
     const label = context === "callout" ? "Callout" : "引用块";
-    const card = this.createGroupCard(
+    const { subtabContainer, fieldsPanel, fieldsContainer } = this.createHeadingLevelCard(
       container,
       `${label} 内部各级标题 (H1–H6)`,
-      `切换下方 H1–H6 胶囊，微调 ${label} 内部各级标题的行高与间距。`,
+      `切换下方 H1–H6 标签页，微调 ${label} 内部各级标题的行高与间距。`,
     );
-    const pillContainer = card.createDiv({ cls: "rl-settings-pill-container" });
-    const fieldsContainer = card.createDiv({ cls: "rl-settings-heading-fields" });
 
     const renderLevelFields = (level: HeadingLevel): void => {
       fieldsContainer.empty();
@@ -623,12 +717,9 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
       this.addNumber(fieldsContainer, [...prefix, bottomKey], `${HEADING_LABELS[level]} 下间距`, "内部标题底部间距。");
     };
 
-    this.renderHeadingLevelPills(pillContainer, `${context}-headings`, (level) => {
+    this.renderHeadingLevelTabs(subtabContainer, `${context}-headings`, fieldsPanel, (level) => {
       renderLevelFields(level);
     });
-
-    const activeLevel = this.activeHeadingLevelByContext[`${context}-headings`] ?? "h1";
-    renderLevelFields(activeLevel);
   }
 
   private renderImageSection(container: HTMLElement, tab: SettingsTabDefinition): void {
@@ -736,4 +827,3 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
     });
   }
 }
-
