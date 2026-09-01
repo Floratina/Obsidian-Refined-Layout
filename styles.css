@@ -18,9 +18,24 @@ body.refined-layout-enabled.rl-edit-body .markdown-source-view.mod-cm6 .cm-line:
   line-height: var(--rl-edit-body-empty-line-height-em) !important;
 }
 
+/* Item-level gaps: every list line carries them, so adjacent lines collapse
+   to the larger of the two. The block-level rules below outrank this one on
+   the first and last line of a run. */
 body.refined-layout-enabled.rl-edit-body .markdown-source-view.mod-cm6 .cm-content > :is(.HyperMD-list-line, .HyperMD-list-line-nobullet) {
-  margin-block-start: var(--rl-edit-body-list-start-em) !important;
-  margin-block-end: var(--rl-edit-body-list-end-em) !important;
+  margin-block-start: var(--rl-edit-body-list-item-start-em) !important;
+  margin-block-end: var(--rl-edit-body-list-item-end-em) !important;
+}
+
+/* A source-view list has no wrapper element, so its outer edges are the first
+   and last line of an unbroken run of list lines. */
+body.refined-layout-enabled.rl-edit-body .markdown-source-view.mod-cm6 .cm-content > :is(.HyperMD-list-line, .HyperMD-list-line-nobullet):first-child,
+body.refined-layout-enabled.rl-edit-body .markdown-source-view.mod-cm6 .cm-content > :not(.HyperMD-list-line, .HyperMD-list-line-nobullet) + :is(.HyperMD-list-line, .HyperMD-list-line-nobullet) {
+  margin-block-start: var(--rl-edit-body-list-block-start-em) !important;
+}
+
+body.refined-layout-enabled.rl-edit-body .markdown-source-view.mod-cm6 .cm-content > :is(.HyperMD-list-line, .HyperMD-list-line-nobullet):last-child,
+body.refined-layout-enabled.rl-edit-body .markdown-source-view.mod-cm6 .cm-content > :is(.HyperMD-list-line, .HyperMD-list-line-nobullet):has(+ :not(.HyperMD-list-line, .HyperMD-list-line-nobullet)) {
+  margin-block-end: var(--rl-edit-body-list-block-end-em) !important;
 }
 
 /* --------------------------------------------------------------------------
@@ -35,10 +50,20 @@ body.refined-layout-enabled.rl-read-body .markdown-rendered p:not(:where(.block-
   margin-block-end: var(--rl-read-body-paragraph-spacing-em) !important;
 }
 
+/* Item-level gaps stop short of the list's own edges so they never collapse
+   into the block-level margins below. */
+body.refined-layout-enabled.rl-read-body .markdown-rendered :is(.el-ul, .el-ol) li + li:not(:where(.block-language-dataviewjs *)) {
+  margin-block-start: var(--rl-read-body-list-item-start-em) !important;
+}
+
+body.refined-layout-enabled.rl-read-body .markdown-rendered :is(.el-ul, .el-ol) li:not(:last-child):not(:where(.block-language-dataviewjs *)) {
+  margin-block-end: var(--rl-read-body-list-item-end-em) !important;
+}
+
 body.refined-layout-enabled.rl-read-body .markdown-rendered .el-ol > ol:not(:where(.block-language-dataviewjs *)),
 body.refined-layout-enabled.rl-read-body .markdown-rendered .el-ul > ul:not(:where(.block-language-dataviewjs *)) {
-  margin-block-start: var(--rl-read-body-list-start-em) !important;
-  margin-block-end: var(--rl-read-body-list-end-em) !important;
+  margin-block-start: var(--rl-read-body-list-block-start-em) !important;
+  margin-block-end: var(--rl-read-body-list-block-end-em) !important;
 }
 
 /* --------------------------------------------------------------------------
@@ -288,12 +313,21 @@ body.refined-layout-enabled.rl-edit-callouts .markdown-source-view.mod-cm6 :is(.
   margin-block-end: var(--rl-edit-callout-paragraph-spacing-em) !important;
 }
 
-body.refined-layout-enabled.rl-edit-callouts .markdown-source-view.mod-cm6 :is(.callout.drop-shadow, .cm-callout) :is(ul, ol) {
-  margin-block-start: var(--rl-edit-callout-list-start-em) !important;
-  margin-block-end: var(--rl-edit-callout-list-end-em) !important;
+body.refined-layout-enabled.rl-edit-callouts .markdown-source-view.mod-cm6 :is(.callout.drop-shadow, .cm-callout) li + li {
+  margin-block-start: var(--rl-edit-callout-list-item-start-em) !important;
 }
 
-body.refined-layout-enabled.rl-edit-callouts .markdown-source-view.mod-cm6 :is(.callout.drop-shadow, .cm-callout) :is(ul, ol):last-child {
+body.refined-layout-enabled.rl-edit-callouts .markdown-source-view.mod-cm6 :is(.callout.drop-shadow, .cm-callout) li:not(:last-child) {
+  margin-block-end: var(--rl-edit-callout-list-item-end-em) !important;
+}
+
+/* Nested sub-lists are item-level rhythm, not a list block of their own. */
+body.refined-layout-enabled.rl-edit-callouts .markdown-source-view.mod-cm6 :is(.callout.drop-shadow, .cm-callout) :is(ul, ol):not(li > *) {
+  margin-block-start: var(--rl-edit-callout-list-block-start-em) !important;
+  margin-block-end: var(--rl-edit-callout-list-block-end-em) !important;
+}
+
+body.refined-layout-enabled.rl-edit-callouts .markdown-source-view.mod-cm6 :is(.callout.drop-shadow, .cm-callout) :is(ul, ol):last-child:not(li > *) {
   margin-block-end: var(--rl-edit-callout-last-list-end-em) !important;
 }
 
@@ -334,12 +368,20 @@ body.refined-layout-enabled.rl-read-callouts .markdown-rendered .callout-content
   margin-block-end: var(--rl-read-callout-paragraph-spacing-em) !important;
 }
 
-body.refined-layout-enabled.rl-read-callouts .markdown-rendered .callout :is(ul, ol):not(:where(.block-language-dataviewjs *)) {
-  margin-block-start: var(--rl-read-callout-list-start-em) !important;
-  margin-block-end: var(--rl-read-callout-list-end-em) !important;
+body.refined-layout-enabled.rl-read-callouts .markdown-rendered .callout li + li:not(:where(.block-language-dataviewjs *)) {
+  margin-block-start: var(--rl-read-callout-list-item-start-em) !important;
 }
 
-body.refined-layout-enabled.rl-read-callouts .markdown-rendered .callout :is(ul, ol):last-child:not(:where(.block-language-dataviewjs *)) {
+body.refined-layout-enabled.rl-read-callouts .markdown-rendered .callout li:not(:last-child):not(:where(.block-language-dataviewjs *)) {
+  margin-block-end: var(--rl-read-callout-list-item-end-em) !important;
+}
+
+body.refined-layout-enabled.rl-read-callouts .markdown-rendered .callout :is(ul, ol):not(li > *):not(:where(.block-language-dataviewjs *)) {
+  margin-block-start: var(--rl-read-callout-list-block-start-em) !important;
+  margin-block-end: var(--rl-read-callout-list-block-end-em) !important;
+}
+
+body.refined-layout-enabled.rl-read-callouts .markdown-rendered .callout :is(ul, ol):last-child:not(li > *):not(:where(.block-language-dataviewjs *)) {
   margin-block-end: var(--rl-read-callout-last-list-end-em) !important;
 }
 
@@ -446,8 +488,18 @@ body.refined-layout-enabled.rl-edit-blockquotes .markdown-source-view.mod-cm6 .c
 }
 
 body.refined-layout-enabled.rl-edit-blockquotes .markdown-source-view.mod-cm6 .cm-line.HyperMD-quote.HyperMD-list-line {
-  margin-block-start: var(--rl-edit-blockquote-list-start-em) !important;
-  margin-block-end: var(--rl-edit-blockquote-list-end-em) !important;
+  margin-block-start: var(--rl-edit-blockquote-list-item-start-em) !important;
+  margin-block-end: var(--rl-edit-blockquote-list-item-end-em) !important;
+}
+
+body.refined-layout-enabled.rl-edit-blockquotes .markdown-source-view.mod-cm6 .cm-line.HyperMD-quote.HyperMD-list-line:first-child,
+body.refined-layout-enabled.rl-edit-blockquotes .markdown-source-view.mod-cm6 :not(.HyperMD-list-line) + .cm-line.HyperMD-quote.HyperMD-list-line {
+  margin-block-start: var(--rl-edit-blockquote-list-block-start-em) !important;
+}
+
+body.refined-layout-enabled.rl-edit-blockquotes .markdown-source-view.mod-cm6 .cm-line.HyperMD-quote.HyperMD-list-line:last-child,
+body.refined-layout-enabled.rl-edit-blockquotes .markdown-source-view.mod-cm6 .cm-line.HyperMD-quote.HyperMD-list-line:has(+ :not(.HyperMD-list-line)) {
+  margin-block-end: var(--rl-edit-blockquote-list-block-end-em) !important;
 }
 
 body.refined-layout-enabled.rl-read-blockquotes .markdown-rendered .el-blockquote p:not(:where(.block-language-dataviewjs *)) {
@@ -456,9 +508,17 @@ body.refined-layout-enabled.rl-read-blockquotes .markdown-rendered .el-blockquot
   margin-block-end: var(--rl-read-blockquote-paragraph-spacing-em) !important;
 }
 
-body.refined-layout-enabled.rl-read-blockquotes .markdown-rendered .el-blockquote :is(ul, ol):not(:where(.block-language-dataviewjs *)) {
-  margin-block-start: var(--rl-read-blockquote-list-start-em) !important;
-  margin-block-end: var(--rl-read-blockquote-list-end-em) !important;
+body.refined-layout-enabled.rl-read-blockquotes .markdown-rendered .el-blockquote li + li:not(:where(.block-language-dataviewjs *)) {
+  margin-block-start: var(--rl-read-blockquote-list-item-start-em) !important;
+}
+
+body.refined-layout-enabled.rl-read-blockquotes .markdown-rendered .el-blockquote li:not(:last-child):not(:where(.block-language-dataviewjs *)) {
+  margin-block-end: var(--rl-read-blockquote-list-item-end-em) !important;
+}
+
+body.refined-layout-enabled.rl-read-blockquotes .markdown-rendered .el-blockquote :is(ul, ol):not(li > *):not(:where(.block-language-dataviewjs *)) {
+  margin-block-start: var(--rl-read-blockquote-list-block-start-em) !important;
+  margin-block-end: var(--rl-read-blockquote-list-block-end-em) !important;
 }
 
 body.refined-layout-enabled.rl-read-blockquotes .markdown-rendered .el-blockquote hr:not(:where(.block-language-dataviewjs *)) {

@@ -35,8 +35,10 @@ export interface BodySettings {
   lineHeight: number;
   paragraphSpacingEm: number;
   emptyLineHeightEm: number;
-  listStartEm: number;
-  listEndEm: number;
+  listItemStartEm: number;
+  listItemEndEm: number;
+  listBlockStartEm: number;
+  listBlockEndEm: number;
 }
 
 export interface HeadingSettings {
@@ -91,8 +93,10 @@ export interface CalloutSettings {
   collapsedPaddingBottomEm: number;
   paragraphLineHeight: number;
   paragraphSpacingEm: number;
-  listStartEm: number;
-  listEndEm: number;
+  listItemStartEm: number;
+  listItemEndEm: number;
+  listBlockStartEm: number;
+  listBlockEndEm: number;
   lastListEndEm: number;
   headings: Record<HeadingLevel, ContextHeadingSettings>;
   image: ImageSettings;
@@ -102,8 +106,10 @@ export interface CalloutSettings {
 export interface BlockquoteSettings {
   paragraphLineHeight: number;
   paragraphSpacingEm: number;
-  listStartEm: number;
-  listEndEm: number;
+  listItemStartEm: number;
+  listItemEndEm: number;
+  listBlockStartEm: number;
+  listBlockEndEm: number;
   headings: Record<HeadingLevel, ContextHeadingSettings>;
   table: TableSettings;
 }
@@ -170,7 +176,7 @@ export interface ModeSettings {
 }
 
 export interface RefinedLayoutSettings {
-  schemaVersion: 2;
+  schemaVersion: 3;
   edit: ModeSettings;
   read: ModeSettings;
 }
@@ -264,15 +270,17 @@ const ALL_MODULES: ModuleSettings = {
 };
 
 export const DEFAULT_SETTINGS: RefinedLayoutSettings = {
-  schemaVersion: 2,
+  schemaVersion: 3,
   edit: {
     modules: { ...ALL_MODULES },
     body: {
       lineHeight: 1.735,
       paragraphSpacingEm: 0,
       emptyLineHeightEm: 0.5,
-      listStartEm: 0,
-      listEndEm: 0,
+      listItemStartEm: 0,
+      listItemEndEm: 0,
+      listBlockStartEm: 0,
+      listBlockEndEm: 0,
     },
     headings: EDIT_HEADINGS,
     headingDecoration: {
@@ -302,8 +310,10 @@ export const DEFAULT_SETTINGS: RefinedLayoutSettings = {
       collapsedPaddingBottomEm: 0.95,
       paragraphLineHeight: 1.64825,
       paragraphSpacingEm: 0.33,
-      listStartEm: 0,
-      listEndEm: 0,
+      listItemStartEm: 0,
+      listItemEndEm: 0,
+      listBlockStartEm: 0,
+      listBlockEndEm: 0,
       lastListEndEm: 0,
       headings: EDIT_CALLOUT_HEADINGS,
       image: { ...EDIT_IMAGE },
@@ -312,8 +322,10 @@ export const DEFAULT_SETTINGS: RefinedLayoutSettings = {
     blockquote: {
       paragraphLineHeight: 1.735,
       paragraphSpacingEm: 0,
-      listStartEm: 0,
-      listEndEm: 0,
+      listItemStartEm: 0,
+      listItemEndEm: 0,
+      listBlockStartEm: 0,
+      listBlockEndEm: 0,
       headings: EDIT_BLOCKQUOTE_HEADINGS,
       table: { ...EDIT_TABLE },
     },
@@ -369,8 +381,10 @@ export const DEFAULT_SETTINGS: RefinedLayoutSettings = {
       lineHeight: 1.735,
       paragraphSpacingEm: 0.5,
       emptyLineHeightEm: 0.5,
-      listStartEm: 0,
-      listEndEm: 0,
+      listItemStartEm: 0,
+      listItemEndEm: 0,
+      listBlockStartEm: 0,
+      listBlockEndEm: 0,
     },
     headings: READ_HEADINGS,
     headingDecoration: {
@@ -400,8 +414,10 @@ export const DEFAULT_SETTINGS: RefinedLayoutSettings = {
       collapsedPaddingBottomEm: 0.9,
       paragraphLineHeight: 1.64825,
       paragraphSpacingEm: 0.51,
-      listStartEm: 0,
-      listEndEm: 0,
+      listItemStartEm: 0,
+      listItemEndEm: 0,
+      listBlockStartEm: 0,
+      listBlockEndEm: 0,
       lastListEndEm: 0,
       headings: READ_CALLOUT_HEADINGS,
       image: { ...READ_IMAGE },
@@ -410,8 +426,10 @@ export const DEFAULT_SETTINGS: RefinedLayoutSettings = {
     blockquote: {
       paragraphLineHeight: 1.64825,
       paragraphSpacingEm: 0.51,
-      listStartEm: 0,
-      listEndEm: 0,
+      listItemStartEm: 0,
+      listItemEndEm: 0,
+      listBlockStartEm: 0,
+      listBlockEndEm: 0,
       headings: READ_BLOCKQUOTE_HEADINGS,
       table: { ...READ_TABLE },
     },
@@ -492,17 +510,7 @@ export function cloneDefaultSettings(): RefinedLayoutSettings {
   return structuredClone(DEFAULT_SETTINGS);
 }
 
-function migrateSettings(candidate: unknown): unknown {
-  if (typeof candidate !== "object" || candidate === null) {
-    return candidate;
-  }
-
-  const source = structuredClone(candidate) as Record<string, unknown>;
-  const schemaVersion = source.schemaVersion;
-  if (schemaVersion !== 1) {
-    return source;
-  }
-
+function migrateV1ToV2(source: Record<string, unknown>): Record<string, unknown> {
   for (const mode of MODE_KEYS) {
     const modeSettings = source[mode];
     if (typeof modeSettings !== "object" || modeSettings === null) {
@@ -551,6 +559,67 @@ function migrateSettings(candidate: unknown): unknown {
   return source;
 }
 
+/**
+ * Schema 2 stored one pair of list margins per context, but the stylesheet
+ * applied it to a different element in each mode: to every list line in the
+ * editing view's body and blockquotes (an item-level gap), and to the list
+ * element itself everywhere else (a block-level gap). Schema 3 splits the two
+ * layers, so each old value moves to whichever layer it actually drove.
+ */
+function migrateV2ToV3(source: Record<string, unknown>): Record<string, unknown> {
+  const ITEM_LEVEL_CONTEXTS: Record<ModeKey, readonly string[]> = {
+    edit: ["body", "blockquote"],
+    read: [],
+  };
+
+  for (const mode of MODE_KEYS) {
+    const modeSettings = source[mode];
+    if (typeof modeSettings !== "object" || modeSettings === null) {
+      continue;
+    }
+    const modeRecord = modeSettings as Record<string, unknown>;
+
+    for (const context of ["body", "callout", "blockquote"]) {
+      const contextSettings = modeRecord[context];
+      if (typeof contextSettings !== "object" || contextSettings === null) {
+        continue;
+      }
+      const contextRecord = contextSettings as Record<string, unknown>;
+      const legacyStart = contextRecord.listStartEm;
+      const legacyEnd = contextRecord.listEndEm;
+      delete contextRecord.listStartEm;
+      delete contextRecord.listEndEm;
+
+      // The old value always drove the list's outer edges.
+      contextRecord.listBlockStartEm = legacyStart;
+      contextRecord.listBlockEndEm = legacyEnd;
+
+      // Where it was applied per line it drove the gaps between items too.
+      const drovesItems = ITEM_LEVEL_CONTEXTS[mode].includes(context);
+      contextRecord.listItemStartEm = drovesItems ? legacyStart : 0;
+      contextRecord.listItemEndEm = drovesItems ? legacyEnd : 0;
+    }
+  }
+
+  source.schemaVersion = 3;
+  return source;
+}
+
+function migrateSettings(candidate: unknown): unknown {
+  if (typeof candidate !== "object" || candidate === null) {
+    return candidate;
+  }
+
+  let source = structuredClone(candidate) as Record<string, unknown>;
+  if (source.schemaVersion === 1) {
+    source = migrateV1ToV2(source);
+  }
+  if (source.schemaVersion === 2) {
+    source = migrateV2ToV3(source);
+  }
+  return source;
+}
+
 export function mergeSettings(candidate: unknown): RefinedLayoutSettings {
   return mergeKnown(cloneDefaultSettings(), migrateSettings(candidate));
 }
@@ -562,8 +631,8 @@ export function parseSettingsJson(json: string): RefinedLayoutSettings {
   }
 
   const schemaVersion = (candidate as Record<string, unknown>).schemaVersion;
-  if (schemaVersion !== 1 && schemaVersion !== 2) {
-    throw new Error("配置文件的 schemaVersion 必须是 1 或 2");
+  if (schemaVersion !== 1 && schemaVersion !== 2 && schemaVersion !== 3) {
+    throw new Error("配置文件的 schemaVersion 必须是 1、2 或 3");
   }
 
   return mergeSettings(candidate);

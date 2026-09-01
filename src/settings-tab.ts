@@ -106,6 +106,7 @@ function inferNumberOptions(path: string[]): Required<NumberOptions> {
   const allowsNegative = joined.includes("margin")
     || joined.includes("offset")
     || joined.includes("headinggap")
+    || joined.includes("list")
     || key === "topEm"
     || key === "bottomEm"
     || key === "bottomPx"
@@ -597,9 +598,11 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
       this.addNumber(bodyCard, ["body", "paragraphSpacingEm"], "段落间距", "阅读视图中普通段落之间的垂直间距。");
     }
 
-    const listCard = this.createGroupCard(content, "列表间距", "普通列表整体顶部与底部的间距。");
-    this.addNumber(listCard, ["body", "listStartEm"], "列表上间距", "正文列表与前方内容的顶部间距。");
-    this.addNumber(listCard, ["body", "listEndEm"], "列表下间距", "正文列表与后方内容的底部间距。");
+    const listCard = this.createGroupCard(content, "列表间距", "「条目」控制条目与条目之间；「整体」控制列表首项上方和末项下方，即列表与前后内容的距离。首末两端由「整体」决定，不与「条目」叠加。");
+    this.addNumber(listCard, ["body", "listItemStartEm"], "列表条目上间距", "正文列表中，每个条目与上一个条目的间距。");
+    this.addNumber(listCard, ["body", "listItemEndEm"], "列表条目下间距", "正文列表中，每个条目与下一个条目的间距。");
+    this.addNumber(listCard, ["body", "listBlockStartEm"], "列表整体上间距", "正文列表首项与前方内容的距离。");
+    this.addNumber(listCard, ["body", "listBlockEndEm"], "列表整体下间距", "正文列表末项与后方内容的距离。");
   }
 
   private renderHeadingsSection(container: HTMLElement, tab: SettingsTabDefinition): void {
@@ -682,12 +685,14 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
     this.addNumber(specialTitleCard, ["callout", "collapsedPaddingTopEm"], "折叠状态上内边距", "折叠 Callout 的顶部内边距。");
     this.addNumber(specialTitleCard, ["callout", "collapsedPaddingBottomEm"], "折叠状态下内边距", "折叠 Callout 的底部内边距。");
 
-    const bodyCard = this.createGroupCard(content, "内部正文与列表", "Callout 内部段落及列表的独立间距。");
+    const bodyCard = this.createGroupCard(content, "内部正文与列表", "Callout 内部段落及列表的独立间距；列表分「条目」与「整体」两层。");
     this.addNumber(bodyCard, ["callout", "paragraphLineHeight"], "内部正文行高", "Callout 正文行高，独立于普通正文。");
     this.addNumber(bodyCard, ["callout", "paragraphSpacingEm"], "内部段落间距", "Callout 段落间距。");
-    this.addNumber(bodyCard, ["callout", "listStartEm"], "内部列表上间距", "Callout 列表顶部间距。");
-    this.addNumber(bodyCard, ["callout", "listEndEm"], "内部列表下间距", "Callout 列表底部间距。");
-    this.addNumber(bodyCard, ["callout", "lastListEndEm"], "末尾列表下间距", "列表是 Callout 最后元素时的底部间距。");
+    this.addNumber(bodyCard, ["callout", "listItemStartEm"], "列表条目上间距", "Callout 列表中，每个条目与上一个条目的间距。");
+    this.addNumber(bodyCard, ["callout", "listItemEndEm"], "列表条目下间距", "Callout 列表中，每个条目与下一个条目的间距。");
+    this.addNumber(bodyCard, ["callout", "listBlockStartEm"], "列表整体上间距", "Callout 列表首项与前方内容的距离。");
+    this.addNumber(bodyCard, ["callout", "listBlockEndEm"], "列表整体下间距", "Callout 列表末项与后方内容的距离。");
+    this.addNumber(bodyCard, ["callout", "lastListEndEm"], "末尾列表整体下间距", "列表是 Callout 最后一个元素时，覆盖「列表整体下间距」。");
 
     this.renderImageFields(content, ["callout", "image"], "Callout 内部图片", "Callout 内部图片的尺寸和外观设置。");
     this.renderTableFields(content, ["callout", "table"], "Callout 内部表格", "Callout 内部表格的内边距、边框和间距。");
@@ -697,11 +702,13 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
   private renderBlockquoteSection(container: HTMLElement, tab: SettingsTabDefinition): void {
     const content = this.createModuleCard(container, tab);
 
-    const bodyCard = this.createGroupCard(content, "内部正文与列表", "引用块内部段落及列表的独立排版与间距。");
+    const bodyCard = this.createGroupCard(content, "内部正文与列表", "引用块内部段落及列表的独立排版与间距；列表分「条目」与「整体」两层。");
     this.addNumber(bodyCard, ["blockquote", "paragraphLineHeight"], "内部正文行高", "引用块正文行高，独立于普通正文。");
     this.addNumber(bodyCard, ["blockquote", "paragraphSpacingEm"], "内部段落间距", "引用块段落间距。");
-    this.addNumber(bodyCard, ["blockquote", "listStartEm"], "内部列表上间距", "引用块列表顶部间距。");
-    this.addNumber(bodyCard, ["blockquote", "listEndEm"], "内部列表下间距", "引用块列表底部间距。");
+    this.addNumber(bodyCard, ["blockquote", "listItemStartEm"], "列表条目上间距", "引用块列表中，每个条目与上一个条目的间距。");
+    this.addNumber(bodyCard, ["blockquote", "listItemEndEm"], "列表条目下间距", "引用块列表中，每个条目与下一个条目的间距。");
+    this.addNumber(bodyCard, ["blockquote", "listBlockStartEm"], "列表整体上间距", "引用块列表首项与前方内容的距离。");
+    this.addNumber(bodyCard, ["blockquote", "listBlockEndEm"], "列表整体下间距", "引用块列表末项与后方内容的距离。");
 
     this.renderTableFields(content, ["blockquote", "table"], "引用块内部表格", "引用块内部表格的内边距、边框和间距。");
     this.renderContextHeadings(content, "blockquote", false);

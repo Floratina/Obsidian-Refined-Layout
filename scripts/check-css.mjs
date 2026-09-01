@@ -155,6 +155,41 @@ if (tabNavRule === null || tabButtonRule === null) {
   }
 }
 
+// Every context/mode pair must drive all four list variables, so a missing
+// rule shows up here rather than as a silently dead setting.
+for (const mode of ["edit", "read"]) {
+  for (const context of ["body", "callout", "blockquote"]) {
+    for (const layer of ["item-start", "item-end", "block-start", "block-end"]) {
+      const variable = `var(--rl-${mode}-${context}-list-${layer}-em)`;
+      if (!css.includes(variable)) {
+        failures.push(`列表间距规则缺少变量引用：${variable}`);
+      }
+    }
+  }
+}
+
+// The block layer owns the outer edges only: nested sub-lists in the rendered
+// DOM and the interior lines of a source-view list run must be excluded.
+const requiredListScopeRules = [
+  ":is(ul, ol):not(li > *)",
+  "li + li",
+  "li:not(:last-child)",
+  ".cm-content > :not(.HyperMD-list-line, .HyperMD-list-line-nobullet) + :is(.HyperMD-list-line, .HyperMD-list-line-nobullet)",
+  ".cm-content > :is(.HyperMD-list-line, .HyperMD-list-line-nobullet):has(+ :not(.HyperMD-list-line, .HyperMD-list-line-nobullet))",
+  ":not(.HyperMD-list-line) + .cm-line.HyperMD-quote.HyperMD-list-line",
+  ".cm-line.HyperMD-quote.HyperMD-list-line:has(+ :not(.HyperMD-list-line))",
+];
+for (const rule of requiredListScopeRules) {
+  if (!css.includes(rule)) {
+    failures.push(`缺少列表整体间距边界规则：${rule}`);
+  }
+}
+
+const legacyListVariables = css.match(/--rl-(?:edit|read)-(?:body|callout|blockquote)-list-(?:start|end)-em/g) ?? [];
+if (legacyListVariables.length > 0) {
+  failures.push(`CSS 仍引用已拆分的旧列表变量：${[...new Set(legacyListVariables)].join(", ")}`);
+}
+
 for (const legacyClass of [
   ".rl-settings-card-header",
   ".rl-settings-card-heading",
@@ -388,7 +423,7 @@ if (settingsSource === undefined) {
   };
   const migrated = settingsModule.mergeSettings(legacySettings);
   if (
-    migrated.schemaVersion !== 2
+    migrated.schemaVersion !== 3
     || migrated.edit.headingGap.body.paragraphEm !== 2
     || migrated.edit.headingGap.callout.listPx !== -5
     || migrated.read.headingGap.callout.tablePx !== 8
@@ -402,7 +437,7 @@ if (settingsSource === undefined) {
 
   const importedLegacy = settingsModule.parseSettingsJson(JSON.stringify(legacySettings));
   if (
-    importedLegacy.schemaVersion !== 2
+    importedLegacy.schemaVersion !== 3
     || importedLegacy.read.headingGap.callout.listPx !== 6
     || importedLegacy.edit.mermaid.portraitMaxWidthPct !== 35
   ) {
@@ -415,7 +450,8 @@ if (settingsSource === undefined) {
     read: {},
   });
   if (
-    mergedSchemaTwo.edit.modules.body !== false
+    mergedSchemaTwo.schemaVersion !== 3
+    || mergedSchemaTwo.edit.modules.body !== false
     || mergedSchemaTwo.edit.modules.mermaid !== true
     || mergedSchemaTwo.edit.mermaid.portraitAspectRatio !== 0.75
     || mergedSchemaTwo.read.mermaid.portraitMaxWidthPct !== 35
@@ -423,12 +459,57 @@ if (settingsSource === undefined) {
     failures.push("schemaVersion 2 设置补全 Mermaid 默认值检查失败");
   }
 
+  // Schema 2 stored one list margin pair per context. Splitting it into item
+  // and block layers has to leave every mode rendering exactly as before, so
+  // the old value lands on whichever layer the stylesheet actually drove.
+  const schemaTwoLists = {
+    schemaVersion: 2,
+    edit: {
+      body: { listStartEm: 0.4, listEndEm: 0.6 },
+      callout: { listStartEm: 0.8, listEndEm: 0.9 },
+      blockquote: { listStartEm: 0.1, listEndEm: 0.2 },
+    },
+    read: {
+      body: { listStartEm: 1.1, listEndEm: 1.2 },
+      callout: { listStartEm: 1.3, listEndEm: 1.4 },
+      blockquote: { listStartEm: 1.5, listEndEm: 1.6 },
+    },
+  };
+  const migratedLists = settingsModule.mergeSettings(schemaTwoLists);
+  const expectedLists = {
+    // Applied per list line, so it drove both layers.
+    "edit.body": { itemStart: 0.4, itemEnd: 0.6, blockStart: 0.4, blockEnd: 0.6 },
+    "edit.blockquote": { itemStart: 0.1, itemEnd: 0.2, blockStart: 0.1, blockEnd: 0.2 },
+    // Applied to the list element, so it only ever drove the outer edges.
+    "edit.callout": { itemStart: 0, itemEnd: 0, blockStart: 0.8, blockEnd: 0.9 },
+    "read.body": { itemStart: 0, itemEnd: 0, blockStart: 1.1, blockEnd: 1.2 },
+    "read.callout": { itemStart: 0, itemEnd: 0, blockStart: 1.3, blockEnd: 1.4 },
+    "read.blockquote": { itemStart: 0, itemEnd: 0, blockStart: 1.5, blockEnd: 1.6 },
+  };
+  if (migratedLists.schemaVersion !== 3) {
+    failures.push("schemaVersion 2 列表间距迁移未升级到 3");
+  }
+  for (const [target, expected] of Object.entries(expectedLists)) {
+    const [mode, context] = target.split(".");
+    const actual = migratedLists[mode][context];
+    if (
+      actual.listItemStartEm !== expected.itemStart
+      || actual.listItemEndEm !== expected.itemEnd
+      || actual.listBlockStartEm !== expected.blockStart
+      || actual.listBlockEndEm !== expected.blockEnd
+      || "listStartEm" in actual
+      || "listEndEm" in actual
+    ) {
+      failures.push(`${target} 列表间距迁移检查失败：${JSON.stringify(actual)}`);
+    }
+  }
+
   const importedDefaults = settingsModule.parseSettingsJson(JSON.stringify(settingsModule.DEFAULT_SETTINGS));
   if (JSON.stringify(importedDefaults) !== JSON.stringify(settingsModule.DEFAULT_SETTINGS)) {
     failures.push("导出配置 JSON 无法无损导入");
   }
 
-  for (const invalidJson of ["{", "{}", "[]", JSON.stringify({ schemaVersion: 3 })]) {
+  for (const invalidJson of ["{", "{}", "[]", JSON.stringify({ schemaVersion: 4 })]) {
     try {
       settingsModule.parseSettingsJson(invalidJson);
       failures.push(`无效配置未被拒绝：${invalidJson}`);

@@ -134,15 +134,17 @@ var ALL_MODULES = {
   canvasReset: true
 };
 var DEFAULT_SETTINGS = {
-  schemaVersion: 2,
+  schemaVersion: 3,
   edit: {
     modules: { ...ALL_MODULES },
     body: {
       lineHeight: 1.735,
       paragraphSpacingEm: 0,
       emptyLineHeightEm: 0.5,
-      listStartEm: 0,
-      listEndEm: 0
+      listItemStartEm: 0,
+      listItemEndEm: 0,
+      listBlockStartEm: 0,
+      listBlockEndEm: 0
     },
     headings: EDIT_HEADINGS,
     headingDecoration: {
@@ -172,8 +174,10 @@ var DEFAULT_SETTINGS = {
       collapsedPaddingBottomEm: 0.95,
       paragraphLineHeight: 1.64825,
       paragraphSpacingEm: 0.33,
-      listStartEm: 0,
-      listEndEm: 0,
+      listItemStartEm: 0,
+      listItemEndEm: 0,
+      listBlockStartEm: 0,
+      listBlockEndEm: 0,
       lastListEndEm: 0,
       headings: EDIT_CALLOUT_HEADINGS,
       image: { ...EDIT_IMAGE },
@@ -182,8 +186,10 @@ var DEFAULT_SETTINGS = {
     blockquote: {
       paragraphLineHeight: 1.735,
       paragraphSpacingEm: 0,
-      listStartEm: 0,
-      listEndEm: 0,
+      listItemStartEm: 0,
+      listItemEndEm: 0,
+      listBlockStartEm: 0,
+      listBlockEndEm: 0,
       headings: EDIT_BLOCKQUOTE_HEADINGS,
       table: { ...EDIT_TABLE }
     },
@@ -239,8 +245,10 @@ var DEFAULT_SETTINGS = {
       lineHeight: 1.735,
       paragraphSpacingEm: 0.5,
       emptyLineHeightEm: 0.5,
-      listStartEm: 0,
-      listEndEm: 0
+      listItemStartEm: 0,
+      listItemEndEm: 0,
+      listBlockStartEm: 0,
+      listBlockEndEm: 0
     },
     headings: READ_HEADINGS,
     headingDecoration: {
@@ -270,8 +278,10 @@ var DEFAULT_SETTINGS = {
       collapsedPaddingBottomEm: 0.9,
       paragraphLineHeight: 1.64825,
       paragraphSpacingEm: 0.51,
-      listStartEm: 0,
-      listEndEm: 0,
+      listItemStartEm: 0,
+      listItemEndEm: 0,
+      listBlockStartEm: 0,
+      listBlockEndEm: 0,
       lastListEndEm: 0,
       headings: READ_CALLOUT_HEADINGS,
       image: { ...READ_IMAGE },
@@ -280,8 +290,10 @@ var DEFAULT_SETTINGS = {
     blockquote: {
       paragraphLineHeight: 1.64825,
       paragraphSpacingEm: 0.51,
-      listStartEm: 0,
-      listEndEm: 0,
+      listItemStartEm: 0,
+      listItemEndEm: 0,
+      listBlockStartEm: 0,
+      listBlockEndEm: 0,
       headings: READ_BLOCKQUOTE_HEADINGS,
       table: { ...READ_TABLE }
     },
@@ -352,15 +364,7 @@ function mergeKnown(defaults, candidate) {
 function cloneDefaultSettings() {
   return structuredClone(DEFAULT_SETTINGS);
 }
-function migrateSettings(candidate) {
-  if (typeof candidate !== "object" || candidate === null) {
-    return candidate;
-  }
-  const source = structuredClone(candidate);
-  const schemaVersion = source.schemaVersion;
-  if (schemaVersion !== 1) {
-    return source;
-  }
+function migrateV1ToV2(source) {
   for (const mode of MODE_KEYS) {
     const modeSettings = source[mode];
     if (typeof modeSettings !== "object" || modeSettings === null) {
@@ -407,6 +411,50 @@ function migrateSettings(candidate) {
   source.schemaVersion = 2;
   return source;
 }
+function migrateV2ToV3(source) {
+  const ITEM_LEVEL_CONTEXTS = {
+    edit: ["body", "blockquote"],
+    read: []
+  };
+  for (const mode of MODE_KEYS) {
+    const modeSettings = source[mode];
+    if (typeof modeSettings !== "object" || modeSettings === null) {
+      continue;
+    }
+    const modeRecord = modeSettings;
+    for (const context of ["body", "callout", "blockquote"]) {
+      const contextSettings = modeRecord[context];
+      if (typeof contextSettings !== "object" || contextSettings === null) {
+        continue;
+      }
+      const contextRecord = contextSettings;
+      const legacyStart = contextRecord.listStartEm;
+      const legacyEnd = contextRecord.listEndEm;
+      delete contextRecord.listStartEm;
+      delete contextRecord.listEndEm;
+      contextRecord.listBlockStartEm = legacyStart;
+      contextRecord.listBlockEndEm = legacyEnd;
+      const drovesItems = ITEM_LEVEL_CONTEXTS[mode].includes(context);
+      contextRecord.listItemStartEm = drovesItems ? legacyStart : 0;
+      contextRecord.listItemEndEm = drovesItems ? legacyEnd : 0;
+    }
+  }
+  source.schemaVersion = 3;
+  return source;
+}
+function migrateSettings(candidate) {
+  if (typeof candidate !== "object" || candidate === null) {
+    return candidate;
+  }
+  let source = structuredClone(candidate);
+  if (source.schemaVersion === 1) {
+    source = migrateV1ToV2(source);
+  }
+  if (source.schemaVersion === 2) {
+    source = migrateV2ToV3(source);
+  }
+  return source;
+}
 function mergeSettings(candidate) {
   return mergeKnown(cloneDefaultSettings(), migrateSettings(candidate));
 }
@@ -416,8 +464,8 @@ function parseSettingsJson(json) {
     throw new Error("\u914D\u7F6E\u6587\u4EF6\u6839\u8282\u70B9\u5FC5\u987B\u662F\u5BF9\u8C61");
   }
   const schemaVersion = candidate.schemaVersion;
-  if (schemaVersion !== 1 && schemaVersion !== 2) {
-    throw new Error("\u914D\u7F6E\u6587\u4EF6\u7684 schemaVersion \u5FC5\u987B\u662F 1 \u6216 2");
+  if (schemaVersion !== 1 && schemaVersion !== 2 && schemaVersion !== 3) {
+    throw new Error("\u914D\u7F6E\u6587\u4EF6\u7684 schemaVersion \u5FC5\u987B\u662F 1\u30012 \u6216 3");
   }
   return mergeSettings(candidate);
 }
@@ -459,7 +507,7 @@ function inferNumberOptions(path) {
   if (key.toLowerCase().includes("lineheight")) {
     return { unit: "\u500D", min: 0.5, max: 3, step: 0.01 };
   }
-  const allowsNegative = joined.includes("margin") || joined.includes("offset") || joined.includes("headinggap") || key === "topEm" || key === "bottomEm" || key === "bottomPx" || key === "leftPx";
+  const allowsNegative = joined.includes("margin") || joined.includes("offset") || joined.includes("headinggap") || joined.includes("list") || key === "topEm" || key === "bottomEm" || key === "bottomPx" || key === "leftPx";
   const isSize = joined.includes("radius") || joined.includes("border") || joined.includes("width") || joined.includes("height") || joined.includes("padding");
   if (unit === "em") {
     return { unit, min: allowsNegative ? -5 : 0, max: 10, step: 0.01 };
@@ -875,9 +923,11 @@ var RefinedLayoutSettingTab = class extends import_obsidian.PluginSettingTab {
     } else {
       this.addNumber(bodyCard, ["body", "paragraphSpacingEm"], "\u6BB5\u843D\u95F4\u8DDD", "\u9605\u8BFB\u89C6\u56FE\u4E2D\u666E\u901A\u6BB5\u843D\u4E4B\u95F4\u7684\u5782\u76F4\u95F4\u8DDD\u3002");
     }
-    const listCard = this.createGroupCard(content, "\u5217\u8868\u95F4\u8DDD", "\u666E\u901A\u5217\u8868\u6574\u4F53\u9876\u90E8\u4E0E\u5E95\u90E8\u7684\u95F4\u8DDD\u3002");
-    this.addNumber(listCard, ["body", "listStartEm"], "\u5217\u8868\u4E0A\u95F4\u8DDD", "\u6B63\u6587\u5217\u8868\u4E0E\u524D\u65B9\u5185\u5BB9\u7684\u9876\u90E8\u95F4\u8DDD\u3002");
-    this.addNumber(listCard, ["body", "listEndEm"], "\u5217\u8868\u4E0B\u95F4\u8DDD", "\u6B63\u6587\u5217\u8868\u4E0E\u540E\u65B9\u5185\u5BB9\u7684\u5E95\u90E8\u95F4\u8DDD\u3002");
+    const listCard = this.createGroupCard(content, "\u5217\u8868\u95F4\u8DDD", "\u300C\u6761\u76EE\u300D\u63A7\u5236\u6761\u76EE\u4E0E\u6761\u76EE\u4E4B\u95F4\uFF1B\u300C\u6574\u4F53\u300D\u63A7\u5236\u5217\u8868\u9996\u9879\u4E0A\u65B9\u548C\u672B\u9879\u4E0B\u65B9\uFF0C\u5373\u5217\u8868\u4E0E\u524D\u540E\u5185\u5BB9\u7684\u8DDD\u79BB\u3002\u9996\u672B\u4E24\u7AEF\u7531\u300C\u6574\u4F53\u300D\u51B3\u5B9A\uFF0C\u4E0D\u4E0E\u300C\u6761\u76EE\u300D\u53E0\u52A0\u3002");
+    this.addNumber(listCard, ["body", "listItemStartEm"], "\u5217\u8868\u6761\u76EE\u4E0A\u95F4\u8DDD", "\u6B63\u6587\u5217\u8868\u4E2D\uFF0C\u6BCF\u4E2A\u6761\u76EE\u4E0E\u4E0A\u4E00\u4E2A\u6761\u76EE\u7684\u95F4\u8DDD\u3002");
+    this.addNumber(listCard, ["body", "listItemEndEm"], "\u5217\u8868\u6761\u76EE\u4E0B\u95F4\u8DDD", "\u6B63\u6587\u5217\u8868\u4E2D\uFF0C\u6BCF\u4E2A\u6761\u76EE\u4E0E\u4E0B\u4E00\u4E2A\u6761\u76EE\u7684\u95F4\u8DDD\u3002");
+    this.addNumber(listCard, ["body", "listBlockStartEm"], "\u5217\u8868\u6574\u4F53\u4E0A\u95F4\u8DDD", "\u6B63\u6587\u5217\u8868\u9996\u9879\u4E0E\u524D\u65B9\u5185\u5BB9\u7684\u8DDD\u79BB\u3002");
+    this.addNumber(listCard, ["body", "listBlockEndEm"], "\u5217\u8868\u6574\u4F53\u4E0B\u95F4\u8DDD", "\u6B63\u6587\u5217\u8868\u672B\u9879\u4E0E\u540E\u65B9\u5185\u5BB9\u7684\u8DDD\u79BB\u3002");
   }
   renderHeadingsSection(container, tab) {
     const content = this.createModuleCard(container, tab);
@@ -946,23 +996,27 @@ var RefinedLayoutSettingTab = class extends import_obsidian.PluginSettingTab {
     this.addNumber(specialTitleCard, ["callout", "titleOnlyPaddingBottomEm"], "\u4EC5\u6807\u9898\u65F6\u4E0B\u5185\u8FB9\u8DDD", "Callout \u53EA\u6709\u6807\u9898\u65F6\u7684\u5E95\u90E8\u5185\u8FB9\u8DDD\uFF1B\u72EC\u7ACB\u4E8E\u6709\u5185\u5BB9 Callout \u7684\u5361\u7247\u4E0B\u5185\u8FB9\u8DDD\u3002");
     this.addNumber(specialTitleCard, ["callout", "collapsedPaddingTopEm"], "\u6298\u53E0\u72B6\u6001\u4E0A\u5185\u8FB9\u8DDD", "\u6298\u53E0 Callout \u7684\u9876\u90E8\u5185\u8FB9\u8DDD\u3002");
     this.addNumber(specialTitleCard, ["callout", "collapsedPaddingBottomEm"], "\u6298\u53E0\u72B6\u6001\u4E0B\u5185\u8FB9\u8DDD", "\u6298\u53E0 Callout \u7684\u5E95\u90E8\u5185\u8FB9\u8DDD\u3002");
-    const bodyCard = this.createGroupCard(content, "\u5185\u90E8\u6B63\u6587\u4E0E\u5217\u8868", "Callout \u5185\u90E8\u6BB5\u843D\u53CA\u5217\u8868\u7684\u72EC\u7ACB\u95F4\u8DDD\u3002");
+    const bodyCard = this.createGroupCard(content, "\u5185\u90E8\u6B63\u6587\u4E0E\u5217\u8868", "Callout \u5185\u90E8\u6BB5\u843D\u53CA\u5217\u8868\u7684\u72EC\u7ACB\u95F4\u8DDD\uFF1B\u5217\u8868\u5206\u300C\u6761\u76EE\u300D\u4E0E\u300C\u6574\u4F53\u300D\u4E24\u5C42\u3002");
     this.addNumber(bodyCard, ["callout", "paragraphLineHeight"], "\u5185\u90E8\u6B63\u6587\u884C\u9AD8", "Callout \u6B63\u6587\u884C\u9AD8\uFF0C\u72EC\u7ACB\u4E8E\u666E\u901A\u6B63\u6587\u3002");
     this.addNumber(bodyCard, ["callout", "paragraphSpacingEm"], "\u5185\u90E8\u6BB5\u843D\u95F4\u8DDD", "Callout \u6BB5\u843D\u95F4\u8DDD\u3002");
-    this.addNumber(bodyCard, ["callout", "listStartEm"], "\u5185\u90E8\u5217\u8868\u4E0A\u95F4\u8DDD", "Callout \u5217\u8868\u9876\u90E8\u95F4\u8DDD\u3002");
-    this.addNumber(bodyCard, ["callout", "listEndEm"], "\u5185\u90E8\u5217\u8868\u4E0B\u95F4\u8DDD", "Callout \u5217\u8868\u5E95\u90E8\u95F4\u8DDD\u3002");
-    this.addNumber(bodyCard, ["callout", "lastListEndEm"], "\u672B\u5C3E\u5217\u8868\u4E0B\u95F4\u8DDD", "\u5217\u8868\u662F Callout \u6700\u540E\u5143\u7D20\u65F6\u7684\u5E95\u90E8\u95F4\u8DDD\u3002");
+    this.addNumber(bodyCard, ["callout", "listItemStartEm"], "\u5217\u8868\u6761\u76EE\u4E0A\u95F4\u8DDD", "Callout \u5217\u8868\u4E2D\uFF0C\u6BCF\u4E2A\u6761\u76EE\u4E0E\u4E0A\u4E00\u4E2A\u6761\u76EE\u7684\u95F4\u8DDD\u3002");
+    this.addNumber(bodyCard, ["callout", "listItemEndEm"], "\u5217\u8868\u6761\u76EE\u4E0B\u95F4\u8DDD", "Callout \u5217\u8868\u4E2D\uFF0C\u6BCF\u4E2A\u6761\u76EE\u4E0E\u4E0B\u4E00\u4E2A\u6761\u76EE\u7684\u95F4\u8DDD\u3002");
+    this.addNumber(bodyCard, ["callout", "listBlockStartEm"], "\u5217\u8868\u6574\u4F53\u4E0A\u95F4\u8DDD", "Callout \u5217\u8868\u9996\u9879\u4E0E\u524D\u65B9\u5185\u5BB9\u7684\u8DDD\u79BB\u3002");
+    this.addNumber(bodyCard, ["callout", "listBlockEndEm"], "\u5217\u8868\u6574\u4F53\u4E0B\u95F4\u8DDD", "Callout \u5217\u8868\u672B\u9879\u4E0E\u540E\u65B9\u5185\u5BB9\u7684\u8DDD\u79BB\u3002");
+    this.addNumber(bodyCard, ["callout", "lastListEndEm"], "\u672B\u5C3E\u5217\u8868\u6574\u4F53\u4E0B\u95F4\u8DDD", "\u5217\u8868\u662F Callout \u6700\u540E\u4E00\u4E2A\u5143\u7D20\u65F6\uFF0C\u8986\u76D6\u300C\u5217\u8868\u6574\u4F53\u4E0B\u95F4\u8DDD\u300D\u3002");
     this.renderImageFields(content, ["callout", "image"], "Callout \u5185\u90E8\u56FE\u7247", "Callout \u5185\u90E8\u56FE\u7247\u7684\u5C3A\u5BF8\u548C\u5916\u89C2\u8BBE\u7F6E\u3002");
     this.renderTableFields(content, ["callout", "table"], "Callout \u5185\u90E8\u8868\u683C", "Callout \u5185\u90E8\u8868\u683C\u7684\u5185\u8FB9\u8DDD\u3001\u8FB9\u6846\u548C\u95F4\u8DDD\u3002");
     this.renderContextHeadings(content, "callout", this.mode === "read");
   }
   renderBlockquoteSection(container, tab) {
     const content = this.createModuleCard(container, tab);
-    const bodyCard = this.createGroupCard(content, "\u5185\u90E8\u6B63\u6587\u4E0E\u5217\u8868", "\u5F15\u7528\u5757\u5185\u90E8\u6BB5\u843D\u53CA\u5217\u8868\u7684\u72EC\u7ACB\u6392\u7248\u4E0E\u95F4\u8DDD\u3002");
+    const bodyCard = this.createGroupCard(content, "\u5185\u90E8\u6B63\u6587\u4E0E\u5217\u8868", "\u5F15\u7528\u5757\u5185\u90E8\u6BB5\u843D\u53CA\u5217\u8868\u7684\u72EC\u7ACB\u6392\u7248\u4E0E\u95F4\u8DDD\uFF1B\u5217\u8868\u5206\u300C\u6761\u76EE\u300D\u4E0E\u300C\u6574\u4F53\u300D\u4E24\u5C42\u3002");
     this.addNumber(bodyCard, ["blockquote", "paragraphLineHeight"], "\u5185\u90E8\u6B63\u6587\u884C\u9AD8", "\u5F15\u7528\u5757\u6B63\u6587\u884C\u9AD8\uFF0C\u72EC\u7ACB\u4E8E\u666E\u901A\u6B63\u6587\u3002");
     this.addNumber(bodyCard, ["blockquote", "paragraphSpacingEm"], "\u5185\u90E8\u6BB5\u843D\u95F4\u8DDD", "\u5F15\u7528\u5757\u6BB5\u843D\u95F4\u8DDD\u3002");
-    this.addNumber(bodyCard, ["blockquote", "listStartEm"], "\u5185\u90E8\u5217\u8868\u4E0A\u95F4\u8DDD", "\u5F15\u7528\u5757\u5217\u8868\u9876\u90E8\u95F4\u8DDD\u3002");
-    this.addNumber(bodyCard, ["blockquote", "listEndEm"], "\u5185\u90E8\u5217\u8868\u4E0B\u95F4\u8DDD", "\u5F15\u7528\u5757\u5217\u8868\u5E95\u90E8\u95F4\u8DDD\u3002");
+    this.addNumber(bodyCard, ["blockquote", "listItemStartEm"], "\u5217\u8868\u6761\u76EE\u4E0A\u95F4\u8DDD", "\u5F15\u7528\u5757\u5217\u8868\u4E2D\uFF0C\u6BCF\u4E2A\u6761\u76EE\u4E0E\u4E0A\u4E00\u4E2A\u6761\u76EE\u7684\u95F4\u8DDD\u3002");
+    this.addNumber(bodyCard, ["blockquote", "listItemEndEm"], "\u5217\u8868\u6761\u76EE\u4E0B\u95F4\u8DDD", "\u5F15\u7528\u5757\u5217\u8868\u4E2D\uFF0C\u6BCF\u4E2A\u6761\u76EE\u4E0E\u4E0B\u4E00\u4E2A\u6761\u76EE\u7684\u95F4\u8DDD\u3002");
+    this.addNumber(bodyCard, ["blockquote", "listBlockStartEm"], "\u5217\u8868\u6574\u4F53\u4E0A\u95F4\u8DDD", "\u5F15\u7528\u5757\u5217\u8868\u9996\u9879\u4E0E\u524D\u65B9\u5185\u5BB9\u7684\u8DDD\u79BB\u3002");
+    this.addNumber(bodyCard, ["blockquote", "listBlockEndEm"], "\u5217\u8868\u6574\u4F53\u4E0B\u95F4\u8DDD", "\u5F15\u7528\u5757\u5217\u8868\u672B\u9879\u4E0E\u540E\u65B9\u5185\u5BB9\u7684\u8DDD\u79BB\u3002");
     this.renderTableFields(content, ["blockquote", "table"], "\u5F15\u7528\u5757\u5185\u90E8\u8868\u683C", "\u5F15\u7528\u5757\u5185\u90E8\u8868\u683C\u7684\u5185\u8FB9\u8DDD\u3001\u8FB9\u6846\u548C\u95F4\u8DDD\u3002");
     this.renderContextHeadings(content, "blockquote", false);
   }
