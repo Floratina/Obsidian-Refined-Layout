@@ -190,6 +190,17 @@ if (legacyListVariables.length > 0) {
   failures.push(`CSS 仍引用已拆分的旧列表变量：${[...new Set(legacyListVariables)].join(", ")}`);
 }
 
+// CodeMirror composes line classes in an order Obsidian does not guarantee, so
+// a heading line may be class="HyperMD-header ... cm-line" or
+// class="cm-line HyperMD-header ...". Prefix matching silently drops every
+// "标题后首元素" rule at once when the order flips; substring matching does not.
+const prefixClassMatchers = css.match(/\[class\^=[^\]]*\]/g) ?? [];
+if (prefixClassMatchers.length > 0) {
+  failures.push(
+    `class 前缀匹配依赖 CodeMirror 的 class 顺序，请改用 [class*=...]：${[...new Set(prefixClassMatchers)].join(", ")}`,
+  );
+}
+
 for (const legacyClass of [
   ".rl-settings-card-header",
   ".rl-settings-card-heading",

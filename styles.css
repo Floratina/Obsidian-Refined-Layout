@@ -954,7 +954,7 @@ body.refined-layout-enabled.rl-read-tables .markdown-rendered .el-table > table:
    Heading followed by the first content element
    -------------------------------------------------------------------------- */
 
-body.refined-layout-enabled.rl-edit-heading-gaps .markdown-source-view.mod-cm6 .cm-content > [class^="HyperMD-header"] + .cm-line:has(> br:only-child):has(+ :is(
+body.refined-layout-enabled.rl-edit-heading-gaps .markdown-source-view.mod-cm6 .cm-content > [class*="HyperMD-header"] + .cm-line:has(> br:only-child):has(+ :is(
   .cm-line:not([class*="HyperMD-header"]),
   .cm-callout,
   .cm-table-widget,
@@ -963,15 +963,15 @@ body.refined-layout-enabled.rl-edit-heading-gaps .markdown-source-view.mod-cm6 .
   line-height: var(--rl-edit-heading-gap-body-empty-line-em) !important;
 }
 
-body.refined-layout-enabled.rl-edit-heading-gaps .markdown-source-view.mod-cm6 .cm-content > [class^="HyperMD-header"] + .cm-line:not(:has(> br:only-child)):not([class*="HyperMD"]) {
+body.refined-layout-enabled.rl-edit-heading-gaps .markdown-source-view.mod-cm6 .cm-content > [class*="HyperMD-header"] + .cm-line:not(:has(> br:only-child)):not([class*="HyperMD"]) {
   padding-top: var(--rl-edit-heading-gap-body-paragraph-em) !important;
 }
 
-body.refined-layout-enabled.rl-edit-heading-gaps .markdown-source-view.mod-cm6 .cm-content > [class^="HyperMD-header"] + [class*="HyperMD-list-line"] {
+body.refined-layout-enabled.rl-edit-heading-gaps .markdown-source-view.mod-cm6 .cm-content > [class*="HyperMD-header"] + [class*="HyperMD-list-line"] {
   padding-top: var(--rl-edit-heading-gap-body-list-em) !important;
 }
 
-body.refined-layout-enabled.rl-edit-heading-gaps .markdown-source-view.mod-cm6 .cm-content > [class^="HyperMD-header"] + [class*="HyperMD-quote"] {
+body.refined-layout-enabled.rl-edit-heading-gaps .markdown-source-view.mod-cm6 .cm-content > [class*="HyperMD-header"] + [class*="HyperMD-quote"] {
   padding-top: var(--rl-edit-heading-gap-body-quote-em) !important;
 }
 
@@ -979,16 +979,16 @@ body.refined-layout-enabled.rl-edit-heading-gaps .markdown-source-view.mod-cm6 .
   padding-top: var(--rl-edit-heading-gap-body-code-em) !important;
 }
 
-body.refined-layout-enabled.rl-edit-heading-gaps .markdown-source-view.mod-cm6 .cm-content > [class^="HyperMD-header"] + .cm-table-widget {
+body.refined-layout-enabled.rl-edit-heading-gaps .markdown-source-view.mod-cm6 .cm-content > [class*="HyperMD-header"] + .cm-table-widget {
   margin-block-start: var(--rl-edit-heading-gap-body-table-em) !important;
 }
 
-body.refined-layout-enabled.rl-edit-heading-gaps .markdown-source-view.mod-cm6 .cm-content > [class^="HyperMD-header"] + .image-embed {
+body.refined-layout-enabled.rl-edit-heading-gaps .markdown-source-view.mod-cm6 .cm-content > [class*="HyperMD-header"] + .image-embed {
   margin-block-start: var(--rl-edit-heading-gap-body-image-em) !important;
 }
 
-body.refined-layout-enabled.rl-edit-heading-gaps .markdown-source-view.mod-cm6 .cm-content > [class^="HyperMD-header"] + .callout.drop-shadow,
-body.refined-layout-enabled.rl-edit-heading-gaps .markdown-source-view.mod-cm6 .cm-content > [class^="HyperMD-header"] + .cm-callout .callout {
+body.refined-layout-enabled.rl-edit-heading-gaps .markdown-source-view.mod-cm6 .cm-content > [class*="HyperMD-header"] + .callout.drop-shadow,
+body.refined-layout-enabled.rl-edit-heading-gaps .markdown-source-view.mod-cm6 .cm-content > [class*="HyperMD-header"] + .cm-callout .callout {
   margin-block-start: var(--rl-edit-heading-gap-body-callout-em) !important;
 }
 
