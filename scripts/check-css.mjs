@@ -79,11 +79,12 @@ if (settingsTabSource === undefined) {
 
 const requiredSettingsStyles = [
   ".rl-settings-page-content",
-  "max-width: 720px !important",
-  "margin-inline: auto !important",
-  "padding: 32px 0 60px 0 !important",
-  "padding-inline: 18px !important",
+  ".rl-settings-header",
+  ".rl-settings-header-actions",
+  ".rl-settings-mode-switch",
+  ".rl-settings-mode-active",
   ".rl-settings-tab-nav",
+  ".rl-settings-tab-nav::after",
   ".rl-settings-tab-panels",
   "flex-wrap: wrap",
   "min-width: 0",
@@ -98,6 +99,59 @@ const requiredSettingsStyles = [
 for (const rule of requiredSettingsStyles) {
   if (!css.includes(rule)) {
     failures.push(`缺少设置页标签或卡片样式：${rule}`);
+  }
+}
+
+// The settings page must inherit Obsidian's own pane width and padding instead
+// of re-centering itself in a narrow fixed-width column.
+const forbiddenSettingsStyles = [
+  "max-width: 720px",
+  "margin-inline: auto !important",
+  "padding: 32px 0 60px 0",
+  "padding-inline: 18px",
+];
+for (const rule of forbiddenSettingsStyles) {
+  if (css.includes(rule)) {
+    failures.push(`设置页仍限制在固定窄栏内：${rule}`);
+  }
+}
+
+// Linter-style folder tabs: every wrapped row keeps its own full-width rule
+// and the active tab cuts through it.
+const requiredTabStyles = [
+  "repeating-linear-gradient(",
+  "border-bottom-color: var(--background-primary)",
+  "height: 34px",
+  "row-gap: 6px",
+  "column-gap: 0",
+];
+for (const rule of requiredTabStyles) {
+  if (!css.includes(rule)) {
+    failures.push(`缺少 Linter 风格标签样式：${rule}`);
+  }
+}
+
+// The repeating row rule is positioned by hand, so the tab height and the
+// row gap have to keep matching the gradient period.
+const tabNavRule = css.match(/\.refined-layout-settings \.rl-settings-tab-nav\s*\{([\s\S]*?)\}/);
+const tabButtonRule = css.match(/\.refined-layout-settings \.rl-settings-tab-button\s*\{([\s\S]*?)\}/);
+if (tabNavRule === null || tabButtonRule === null) {
+  failures.push("无法解析设置页标签导航样式");
+} else {
+  const tabHeight = Number(tabButtonRule[1].match(/height:\s*(\d+)px/)?.[1]);
+  const rowGap = Number(tabNavRule[1].match(/row-gap:\s*(\d+)px/)?.[1]);
+  const gradient = tabNavRule[1].match(/repeating-linear-gradient\(([\s\S]*?);/)?.[1] ?? "";
+  const gradientStops = [...gradient.matchAll(/(\d+)px/g)].map((match) => Number(match[1]));
+  const ruleStart = tabHeight - 2;
+  const expectedStops = [ruleStart, ruleStart, tabHeight, tabHeight, tabHeight + rowGap];
+  if (
+    !Number.isFinite(tabHeight)
+    || !Number.isFinite(rowGap)
+    || gradientStops.join(",") !== expectedStops.join(",")
+  ) {
+    failures.push(
+      `标签行分割线与标签高度不匹配：期望 ${expectedStops.join(", ")}，实际 ${gradientStops.join(", ")}`,
+    );
   }
 }
 

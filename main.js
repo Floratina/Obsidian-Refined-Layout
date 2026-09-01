@@ -495,64 +495,82 @@ var RefinedLayoutSettingTab = class extends import_obsidian.PluginSettingTab {
     containerEl.empty();
     containerEl.addClass("refined-layout-settings");
     const page = containerEl.createDiv({ cls: "rl-settings-page-content" });
-    this.renderModeSwitcher(page);
-    this.renderGlobalReset(page);
-    this.renderConfigTransfer(page);
+    this.renderHeader(page);
     this.renderSettingsTabs(page);
   }
-  renderModeSwitcher(container) {
-    const group = container.createDiv({ cls: "setting-group rl-settings-group" });
-    const card = group.createDiv({ cls: "setting-items rl-settings-card" });
-    const setting = new import_obsidian.Setting(card).setName("\u8BBE\u7F6E\u6A21\u5F0F").setDesc("\u7F16\u8F91\u6A21\u5F0F\u4E0E\u9605\u8BFB\u6A21\u5F0F\u7684\u53C2\u6570\u548C\u6A21\u5757\u5F00\u5173\u5B8C\u5168\u72EC\u7ACB\u3002");
+  renderHeader(container) {
+    const header = container.createDiv({ cls: "rl-settings-header" });
+    const titleRow = header.createDiv({ cls: "rl-settings-title-row" });
+    const titleBox = titleRow.createDiv({ cls: "rl-settings-title-box" });
+    titleBox.createEl("h2", { cls: "rl-settings-title", text: "Refined Layout" });
+    titleBox.createDiv({
+      cls: "rl-settings-subtitle",
+      text: "\u7F16\u8F91\u6A21\u5F0F\u4E0E\u9605\u8BFB\u6A21\u5F0F\u62E5\u6709\u5404\u81EA\u7684\u6A21\u5757\u5F00\u5173\u548C\u6392\u7248\u53C2\u6570\uFF0C\u4E92\u4E0D\u5F71\u54CD\u3002"
+    });
+    const actions = titleRow.createDiv({ cls: "rl-settings-header-actions" });
+    this.createHeaderButton(actions, "\u5BFC\u51FA\u914D\u7F6E", "\u628A\u5F53\u524D\u7F16\u8F91\u548C\u9605\u8BFB\u4E24\u5957\u8BBE\u7F6E\u5BFC\u51FA\u4E3A JSON \u6587\u4EF6\u3002", () => {
+      this.plugin.exportSettings();
+    });
+    this.createHeaderButton(actions, "\u5BFC\u5165\u914D\u7F6E", "\u4ECE JSON \u6587\u4EF6\u5BFC\u5165\u8BBE\u7F6E\uFF0C\u5BFC\u5165\u6210\u529F\u540E\u7ACB\u5373\u66FF\u6362\u5F53\u524D\u914D\u7F6E\u3002", () => {
+      this.pickSettingsFile();
+    });
+    this.createHeaderButton(
+      actions,
+      "\u5168\u90E8\u91CD\u7F6E",
+      "\u6062\u590D\u7F16\u8F91\u548C\u9605\u8BFB\u4E24\u5957\u8BBE\u7F6E\u4EE5\u53CA\u5168\u90E8\u6A21\u5757\u5F00\u5173\u3002",
+      () => {
+        this.plugin.resetAll();
+        this.display();
+      },
+      "rl-settings-header-danger"
+    );
+    const modeSwitch = header.createDiv({
+      cls: "rl-settings-mode-switch",
+      attr: { role: "group", "aria-label": "\u8BBE\u7F6E\u6A21\u5F0F" }
+    });
     for (const mode of ["edit", "read"]) {
-      setting.addButton((button) => {
-        button.setButtonText(MODE_LABELS[mode]);
-        if (this.mode === mode) {
-          button.setCta();
+      const isActive = this.mode === mode;
+      const button = modeSwitch.createEl("button", {
+        cls: `rl-settings-mode-button ${isActive ? "rl-settings-mode-active" : ""}`,
+        text: MODE_LABELS[mode],
+        attr: {
+          type: "button",
+          "aria-pressed": String(isActive)
         }
-        button.onClick(() => {
-          this.mode = mode;
-          this.display();
-        });
+      });
+      button.addEventListener("click", () => {
+        if (this.mode === mode) {
+          return;
+        }
+        this.mode = mode;
+        this.display();
       });
     }
   }
-  renderGlobalReset(container) {
-    const group = container.createDiv({ cls: "setting-group rl-settings-group" });
-    const card = group.createDiv({ cls: "setting-items rl-settings-card" });
-    new import_obsidian.Setting(card).setName(`${MODE_LABELS[this.mode]} \xB7 \u5168\u90E8\u6062\u590D\u9ED8\u8BA4`).setDesc("\u6062\u590D\u7F16\u8F91\u548C\u9605\u8BFB\u4E24\u5957\u8BBE\u7F6E\u4EE5\u53CA\u5168\u90E8\u6A21\u5757\u5F00\u5173\u3002").addButton((button) => {
-      button.setWarning().setButtonText("\u5168\u90E8\u91CD\u7F6E").onClick(() => {
-        this.plugin.resetAll();
-        this.display();
-      });
+  createHeaderButton(container, label, tooltip, onClick, extraClass = "") {
+    const button = container.createEl("button", {
+      cls: `rl-settings-header-button ${extraClass}`.trim(),
+      text: label,
+      attr: { type: "button", "aria-label": tooltip }
     });
+    button.addEventListener("click", onClick);
   }
-  renderConfigTransfer(container) {
-    const group = container.createDiv({ cls: "setting-group rl-settings-group" });
-    const card = group.createDiv({ cls: "setting-items rl-settings-card" });
-    new import_obsidian.Setting(card).setName("\u914D\u7F6E\u6587\u4EF6").setDesc("\u5BFC\u51FA\u5F53\u524D\u5168\u90E8\u7F16\u8F91/\u9605\u8BFB\u8BBE\u7F6E\uFF0C\u6216\u4ECE JSON \u6587\u4EF6\u5BFC\u5165\uFF1B\u5BFC\u5165\u6210\u529F\u540E\u4F1A\u7ACB\u5373\u66FF\u6362\u5F53\u524D\u914D\u7F6E\u3002").addButton((button) => {
-      button.setButtonText("\u5BFC\u51FA\u914D\u7F6E").onClick(() => {
-        this.plugin.exportSettings();
-      });
-    }).addButton((button) => {
-      button.setButtonText("\u5BFC\u5165\u914D\u7F6E").setWarning().onClick(() => {
-        const input = document.createElement("input");
-        input.type = "file";
-        input.accept = ".json,application/json";
-        input.addEventListener("change", () => {
-          const file = input.files?.[0];
-          if (file === void 0) {
-            return;
-          }
-          void this.plugin.importSettings(file).then((imported) => {
-            if (imported) {
-              this.display();
-            }
-          });
-        });
-        input.click();
+  pickSettingsFile() {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".json,application/json";
+    input.addEventListener("change", () => {
+      const file = input.files?.[0];
+      if (file === void 0) {
+        return;
+      }
+      void this.plugin.importSettings(file).then((imported) => {
+        if (imported) {
+          this.display();
+        }
       });
     });
+    input.click();
   }
   renderSettingsTabs(container) {
     const tabs = SETTINGS_TABS.filter((tab) => tab.id !== "canvasReset" || this.mode === "read");
@@ -567,6 +585,7 @@ var RefinedLayoutSettingTab = class extends import_obsidian.PluginSettingTab {
       cls: "rl-settings-tab-nav",
       attr: {
         role: "tablist",
+        "aria-label": "\u8BBE\u7F6E\u5206\u533A",
         "aria-orientation": "horizontal"
       }
     });
@@ -696,12 +715,11 @@ var RefinedLayoutSettingTab = class extends import_obsidian.PluginSettingTab {
   }
   createModuleCard(container, tab) {
     const isModuleEnabled = this.plugin.settings[this.mode].modules[tab.module];
+    const group = container.createDiv({ cls: "setting-group rl-settings-group rl-settings-module-group" });
+    const card = group.createDiv({ cls: "setting-items rl-settings-card rl-settings-module-card" });
     const contentContainer = container.createDiv({
       cls: `rl-settings-content-wrapper ${isModuleEnabled ? "" : "rl-settings-disabled"}`
     });
-    const group = container.createDiv({ cls: "setting-group rl-settings-group rl-settings-module-group" });
-    container.insertBefore(group, contentContainer);
-    const card = group.createDiv({ cls: "setting-items rl-settings-card rl-settings-module-card" });
     new import_obsidian.Setting(card).setName(tab.label).setDesc(tab.description).addToggle((toggle) => {
       toggle.setValue(isModuleEnabled).onChange((value) => {
         this.plugin.setModule(this.mode, tab.module, value);
@@ -778,7 +796,7 @@ var RefinedLayoutSettingTab = class extends import_obsidian.PluginSettingTab {
     };
     for (const level of HEADING_LEVELS) {
       const button = nav.createEl("button", {
-        cls: `rl-settings-tab-button rl-settings-subtab-button ${level === currentLevel ? "rl-settings-tab-active" : ""}`,
+        cls: `rl-settings-subtab-button ${level === currentLevel ? "rl-settings-tab-active" : ""}`,
         text: HEADING_LABELS[level],
         attr: {
           id: `${idBase}-tab-${level}`,

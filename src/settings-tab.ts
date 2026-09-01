@@ -153,83 +153,94 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
     containerEl.addClass("refined-layout-settings");
 
     const page = containerEl.createDiv({ cls: "rl-settings-page-content" });
-    this.renderModeSwitcher(page);
-    this.renderGlobalReset(page);
-    this.renderConfigTransfer(page);
+    this.renderHeader(page);
     this.renderSettingsTabs(page);
   }
 
-  private renderModeSwitcher(container: HTMLElement): void {
-    const group = container.createDiv({ cls: "setting-group rl-settings-group" });
-    const card = group.createDiv({ cls: "setting-items rl-settings-card" });
-    const setting = new Setting(card)
-      .setName("设置模式")
-      .setDesc("编辑模式与阅读模式的参数和模块开关完全独立。");
+  private renderHeader(container: HTMLElement): void {
+    const header = container.createDiv({ cls: "rl-settings-header" });
 
+    const titleRow = header.createDiv({ cls: "rl-settings-title-row" });
+    const titleBox = titleRow.createDiv({ cls: "rl-settings-title-box" });
+    titleBox.createEl("h2", { cls: "rl-settings-title", text: "Refined Layout" });
+    titleBox.createDiv({
+      cls: "rl-settings-subtitle",
+      text: "编辑模式与阅读模式拥有各自的模块开关和排版参数，互不影响。",
+    });
+
+    const actions = titleRow.createDiv({ cls: "rl-settings-header-actions" });
+    this.createHeaderButton(actions, "导出配置", "把当前编辑和阅读两套设置导出为 JSON 文件。", () => {
+      this.plugin.exportSettings();
+    });
+    this.createHeaderButton(actions, "导入配置", "从 JSON 文件导入设置，导入成功后立即替换当前配置。", () => {
+      this.pickSettingsFile();
+    });
+    this.createHeaderButton(
+      actions,
+      "全部重置",
+      "恢复编辑和阅读两套设置以及全部模块开关。",
+      () => {
+        this.plugin.resetAll();
+        this.display();
+      },
+      "rl-settings-header-danger",
+    );
+
+    const modeSwitch = header.createDiv({
+      cls: "rl-settings-mode-switch",
+      attr: { role: "group", "aria-label": "设置模式" },
+    });
     for (const mode of ["edit", "read"] as const) {
-      setting.addButton((button) => {
-        button.setButtonText(MODE_LABELS[mode]);
+      const isActive = this.mode === mode;
+      const button = modeSwitch.createEl("button", {
+        cls: `rl-settings-mode-button ${isActive ? "rl-settings-mode-active" : ""}`,
+        text: MODE_LABELS[mode],
+        attr: {
+          type: "button",
+          "aria-pressed": String(isActive),
+        },
+      });
+      button.addEventListener("click", () => {
         if (this.mode === mode) {
-          button.setCta();
+          return;
         }
-        button.onClick(() => {
-          this.mode = mode;
-          this.display();
-        });
+        this.mode = mode;
+        this.display();
       });
     }
   }
 
-  private renderGlobalReset(container: HTMLElement): void {
-    const group = container.createDiv({ cls: "setting-group rl-settings-group" });
-    const card = group.createDiv({ cls: "setting-items rl-settings-card" });
-    new Setting(card)
-      .setName(`${MODE_LABELS[this.mode]} · 全部恢复默认`)
-      .setDesc("恢复编辑和阅读两套设置以及全部模块开关。")
-      .addButton((button) => {
-        button
-          .setWarning()
-          .setButtonText("全部重置")
-          .onClick(() => {
-            this.plugin.resetAll();
-            this.display();
-          });
-      });
+  private createHeaderButton(
+    container: HTMLElement,
+    label: string,
+    tooltip: string,
+    onClick: () => void,
+    extraClass = "",
+  ): void {
+    const button = container.createEl("button", {
+      cls: `rl-settings-header-button ${extraClass}`.trim(),
+      text: label,
+      attr: { type: "button", "aria-label": tooltip },
+    });
+    button.addEventListener("click", onClick);
   }
 
-  private renderConfigTransfer(container: HTMLElement): void {
-    const group = container.createDiv({ cls: "setting-group rl-settings-group" });
-    const card = group.createDiv({ cls: "setting-items rl-settings-card" });
-    new Setting(card)
-      .setName("配置文件")
-      .setDesc("导出当前全部编辑/阅读设置，或从 JSON 文件导入；导入成功后会立即替换当前配置。")
-      .addButton((button) => {
-        button.setButtonText("导出配置").onClick(() => {
-          this.plugin.exportSettings();
-        });
-      })
-      .addButton((button) => {
-        button
-          .setButtonText("导入配置")
-          .setWarning()
-          .onClick(() => {
-            const input = document.createElement("input");
-            input.type = "file";
-            input.accept = ".json,application/json";
-            input.addEventListener("change", () => {
-              const file = input.files?.[0];
-              if (file === undefined) {
-                return;
-              }
-              void this.plugin.importSettings(file).then((imported) => {
-                if (imported) {
-                  this.display();
-                }
-              });
-            });
-            input.click();
-          });
+  private pickSettingsFile(): void {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".json,application/json";
+    input.addEventListener("change", () => {
+      const file = input.files?.[0];
+      if (file === undefined) {
+        return;
+      }
+      void this.plugin.importSettings(file).then((imported) => {
+        if (imported) {
+          this.display();
+        }
       });
+    });
+    input.click();
   }
 
   private renderSettingsTabs(container: HTMLElement): void {
@@ -249,6 +260,7 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
       cls: "rl-settings-tab-nav",
       attr: {
         role: "tablist",
+        "aria-label": "设置分区",
         "aria-orientation": "horizontal",
       },
     });
@@ -385,14 +397,13 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
 
   private createModuleCard(container: HTMLElement, tab: SettingsTabDefinition): HTMLElement {
     const isModuleEnabled = this.plugin.settings[this.mode].modules[tab.module];
+
+    const group = container.createDiv({ cls: "setting-group rl-settings-group rl-settings-module-group" });
+    const card = group.createDiv({ cls: "setting-items rl-settings-card rl-settings-module-card" });
+
     const contentContainer = container.createDiv({
       cls: `rl-settings-content-wrapper ${isModuleEnabled ? "" : "rl-settings-disabled"}`,
     });
-
-    const group = container.createDiv({ cls: "setting-group rl-settings-group rl-settings-module-group" });
-    container.insertBefore(group, contentContainer);
-
-    const card = group.createDiv({ cls: "setting-items rl-settings-card rl-settings-module-card" });
 
     new Setting(card)
       .setName(tab.label)
@@ -494,7 +505,7 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
 
     for (const level of HEADING_LEVELS) {
       const button = nav.createEl("button", {
-        cls: `rl-settings-tab-button rl-settings-subtab-button ${level === currentLevel ? "rl-settings-tab-active" : ""}`,
+        cls: `rl-settings-subtab-button ${level === currentLevel ? "rl-settings-tab-active" : ""}`,
         text: HEADING_LABELS[level],
         attr: {
           id: `${idBase}-tab-${level}`,

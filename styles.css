@@ -1166,142 +1166,250 @@ body.refined-layout-enabled.rl-read-canvas-reset .canvas-node .markdown-rendered
 }
 
 /* --------------------------------------------------------------------------
-   Settings tab: Easy Typing style horizontal navigation and Notebook Navigator grouped cards
+   Settings tab: Linter-style wrapping section tabs, Obsidian-native spacing
    -------------------------------------------------------------------------- */
 
+/* Only add breathing room at the bottom. The horizontal padding comes from
+   Obsidian's own settings pane, so the page lines up with every other plugin. */
 .refined-layout-settings {
-  padding: 32px 0 60px 0 !important;
+  padding-bottom: var(--size-4-12, 48px);
 }
 
-/* Match Obsidian's centered settings layout: every section shares one
-   readable width instead of stretching independently. */
 .refined-layout-settings .rl-settings-page-content {
-  width: 100% !important;
-  max-width: 720px !important;
-  min-width: 0;
-  margin-inline: auto !important;
-  align-self: center !important;
-  flex: 0 1 720px !important;
   display: flex;
+  flex: 0 0 auto;
   flex-direction: column;
   align-items: stretch;
-  gap: 12px;
-  padding-inline: 18px;
-  box-sizing: border-box;
-}
-
-/* Obsidian's settings pane is a flex container and may stretch direct
-   children. Keep the page shell itself constrained and centered. */
-.refined-layout-settings > .rl-settings-page-content {
-  width: 100% !important;
-  max-width: 720px !important;
-  min-width: 0 !important;
-  margin-inline: auto !important;
-  align-self: center !important;
-  flex: 0 1 720px !important;
-  padding-inline: 18px !important;
-  box-sizing: border-box;
-}
-
-.refined-layout-settings .rl-settings-tabs {
-  width: auto !important;
-  max-width: 720px !important;
-  min-width: 0;
   align-self: stretch;
-  margin-top: 8px;
-  padding-bottom: 40px;
-  box-sizing: border-box;
-}
-
-.refined-layout-settings .rl-settings-tab-nav,
-.refined-layout-settings .rl-settings-tab-panels {
-  width: auto !important;
-  max-width: 720px !important;
+  width: 100%;
   min-width: 0;
   box-sizing: border-box;
 }
 
-.refined-layout-settings .rl-settings-tab-nav {
+/* Header ------------------------------------------------------------------ */
+
+.refined-layout-settings .rl-settings-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-4-4, 16px);
+  width: 100%;
+  min-width: 0;
+  margin: 0 0 var(--size-4-6, 24px) 0;
+  padding: 0 0 var(--size-4-4, 16px) 0;
+  border-bottom: 1px solid var(--background-modifier-border);
+  box-sizing: border-box;
+}
+
+.refined-layout-settings .rl-settings-title-row {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 6px;
-  margin: 0 0 16px 0;
-  padding: 0 0 10px 0;
-  border-bottom: 1px solid var(--background-modifier-border);
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--size-4-3, 12px);
+  min-width: 0;
 }
 
-.refined-layout-settings .rl-settings-tab-button {
-  appearance: none;
-  min-height: 32px;
-  padding: 6px 14px;
-  border: 1px solid transparent;
-  border-radius: var(--radius-m, 8px);
+.refined-layout-settings .rl-settings-title-box {
+  flex: 1 1 260px;
+  min-width: 0;
+}
+
+.refined-layout-settings .rl-settings-title {
+  margin: 0;
+  padding: 0;
+  color: var(--text-normal);
+  font-size: var(--font-ui-larger, 16px);
+  font-weight: var(--font-bold, 700);
+  line-height: 1.3;
+}
+
+.refined-layout-settings .rl-settings-subtitle {
+  margin: 5px 0 0 0;
+  padding: 0;
   color: var(--text-muted);
-  background: transparent;
-  cursor: pointer;
-  font-size: var(--font-ui-small);
-  font-weight: 500;
-  line-height: 1.35;
-  white-space: nowrap;
-  transition: all 0.15s ease;
+  font-size: var(--font-ui-smaller, 12px);
+  line-height: 1.5;
 }
 
-.refined-layout-settings .rl-settings-tab-button:hover {
+.refined-layout-settings .rl-settings-header-actions {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--size-4-2, 8px);
+}
+
+.refined-layout-settings .rl-settings-header-button {
+  appearance: none;
+  height: 30px;
+  padding: 0 12px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s, 4px);
+  color: var(--text-muted);
+  background: var(--background-primary);
+  box-shadow: none;
+  cursor: pointer;
+  font-size: var(--font-ui-smaller, 12px);
+  font-weight: var(--font-medium, 500);
+  white-space: nowrap;
+  box-sizing: border-box;
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.refined-layout-settings .rl-settings-header-button:hover {
   color: var(--text-normal);
   background: var(--background-modifier-hover);
 }
 
+.refined-layout-settings .rl-settings-header-danger {
+  color: var(--text-error);
+  border-color: color-mix(in srgb, var(--text-error) 35%, var(--background-modifier-border));
+}
+
+.refined-layout-settings .rl-settings-header-danger:hover {
+  color: var(--text-on-accent);
+  border-color: transparent;
+  background: var(--background-modifier-error);
+}
+
+/* Mode switch ------------------------------------------------------------- */
+
+.refined-layout-settings .rl-settings-mode-switch {
+  display: inline-flex;
+  align-self: flex-start;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-m, 8px);
+  background: var(--background-secondary);
+  box-sizing: border-box;
+}
+
+.refined-layout-settings .rl-settings-mode-button {
+  appearance: none;
+  min-width: 104px;
+  height: 28px;
+  padding: 0 16px;
+  border: none;
+  border-radius: var(--radius-s, 4px);
+  color: var(--text-muted);
+  background: transparent;
+  box-shadow: none;
+  cursor: pointer;
+  font-size: var(--font-ui-small, 13px);
+  font-weight: var(--font-medium, 500);
+  white-space: nowrap;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.refined-layout-settings .rl-settings-mode-button:hover {
+  color: var(--text-normal);
+}
+
+.refined-layout-settings .rl-settings-mode-button.rl-settings-mode-active {
+  color: var(--text-on-accent);
+  background: var(--interactive-accent);
+  font-weight: var(--font-semibold, 600);
+}
+
+.refined-layout-settings .rl-settings-mode-button:focus-visible {
+  outline: 2px solid var(--background-modifier-border-focus);
+  outline-offset: 1px;
+}
+
+/* Section tabs ------------------------------------------------------------ */
+
+.refined-layout-settings .rl-settings-tabs {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+/* Tabs may wrap onto several rows. The row rule is painted as a repeating
+   background so that every row - not just the last one - gets a full-width
+   line. Geometry must stay in sync with .rl-settings-tab-button:
+   34px tab height + 6px row-gap = 40px period, rule at 32px-34px. */
+.refined-layout-settings .rl-settings-tab-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: flex-start;
+  width: 100%;
+  min-width: 0;
+  column-gap: 0;
+  row-gap: 6px;
+  margin: 0 0 var(--size-4-5, 20px) 0;
+  padding: 0;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 32px,
+    var(--background-modifier-border) 32px,
+    var(--background-modifier-border) 34px,
+    transparent 34px,
+    transparent 40px
+  );
+  box-sizing: border-box;
+}
+
+/* Keeps a trailing row that holds a single tab from collapsing the layout. */
+.refined-layout-settings .rl-settings-tab-nav::after {
+  content: "";
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 0;
+}
+
+.refined-layout-settings .rl-settings-tab-button {
+  appearance: none;
+  height: 34px;
+  padding: 0 14px;
+  border: 2px solid transparent;
+  border-radius: var(--radius-s, 4px) var(--radius-s, 4px) 0 0;
+  color: var(--text-muted);
+  background: transparent;
+  box-shadow: none;
+  cursor: pointer;
+  font-size: var(--font-ui-small, 13px);
+  font-weight: var(--font-semibold, 600);
+  line-height: 1.4;
+  white-space: nowrap;
+  box-sizing: border-box;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.refined-layout-settings .rl-settings-tab-button:hover:not(.rl-settings-tab-active) {
+  color: var(--text-normal);
+  background: var(--background-modifier-hover);
+}
+
+/* Open-bottom "folder tab": the bottom edge is painted in the pane colour so
+   it cuts through the row rule behind it. */
 .refined-layout-settings .rl-settings-tab-button.rl-settings-tab-active {
-  border-color: color-mix(in srgb, var(--interactive-accent) 30%, transparent);
-  color: var(--text-accent);
-  background: color-mix(in srgb, var(--interactive-accent) 14%, var(--background-primary));
-  font-weight: var(--font-semibold);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  border-color: var(--background-modifier-border);
+  border-bottom-color: var(--background-primary);
+  color: var(--text-normal);
+  background: var(--background-primary);
 }
 
 .refined-layout-settings .rl-settings-tab-button:focus-visible {
   outline: 2px solid var(--background-modifier-border-focus);
-  outline-offset: 2px;
+  outline-offset: -2px;
 }
 
-.refined-layout-settings .rl-settings-subtab-container {
-  display: flex;
-  flex-direction: column;
-  width: auto !important;
-  max-width: 720px !important;
+.refined-layout-settings .rl-settings-tab-panels {
+  width: 100%;
   min-width: 0;
-  margin: 0 0 8px 0;
   box-sizing: border-box;
-}
-
-.refined-layout-settings .rl-settings-subtab-nav {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: flex-start;
-  width: auto !important;
-  max-width: 720px !important;
-  min-width: 0;
-  gap: 6px;
-  margin: 4px 0 6px 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-.refined-layout-settings .rl-settings-subtab-button {
-  min-width: 52px;
-  padding: 5px 14px;
-  text-align: center;
 }
 
 .refined-layout-settings .rl-settings-tab-panel {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  width: auto !important;
-  max-width: 720px !important;
+  gap: var(--size-4-5, 20px);
+  width: 100%;
   min-width: 0;
   box-sizing: border-box;
 }
@@ -1313,9 +1421,8 @@ body.refined-layout-enabled.rl-read-canvas-reset .canvas-node .markdown-rendered
 .refined-layout-settings .rl-settings-content-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  width: auto !important;
-  max-width: 720px !important;
+  gap: var(--size-4-5, 20px);
+  width: 100%;
   min-width: 0;
   box-sizing: border-box;
   transition: opacity 0.2s ease, filter 0.2s ease;
@@ -1327,57 +1434,118 @@ body.refined-layout-enabled.rl-read-canvas-reset .canvas-node .markdown-rendered
   filter: grayscale(0.5);
 }
 
-.refined-layout-settings .setting-group,
-.refined-layout-settings .rl-settings-group {
-  width: auto !important;
-  max-width: 720px !important;
+/* Heading level sub-tabs (H1-H6) ------------------------------------------ */
+
+.refined-layout-settings .rl-settings-subtab-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
   min-width: 0;
+  margin: 0 0 var(--size-4-2, 8px) 0;
   box-sizing: border-box;
-  margin: 0;
-  padding: 0;
 }
 
-/* Category header flush with left edge */
-.refined-layout-settings .rl-settings-group-header {
-  margin: 0 0 8px 0;
+.refined-layout-settings .rl-settings-subtab-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  align-self: flex-start;
+  justify-content: flex-start;
+  max-width: 100%;
+  min-width: 0;
+  gap: 2px;
+  margin: 0;
+  padding: 3px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-m, 8px);
+  background: var(--background-secondary);
+  box-sizing: border-box;
+}
+
+.refined-layout-settings .rl-settings-subtab-button {
+  appearance: none;
+  min-width: 46px;
+  height: 26px;
+  padding: 0 12px;
+  border: none;
+  border-radius: var(--radius-s, 4px);
+  color: var(--text-muted);
+  background: transparent;
+  box-shadow: none;
+  cursor: pointer;
+  font-size: var(--font-ui-smaller, 12px);
+  font-weight: var(--font-medium, 500);
+  line-height: 1;
+  text-align: center;
+  white-space: nowrap;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.refined-layout-settings .rl-settings-subtab-button:hover {
+  color: var(--text-normal);
+}
+
+.refined-layout-settings .rl-settings-subtab-button.rl-settings-tab-active {
+  color: var(--text-on-accent);
+  background: var(--interactive-accent);
+  font-weight: var(--font-semibold, 600);
+}
+
+.refined-layout-settings .rl-settings-subtab-button:focus-visible {
+  outline: 2px solid var(--background-modifier-border-focus);
+  outline-offset: 1px;
+}
+
+/* Grouped cards ----------------------------------------------------------- */
+
+.refined-layout-settings .setting-group,
+.refined-layout-settings .rl-settings-group {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
   padding: 0;
+  box-sizing: border-box;
+}
+
+.refined-layout-settings .rl-settings-group-header {
+  margin: 0 0 var(--size-4-2, 8px) 0;
+  padding: 0 2px;
 }
 
 .refined-layout-settings .rl-settings-group-title {
   margin: 0;
   padding: 0;
-  color: var(--text-muted);
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-}
-
-.refined-layout-settings .rl-settings-group-description {
-  margin: 2px 0 0 0;
-  padding: 0;
-  color: var(--text-faint);
-  font-size: 12px;
+  color: var(--text-normal);
+  font-size: var(--font-ui-small, 13px);
+  font-weight: var(--font-semibold, 600);
+  letter-spacing: 0.01em;
   line-height: 1.4;
 }
 
-/* Card: support theme native variables with fallback across all themes */
+.refined-layout-settings .rl-settings-group-description {
+  margin: 3px 0 0 0;
+  padding: 0;
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller, 12px);
+  line-height: 1.5;
+}
+
 .refined-layout-settings .setting-items,
 .refined-layout-settings .rl-settings-card {
-  width: auto !important;
-  max-width: 720px !important;
+  width: 100%;
   min-width: 0;
-  box-sizing: border-box;
-  overflow: hidden;
-  background-color: var(--setting-items-background, color-mix(in srgb, var(--background-secondary) 85%, var(--background-primary)));
-  border-radius: var(--setting-items-radius, var(--radius-l, 10px));
-  border: var(--setting-items-border-width, 1px) solid var(--setting-items-border-color, color-mix(in srgb, var(--background-modifier-border) 60%, transparent));
-  box-shadow: var(--setting-items-shadow, none);
   margin: 0;
   padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-m, 8px);
+  background-color: var(--background-primary-alt);
+  box-sizing: border-box;
 }
 
 .refined-layout-settings .rl-settings-module-card {
-  background-color: var(--setting-items-background, color-mix(in srgb, var(--background-secondary) 90%, var(--background-primary)));
+  border-color: color-mix(in srgb, var(--interactive-accent) 25%, var(--background-modifier-border));
+  background-color: var(--background-secondary);
 }
 
 /* Keep the module toggle and reset action centered within the module card row. */
@@ -1395,20 +1563,20 @@ body.refined-layout-enabled.rl-read-canvas-reset .canvas-node .markdown-rendered
 }
 
 .refined-layout-settings .rl-settings-heading-fields-card {
-  width: auto;
-  max-width: 720px !important;
-  border-radius: var(--radius-l, 10px) !important;
+  width: 100%;
   overflow: hidden;
+  border-radius: var(--radius-m, 8px);
 }
 
-/* Unified rows inside card - strictly remove individual border-radius and external borders */
+/* Rows inside a card share one frame: no individual borders or radii. */
 .refined-layout-settings .rl-settings-card > .setting-item,
 .refined-layout-settings .setting-items > .setting-item,
 .refined-layout-settings .rl-settings-fields > .setting-item,
 .refined-layout-settings .rl-settings-heading-fields > .setting-item {
+  gap: var(--size-4-4, 16px);
   min-width: 0;
   margin: 0 !important;
-  padding: 12px 18px !important;
+  padding: var(--size-4-3, 12px) var(--size-4-4, 16px) !important;
   border: none !important;
   border-radius: 0 !important;
   background: transparent !important;
@@ -1420,23 +1588,24 @@ body.refined-layout-enabled.rl-read-canvas-reset .canvas-node .markdown-rendered
 .refined-layout-settings .setting-items > .setting-item:hover,
 .refined-layout-settings .rl-settings-fields > .setting-item:hover,
 .refined-layout-settings .rl-settings-heading-fields > .setting-item:hover {
-  background-color: color-mix(in srgb, var(--background-modifier-hover) 35%, transparent) !important;
+  background-color: var(--background-modifier-hover) !important;
 }
 
 .refined-layout-settings .rl-settings-fields > .setting-item + .setting-item,
 .refined-layout-settings .rl-settings-heading-fields > .setting-item + .setting-item,
 .refined-layout-settings .rl-settings-card > .setting-item + .setting-item,
 .refined-layout-settings .setting-items > .setting-item + .setting-item {
-  border-top: 1px solid color-mix(in srgb, var(--background-modifier-border) 45%, transparent) !important;
+  border-top: 1px solid var(--background-modifier-border) !important;
 }
 
 .refined-layout-settings .rl-settings-fields .setting-item-info,
 .refined-layout-settings .rl-settings-heading-fields .setting-item-info,
 .refined-layout-settings .rl-settings-card .setting-item-info,
 .refined-layout-settings .setting-items .setting-item-info {
+  margin-left: 0;
+  margin-right: 0;
   min-width: 0;
   padding-left: 0;
-  margin-left: 0;
 }
 
 .refined-layout-settings .rl-settings-fields .setting-item-name,
@@ -1444,16 +1613,19 @@ body.refined-layout-enabled.rl-read-canvas-reset .canvas-node .markdown-rendered
 .refined-layout-settings .rl-settings-card .setting-item-name,
 .refined-layout-settings .setting-items .setting-item-name {
   color: var(--text-normal);
-  font-size: var(--font-ui-small);
-  font-weight: 500;
+  font-size: var(--font-ui-small, 13px);
+  font-weight: var(--font-medium, 500);
+  line-height: 1.4;
 }
 
 .refined-layout-settings .rl-settings-fields .setting-item-description,
 .refined-layout-settings .rl-settings-heading-fields .setting-item-description,
 .refined-layout-settings .rl-settings-card .setting-item-description,
 .refined-layout-settings .setting-items .setting-item-description {
+  margin-top: 3px;
   color: var(--text-muted);
-  font-size: 12px;
+  font-size: var(--font-ui-smaller, 12px);
+  line-height: 1.5;
 }
 
 .refined-layout-settings .rl-settings-fields .setting-item-control,
@@ -1461,23 +1633,23 @@ body.refined-layout-enabled.rl-read-canvas-reset .canvas-node .markdown-rendered
 .refined-layout-settings .rl-settings-card .setting-item-control,
 .refined-layout-settings .setting-items .setting-item-control {
   display: flex;
-  align-items: center;
-  gap: 6px;
   flex: 0 0 auto;
+  align-items: center;
+  gap: var(--size-4-1, 4px);
 }
 
 .refined-layout-settings .rl-settings-card-note {
   margin: 0;
-  padding: 14px 18px;
+  padding: var(--size-4-3, 12px) var(--size-4-4, 16px);
   color: var(--text-muted);
-  font-size: var(--font-ui-small);
-  line-height: 1.5;
+  font-size: var(--font-ui-small, 13px);
+  line-height: 1.6;
 }
 
 .refined-layout-settings .rl-settings-number {
-  width: 80px;
+  width: 84px;
   padding: 4px 8px;
-  border-radius: var(--radius-s, 6px);
+  border-radius: var(--radius-s, 4px);
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
@@ -1485,13 +1657,13 @@ body.refined-layout-enabled.rl-read-canvas-reset .canvas-node .markdown-rendered
 .refined-layout-settings .rl-settings-unit {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  min-width: 26px;
+  justify-content: flex-start;
+  min-width: 22px;
   height: 24px;
-  padding: 0 6px;
+  padding: 0;
   border-radius: 0;
   color: var(--text-muted);
   background: transparent;
-  font-size: 11px;
-  font-weight: 600;
+  font-size: var(--font-ui-smaller, 12px);
+  font-weight: var(--font-medium, 500);
 }
