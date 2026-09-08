@@ -497,17 +497,18 @@ var SETTINGS_TABS = [
   { id: "headingGap", label: "\u6807\u9898\u540E\u9996\u5143\u7D20", description: "\u6807\u9898\u540E\u63A5\u6B63\u6587\u3001\u5217\u8868\u3001\u4EE3\u7801\u5757\u7B49\u5143\u7D20\u65F6\u7684\u95F4\u8DDD\u8865\u507F\u3002", module: "headingGaps", reset: "headingGap" },
   { id: "canvasReset", label: "Canvas \u6837\u5F0F\u91CD\u7F6E", description: "\u9605\u8BFB\u6A21\u5F0F Canvas \u767D\u677F\u5361\u7247\u7684\u7D27\u51D1\u5E03\u5C40\u91CD\u7F6E\u3002", module: "canvasReset", reset: "canvasReset" }
 ];
-function inferNumberOptions(path) {
+function inferNumberOptions(path, mode) {
   const key = path[path.length - 1] ?? "";
   const joined = path.join(".").toLowerCase();
   const unit = key.endsWith("Em") ? "em" : key.endsWith("Px") ? "px" : key.endsWith("Pct") ? "%" : "";
   if (unit === "%") {
     return { unit, min: 10, max: 100, step: 1 };
   }
-  if (key.toLowerCase().includes("lineheight")) {
+  if (unit === "" && key.toLowerCase().includes("lineheight")) {
     return { unit: "\u500D", min: 0.5, max: 3, step: 0.01 };
   }
-  const allowsNegative = joined.includes("margin") || joined.includes("offset") || joined.includes("headinggap") || joined.includes("list") || key === "topEm" || key === "bottomEm" || key === "bottomPx" || key === "leftPx";
+  const isSourceViewPadding = mode === "edit" && /^(?:body|blockquote)\.list/.test(joined);
+  const allowsNegative = !isSourceViewPadding && (joined.includes("margin") || joined.includes("offset") || joined.includes("headinggap") || joined.includes("list") || key === "topEm" || key === "bottomEm" || key === "bottomPx" || key === "leftPx");
   const isSize = joined.includes("radius") || joined.includes("border") || joined.includes("width") || joined.includes("height") || joined.includes("padding");
   if (unit === "em") {
     return { unit, min: allowsNegative ? -5 : 0, max: 10, step: 0.01 };
@@ -891,7 +892,7 @@ var RefinedLayoutSettingTab = class extends import_obsidian.PluginSettingTab {
     activateLevel(currentLevel);
   }
   addNumber(container, path, name, description, options = {}) {
-    const inferred = inferNumberOptions(path);
+    const inferred = inferNumberOptions(path, this.mode);
     const config = { ...inferred, ...options };
     const value = this.plugin.getNumber(this.mode, path);
     const setting = new import_obsidian.Setting(container).setName(name).setDesc(description);

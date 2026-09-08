@@ -18,24 +18,34 @@ body.refined-layout-enabled.rl-edit-body .markdown-source-view.mod-cm6 .cm-line:
   line-height: var(--rl-edit-body-empty-line-height-em) !important;
 }
 
-/* Item-level gaps: every list line carries them, so adjacent lines collapse
-   to the larger of the two. The block-level rules below outrank this one on
-   the first and last line of a run. */
+/* Source-view spacing must be padding, never margin. CodeMirror measures line
+   heights with getBoundingClientRect(), which excludes margins, so a margin on
+   .cm-line desyncs its height map from the real layout and the click/selection
+   target drifts further down the document with every gap. Padding is inside
+   the border box, so it is measured — and it keeps the gap clickable instead
+   of leaving a dead zone between lines.
+   Because padding does not collapse, the gap between two adjacent items is
+   "条目下间距 + 条目上间距" here, whereas the reading view (which uses margins
+   on real list elements) collapses them to the larger of the two. */
 body.refined-layout-enabled.rl-edit-body .markdown-source-view.mod-cm6 .cm-content > :is(.HyperMD-list-line, .HyperMD-list-line-nobullet) {
-  margin-block-start: var(--rl-edit-body-list-item-start-em) !important;
-  margin-block-end: var(--rl-edit-body-list-item-end-em) !important;
+  padding-block-start: var(--rl-edit-body-list-item-start-em) !important;
+  padding-block-end: var(--rl-edit-body-list-item-end-em) !important;
 }
 
 /* A source-view list has no wrapper element, so its outer edges are the first
-   and last line of an unbroken run of list lines. */
+   and last line of an unbroken run of list lines.
+   Note: for a list directly after a heading this competes with the
+   "标题后首元素 → 紧邻列表间距" rule on the same physical property at equal
+   specificity, and that rule wins because it comes later in this file. That is
+   the intended precedence — it is the setting dedicated to that exact case. */
 body.refined-layout-enabled.rl-edit-body .markdown-source-view.mod-cm6 .cm-content > :is(.HyperMD-list-line, .HyperMD-list-line-nobullet):first-child,
 body.refined-layout-enabled.rl-edit-body .markdown-source-view.mod-cm6 .cm-content > :not(.HyperMD-list-line, .HyperMD-list-line-nobullet) + :is(.HyperMD-list-line, .HyperMD-list-line-nobullet) {
-  margin-block-start: var(--rl-edit-body-list-block-start-em) !important;
+  padding-block-start: var(--rl-edit-body-list-block-start-em) !important;
 }
 
 body.refined-layout-enabled.rl-edit-body .markdown-source-view.mod-cm6 .cm-content > :is(.HyperMD-list-line, .HyperMD-list-line-nobullet):last-child,
 body.refined-layout-enabled.rl-edit-body .markdown-source-view.mod-cm6 .cm-content > :is(.HyperMD-list-line, .HyperMD-list-line-nobullet):has(+ :not(.HyperMD-list-line, .HyperMD-list-line-nobullet)) {
-  margin-block-end: var(--rl-edit-body-list-block-end-em) !important;
+  padding-block-end: var(--rl-edit-body-list-block-end-em) !important;
 }
 
 /* --------------------------------------------------------------------------
@@ -484,22 +494,23 @@ body.refined-layout-enabled.rl-read-callouts .markdown-rendered .callout .callou
 
 body.refined-layout-enabled.rl-edit-blockquotes .markdown-source-view.mod-cm6 .cm-line.HyperMD-quote {
   line-height: var(--rl-edit-blockquote-paragraph-line-height) !important;
-  margin-block-end: var(--rl-edit-blockquote-paragraph-spacing-em) !important;
+  padding-block-end: var(--rl-edit-blockquote-paragraph-spacing-em) !important;
 }
 
+/* Padding, not margin — see the source-view note on the body list rules. */
 body.refined-layout-enabled.rl-edit-blockquotes .markdown-source-view.mod-cm6 .cm-line.HyperMD-quote.HyperMD-list-line {
-  margin-block-start: var(--rl-edit-blockquote-list-item-start-em) !important;
-  margin-block-end: var(--rl-edit-blockquote-list-item-end-em) !important;
+  padding-block-start: var(--rl-edit-blockquote-list-item-start-em) !important;
+  padding-block-end: var(--rl-edit-blockquote-list-item-end-em) !important;
 }
 
 body.refined-layout-enabled.rl-edit-blockquotes .markdown-source-view.mod-cm6 .cm-line.HyperMD-quote.HyperMD-list-line:first-child,
 body.refined-layout-enabled.rl-edit-blockquotes .markdown-source-view.mod-cm6 :not(.HyperMD-list-line) + .cm-line.HyperMD-quote.HyperMD-list-line {
-  margin-block-start: var(--rl-edit-blockquote-list-block-start-em) !important;
+  padding-block-start: var(--rl-edit-blockquote-list-block-start-em) !important;
 }
 
 body.refined-layout-enabled.rl-edit-blockquotes .markdown-source-view.mod-cm6 .cm-line.HyperMD-quote.HyperMD-list-line:last-child,
 body.refined-layout-enabled.rl-edit-blockquotes .markdown-source-view.mod-cm6 .cm-line.HyperMD-quote.HyperMD-list-line:has(+ :not(.HyperMD-list-line)) {
-  margin-block-end: var(--rl-edit-blockquote-list-block-end-em) !important;
+  padding-block-end: var(--rl-edit-blockquote-list-block-end-em) !important;
 }
 
 body.refined-layout-enabled.rl-read-blockquotes .markdown-rendered .el-blockquote p:not(:where(.block-language-dataviewjs *)) {

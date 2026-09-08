@@ -88,7 +88,7 @@ const SETTINGS_TABS: readonly SettingsTabDefinition[] = [
   { id: "canvasReset", label: "Canvas 样式重置", description: "阅读模式 Canvas 白板卡片的紧凑布局重置。", module: "canvasReset", reset: "canvasReset" },
 ];
 
-function inferNumberOptions(path: string[]): Required<NumberOptions> {
+function inferNumberOptions(path: string[], mode: ModeKey): Required<NumberOptions> {
   const key = path[path.length - 1] ?? "";
   const joined = path.join(".").toLowerCase();
   const unit = key.endsWith("Em") ? "em"
@@ -99,18 +99,26 @@ function inferNumberOptions(path: string[]): Required<NumberOptions> {
   if (unit === "%") {
     return { unit, min: 10, max: 100, step: 1 };
   }
-  if (key.toLowerCase().includes("lineheight")) {
+  // A real line-height parameter is a unitless ratio. Keys carrying a unit
+  // suffix are lengths even when "lineHeight" appears in the middle of the
+  // name, as in emptyLineHeightEm.
+  if (unit === "" && key.toLowerCase().includes("lineheight")) {
     return { unit: "倍", min: 0.5, max: 3, step: 0.01 };
   }
 
-  const allowsNegative = joined.includes("margin")
-    || joined.includes("offset")
-    || joined.includes("headinggap")
-    || joined.includes("list")
-    || key === "topEm"
-    || key === "bottomEm"
-    || key === "bottomPx"
-    || key === "leftPx";
+  // Body and blockquote list spacing is applied as padding on CodeMirror lines
+  // in the editing view (margins desync CM6's height map), and padding cannot
+  // be negative. The reading view still uses margins, so it keeps negatives.
+  const isSourceViewPadding = mode === "edit" && /^(?:body|blockquote)\.list/.test(joined);
+  const allowsNegative = !isSourceViewPadding
+    && (joined.includes("margin")
+      || joined.includes("offset")
+      || joined.includes("headinggap")
+      || joined.includes("list")
+      || key === "topEm"
+      || key === "bottomEm"
+      || key === "bottomPx"
+      || key === "leftPx");
   const isSize = joined.includes("radius")
     || joined.includes("border")
     || joined.includes("width")
@@ -561,7 +569,7 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
     description: string,
     options: NumberOptions = {},
   ): void {
-    const inferred = inferNumberOptions(path);
+    const inferred = inferNumberOptions(path, this.mode);
     const config = { ...inferred, ...options };
     const value = this.plugin.getNumber(this.mode, path);
     const setting = new Setting(container).setName(name).setDesc(description);

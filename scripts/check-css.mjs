@@ -201,6 +201,64 @@ if (prefixClassMatchers.length > 0) {
   );
 }
 
+// CodeMirror measures line heights with getBoundingClientRect(), which excludes
+// margins. A non-zero vertical margin on a source-view line therefore desyncs
+// CM6's height map from the real layout and the click/selection target drifts
+// down the document. Editing-view line spacing must use padding.
+// Only the subject of the selector matters — a line class appearing earlier in
+// the selector just describes a sibling or ancestor. Commas inside :is()/:not()
+// are not selector-list separators, so mask groups before splitting.
+const selectorSubjects = (selector) => {
+  const masked = selector.replace(/\([^()]*\)/g, (group) => " ".repeat(group.length));
+  const parts = [];
+  let start = 0;
+  for (let i = 0; i <= masked.length; i++) {
+    if (i === masked.length || masked[i] === ",") {
+      parts.push(selector.slice(start, i));
+      start = i + 1;
+    }
+  }
+  return parts.map((part) => {
+    const maskedPart = part.replace(/\([^()]*\)/g, (group) => " ".repeat(group.length));
+    const lastBreak = Math.max(
+      maskedPart.lastIndexOf(" "),
+      maskedPart.lastIndexOf(">"),
+      maskedPart.lastIndexOf("+"),
+      maskedPart.lastIndexOf("~"),
+    );
+    return part.slice(lastBreak + 1).trim();
+  });
+};
+
+const isSourceViewLine = (selector) => selectorSubjects(selector)
+  .some((subject) => /(^|\.)cm-line/.test(subject)
+    || /(^|\.)HyperMD-(list-line|header|quote|codeblock)/.test(subject));
+
+const editRuleBlocks = [...css.matchAll(/(body\.refined-layout-enabled\.rl-edit-[^{]*)\{([^}]*)\}/g)];
+for (const [, selector, body] of editRuleBlocks) {
+  // Rendered callout internals live inside the callout's own padded box, not in
+  // CodeMirror's line list, so their margins are measured with the widget.
+  const insideRenderedCallout = /\.callout-content|\.cm-callout|\.callout\.drop-shadow/.test(selector);
+  if (selector.includes("::before") || insideRenderedCallout || !isSourceViewLine(selector)) {
+    continue;
+  }
+  const verticalMargins = [...body.matchAll(/(margin-(?:block-start|block-end|top|bottom))\s*:\s*([^;]+);/g)];
+  for (const [, property, value] of verticalMargins) {
+    if (value.trim().replace(/\s*!important$/, "") !== "0") {
+      failures.push(
+        `编辑模式行元素上出现非零纵向 margin，会让 CodeMirror 的高度表失准：${property} on ${selector.trim().split("\n")[0]}`,
+      );
+    }
+  }
+}
+
+// emptyLineHeightEm is a length, not a ratio; the settings page must not treat
+// every key containing "lineheight" as a unitless line-height with min 0.5.
+if (settingsTabSource !== undefined
+  && !settingsTabSource.includes('unit === "" && key.toLowerCase().includes("lineheight")')) {
+  failures.push("行高参数判断未按单位后缀区分，空行高度会被误当作行高并卡住下限");
+}
+
 for (const legacyClass of [
   ".rl-settings-card-header",
   ".rl-settings-card-heading",
