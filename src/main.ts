@@ -14,8 +14,9 @@ import { RefinedLayoutSettingTab, type ResettableSection } from "./settings-tab"
 
 const ROOT_CLASS = "refined-layout-enabled";
 const MERMAID_PORTRAIT_CLASS = "rl-mermaid-portrait";
+const MERMAID_NATURAL_WIDTH_PROPERTY = "--rl-mermaid-natural-width";
 const MERMAID_SVG_SELECTOR = ".mermaid > svg";
-const DATAVIEW_JS_SELECTOR = ".block-language-dataviewjs";
+const MERMAID_BYPASS_SELECTOR = ".block-language-dataviewjs, .canvas-wrapper, .canvas-node";
 
 function toKebabCase(value: string): string {
   return value
@@ -140,7 +141,7 @@ export default class RefinedLayoutPlugin extends Plugin {
         this.settings[mode].headings[level].bottomEm = defaults[mode].headings[level].bottomEm;
       }
       this.settings[mode].headingDecoration.firstHeadingPaddingTopPx = defaults[mode].headingDecoration.firstHeadingPaddingTopPx;
-    } else if (section !== "canvasReset") {
+    } else {
       this.settings[mode][section] = structuredClone(defaults[mode][section]) as never;
     }
     this.applyAndScheduleSave();
@@ -252,6 +253,11 @@ export default class RefinedLayoutPlugin extends Plugin {
   private startMermaidObserver(): void {
     this.mermaidObserver = new MutationObserver((records) => {
       for (const record of records) {
+        // Mermaid can finish its viewBox after inserting the SVG into the page.
+        if (record.type === "attributes" && record.target instanceof Element
+          && record.target.matches(MERMAID_SVG_SELECTOR)) {
+          this.classifyMermaid(record.target as SVGSVGElement);
+        }
         for (const node of record.addedNodes) {
           if (!(node instanceof Element)) {
             continue;
@@ -265,7 +271,12 @@ export default class RefinedLayoutPlugin extends Plugin {
         }
       }
     });
-    this.mermaidObserver.observe(document.body, { childList: true, subtree: true });
+    this.mermaidObserver.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["viewBox"],
+    });
     this.refreshMermaidClassifications();
   }
 
@@ -286,8 +297,9 @@ export default class RefinedLayoutPlugin extends Plugin {
       throw new Error("Mermaid SVG is missing its .mermaid parent container");
     }
 
-    if (container.closest(DATAVIEW_JS_SELECTOR) !== null) {
+    if (container.closest(MERMAID_BYPASS_SELECTOR) !== null) {
       container.classList.remove(MERMAID_PORTRAIT_CLASS);
+      svg.style.removeProperty(MERMAID_NATURAL_WIDTH_PROPERTY);
       return;
     }
 
@@ -298,6 +310,7 @@ export default class RefinedLayoutPlugin extends Plugin {
         : null;
     if (mode === null || !this.settings[mode].modules.mermaid) {
       container.classList.remove(MERMAID_PORTRAIT_CLASS);
+      svg.style.removeProperty(MERMAID_NATURAL_WIDTH_PROPERTY);
       return;
     }
 
@@ -309,6 +322,7 @@ export default class RefinedLayoutPlugin extends Plugin {
       || !isPositiveFiniteNumber(portraitAspectRatio)
     ) {
       container.classList.remove(MERMAID_PORTRAIT_CLASS);
+      svg.style.removeProperty(MERMAID_NATURAL_WIDTH_PROPERTY);
       if (!this.invalidMermaidSvgs.has(svg)) {
         console.error(
           "[Refined Layout] Mermaid SVG has an invalid viewBox or portrait aspect-ratio setting; diagram left unclassified.",
@@ -320,6 +334,8 @@ export default class RefinedLayoutPlugin extends Plugin {
     }
 
     this.invalidMermaidSvgs.delete(svg);
+    // Use the unscaled SVG coordinate width, never its already-scaled DOM width.
+    svg.style.setProperty(MERMAID_NATURAL_WIDTH_PROPERTY, `${width}px`);
     container.classList.toggle(
       MERMAID_PORTRAIT_CLASS,
       isPortraitMermaid(width, height, portraitAspectRatio),
@@ -337,6 +353,9 @@ export default class RefinedLayoutPlugin extends Plugin {
     }
     this.appliedModuleClasses.clear();
     this.appliedProperties.clear();
+    for (const svg of document.querySelectorAll<SVGSVGElement>(MERMAID_SVG_SELECTOR)) {
+      svg.style.removeProperty(MERMAID_NATURAL_WIDTH_PROPERTY);
+    }
     for (const container of document.querySelectorAll(`.mermaid.${MERMAID_PORTRAIT_CLASS}`)) {
       container.classList.remove(MERMAID_PORTRAIT_CLASS);
     }

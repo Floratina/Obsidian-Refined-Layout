@@ -1,8 +1,34 @@
 import esbuild from "esbuild";
+import { copyFile, mkdir, readFile } from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 const production = process.argv[2] === "production";
+const projectDir = path.dirname(fileURLToPath(import.meta.url));
+const pluginDir = "D:/文件/Obsidian Vault/Floratina/.obsidian/plugins/refined-layout";
+const assets = ["styles.css", "manifest.json"];
 
 const context = await esbuild.context({
+  absWorkingDir: projectDir,
+  plugins: [{
+    name: "deploy-to-obsidian",
+    setup(build) {
+      build.onLoad({ filter: /[\\/]src[\\/]main\.ts$/ }, async (args) => ({
+        contents: await readFile(args.path, "utf8"),
+        loader: "ts",
+        resolveDir: path.dirname(args.path),
+        watchFiles: assets.map((file) => path.join(projectDir, file)),
+      }));
+      build.onEnd(async (result) => {
+        if (result.errors.length > 0) return;
+        await mkdir(pluginDir, { recursive: true });
+        for (const file of [...assets, "main.js"]) {
+          await copyFile(path.join(projectDir, file), path.join(pluginDir, file));
+        }
+        console.log(`Plugin files synced to ${pluginDir}`);
+      });
+    },
+  }],
   banner: {
     js: "/* Refined Layout - generated file */",
   },

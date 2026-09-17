@@ -12,7 +12,20 @@ Refined Layout 将原来的 Obsidian CSS snippet 改造成可独立配置的本�
 插件不会修改 `.obsidian/appearance.json`。用户设置保存在未纳入 Git 的 `data.json` 中。
 设置页顶部提供“导出配置”和“导入配置”，可将两种模式的完整设置保存为 JSON 或从 JSON 恢复。
 
+## 排版作用范围
+
+Canvas 白板（包括卡片阅读和编辑）整体绕过插件排版，保留 Obsidian 与主题的原有样式。旧配置中的 `canvasReset` 字段会在加载时忽略。
+
+Mermaid 内部文字与节点不应用正文、Callout、引用块等排版规则；普通笔记中的整图宽度、居中和横向滚动仍由 Mermaid 模块控制。Canvas 中的 Mermaid 同样整体绕过。纵向图按 SVG 原始尺寸显示，宽度百分比仅作缩小上限，不会为了填满该比例而放大；渲染后的尺寸变化会触发重新分类。
+
 ## 开发检查
+
+开发目录为 `D:\AppData\obsidian-refined-layout-dev`，源码、Git 历史与依赖均放在此处。
+Obsidian 的运行目录为 `D:\文件\Obsidian Vault\Floratina\.obsidian\plugins\refined-layout`，保留 `main.js`、`styles.css`、`manifest.json` 和用户设置 `data.json`。
+
+在开发目录执行 `npm run build`，会进行类型检查、生成 `main.js`，并自动将三个插件运行文件同步到 Obsidian 目录。构建不会覆盖 `data.json`。
+
+执行 `npm run dev` 会持续监听源码、`styles.css` 和 `manifest.json`，修改后自动构建并同步；按 Ctrl+C 停止监听。同步后，在 Obsidian 中重新加载插件即可使用最新版本。
 
 ```bash
 npm install

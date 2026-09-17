@@ -11,7 +11,6 @@ export const MODULE_KEYS = [
   "tables",
   "codeBlocks",
   "headingGaps",
-  "canvasReset",
 ] as const;
 export type ModuleKey = (typeof MODULE_KEYS)[number];
 
@@ -28,7 +27,6 @@ export interface ModuleSettings {
   tables: boolean;
   codeBlocks: boolean;
   headingGaps: boolean;
-  canvasReset: boolean;
 }
 
 export interface BodySettings {
@@ -208,7 +206,7 @@ const EDIT_HEADINGS: Record<HeadingLevel, HeadingSettings> = {
   h3: { lineHeight: 1.4, topEm: 0.4, bottomEm: 0.004, decorHeightPx: 19, decorOffsetPx: 0 },
   h4: { lineHeight: 1.4, topEm: 0.4, bottomEm: 0.004, decorHeightPx: 18.5, decorOffsetPx: 0 },
   h5: { lineHeight: 1.38, topEm: 0.35, bottomEm: 0.0035, decorHeightPx: 17, decorOffsetPx: 0 },
-  h6: { lineHeight: 1.36, topEm: 0.35, bottomEm: 0.0035, decorHeightPx: 16, decorOffsetPx: 0.5 },
+  h6: { lineHeight: 1.36, topEm: 0.5, bottomEm: 0.1625, decorHeightPx: 16, decorOffsetPx: 0.5 },
 };
 
 const READ_HEADINGS: Record<HeadingLevel, HeadingSettings> = {
@@ -266,7 +264,6 @@ const ALL_MODULES: ModuleSettings = {
   tables: true,
   codeBlocks: true,
   headingGaps: true,
-  canvasReset: true,
 };
 
 export const DEFAULT_SETTINGS: RefinedLayoutSettings = {
@@ -274,13 +271,13 @@ export const DEFAULT_SETTINGS: RefinedLayoutSettings = {
   edit: {
     modules: { ...ALL_MODULES },
     body: {
-      lineHeight: 1.735,
+      lineHeight: 1.7,
       paragraphSpacingEm: 0,
-      emptyLineHeightEm: 0.5,
+      emptyLineHeightEm: 0.45,
       listItemStartEm: 0,
       listItemEndEm: 0,
       listBlockStartEm: 0,
-      listBlockEndEm: 0,
+      listBlockEndEm: 0.15,
     },
     headings: EDIT_HEADINGS,
     headingDecoration: {
@@ -313,7 +310,7 @@ export const DEFAULT_SETTINGS: RefinedLayoutSettings = {
       listItemStartEm: 0,
       listItemEndEm: 0,
       listBlockStartEm: 0,
-      listBlockEndEm: 0,
+      listBlockEndEm: 0.2,
       lastListEndEm: 0,
       headings: EDIT_CALLOUT_HEADINGS,
       image: { ...EDIT_IMAGE },
@@ -331,8 +328,8 @@ export const DEFAULT_SETTINGS: RefinedLayoutSettings = {
     },
     image: { ...EDIT_IMAGE },
     mermaid: {
-      portraitMaxWidthPct: 35,
-      portraitAspectRatio: 0.75,
+      portraitMaxWidthPct: 55,
+      portraitAspectRatio: 1,
       landscapeMinWidthPx: 450,
     },
     table: { ...EDIT_TABLE },
@@ -346,7 +343,7 @@ export const DEFAULT_SETTINGS: RefinedLayoutSettings = {
       body: {
         emptyLineEm: 0.3,
         paragraphEm: 0.3,
-        listEm: 0.3,
+        listEm: 0.45,
         quoteEm: 0.3,
         codeEm: 0.3,
         tableEm: 0.3,
@@ -435,8 +432,8 @@ export const DEFAULT_SETTINGS: RefinedLayoutSettings = {
     },
     image: { ...READ_IMAGE },
     mermaid: {
-      portraitMaxWidthPct: 35,
-      portraitAspectRatio: 0.75,
+      portraitMaxWidthPct: 55,
+      portraitAspectRatio: 1,
       landscapeMinWidthPx: 450,
     },
     table: { ...READ_TABLE },

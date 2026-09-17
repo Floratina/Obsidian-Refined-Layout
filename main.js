@@ -51,8 +51,7 @@ var MODULE_KEYS = [
   "mermaid",
   "tables",
   "codeBlocks",
-  "headingGaps",
-  "canvasReset"
+  "headingGaps"
 ];
 var HEADING_LEVELS = ["h1", "h2", "h3", "h4", "h5", "h6"];
 var EDIT_TABLE = {
@@ -79,7 +78,7 @@ var EDIT_HEADINGS = {
   h3: { lineHeight: 1.4, topEm: 0.4, bottomEm: 4e-3, decorHeightPx: 19, decorOffsetPx: 0 },
   h4: { lineHeight: 1.4, topEm: 0.4, bottomEm: 4e-3, decorHeightPx: 18.5, decorOffsetPx: 0 },
   h5: { lineHeight: 1.38, topEm: 0.35, bottomEm: 35e-4, decorHeightPx: 17, decorOffsetPx: 0 },
-  h6: { lineHeight: 1.36, topEm: 0.35, bottomEm: 35e-4, decorHeightPx: 16, decorOffsetPx: 0.5 }
+  h6: { lineHeight: 1.36, topEm: 0.5, bottomEm: 0.1625, decorHeightPx: 16, decorOffsetPx: 0.5 }
 };
 var READ_HEADINGS = {
   h1: { lineHeight: 1.47, topEm: 0.6, bottomEm: 0.32, decorHeightPx: 20, decorOffsetPx: 0 },
@@ -130,21 +129,20 @@ var ALL_MODULES = {
   mermaid: true,
   tables: true,
   codeBlocks: true,
-  headingGaps: true,
-  canvasReset: true
+  headingGaps: true
 };
 var DEFAULT_SETTINGS = {
   schemaVersion: 3,
   edit: {
     modules: { ...ALL_MODULES },
     body: {
-      lineHeight: 1.735,
+      lineHeight: 1.7,
       paragraphSpacingEm: 0,
-      emptyLineHeightEm: 0.5,
+      emptyLineHeightEm: 0.45,
       listItemStartEm: 0,
       listItemEndEm: 0,
       listBlockStartEm: 0,
-      listBlockEndEm: 0
+      listBlockEndEm: 0.15
     },
     headings: EDIT_HEADINGS,
     headingDecoration: {
@@ -177,7 +175,7 @@ var DEFAULT_SETTINGS = {
       listItemStartEm: 0,
       listItemEndEm: 0,
       listBlockStartEm: 0,
-      listBlockEndEm: 0,
+      listBlockEndEm: 0.2,
       lastListEndEm: 0,
       headings: EDIT_CALLOUT_HEADINGS,
       image: { ...EDIT_IMAGE },
@@ -195,8 +193,8 @@ var DEFAULT_SETTINGS = {
     },
     image: { ...EDIT_IMAGE },
     mermaid: {
-      portraitMaxWidthPct: 35,
-      portraitAspectRatio: 0.75,
+      portraitMaxWidthPct: 55,
+      portraitAspectRatio: 1,
       landscapeMinWidthPx: 450
     },
     table: { ...EDIT_TABLE },
@@ -210,7 +208,7 @@ var DEFAULT_SETTINGS = {
       body: {
         emptyLineEm: 0.3,
         paragraphEm: 0.3,
-        listEm: 0.3,
+        listEm: 0.45,
         quoteEm: 0.3,
         codeEm: 0.3,
         tableEm: 0.3,
@@ -299,8 +297,8 @@ var DEFAULT_SETTINGS = {
     },
     image: { ...READ_IMAGE },
     mermaid: {
-      portraitMaxWidthPct: 35,
-      portraitAspectRatio: 0.75,
+      portraitMaxWidthPct: 55,
+      portraitAspectRatio: 1,
       landscapeMinWidthPx: 450
     },
     table: { ...READ_TABLE },
@@ -494,8 +492,7 @@ var SETTINGS_TABS = [
   { id: "mermaid", label: "Mermaid \u56FE\u8868", description: "\u7EB5\u5411\u4E0E\u6A2A\u5411 Mermaid \u56FE\u8868\u7684\u81EA\u9002\u5E94\u5BBD\u5EA6\u89C4\u5219\u3002", module: "mermaid", reset: "mermaid" },
   { id: "table", label: "\u6B63\u6587\u8868\u683C", description: "\u6B63\u6587\u8868\u683C\u7684\u5355\u5143\u683C\u5185\u8FB9\u8DDD\u3001\u6846\u7EBF\u3001\u5706\u89D2\u548C\u5916\u8FB9\u8DDD\u3002", module: "tables", reset: "table" },
   { id: "codeBlock", label: "\u4EE3\u7801\u5757", description: "\u4EE3\u7801\u5757\u884C\u9AD8\u53CA\u6A21\u5F0F\u76F8\u5173\u7684\u4E0A\u4E0B\u8FB9\u8DDD\u8BBE\u7F6E\u3002", module: "codeBlocks", reset: "codeBlock" },
-  { id: "headingGap", label: "\u6807\u9898\u540E\u9996\u5143\u7D20", description: "\u6807\u9898\u540E\u63A5\u6B63\u6587\u3001\u5217\u8868\u3001\u4EE3\u7801\u5757\u7B49\u5143\u7D20\u65F6\u7684\u95F4\u8DDD\u8865\u507F\u3002", module: "headingGaps", reset: "headingGap" },
-  { id: "canvasReset", label: "Canvas \u6837\u5F0F\u91CD\u7F6E", description: "\u9605\u8BFB\u6A21\u5F0F Canvas \u767D\u677F\u5361\u7247\u7684\u7D27\u51D1\u5E03\u5C40\u91CD\u7F6E\u3002", module: "canvasReset", reset: "canvasReset" }
+  { id: "headingGap", label: "\u6807\u9898\u540E\u9996\u5143\u7D20", description: "\u6807\u9898\u540E\u63A5\u6B63\u6587\u3001\u5217\u8868\u3001\u4EE3\u7801\u5757\u7B49\u5143\u7D20\u65F6\u7684\u95F4\u8DDD\u8865\u507F\u3002", module: "headingGaps", reset: "headingGap" }
 ];
 function inferNumberOptions(path, mode) {
   const key = path[path.length - 1] ?? "";
@@ -622,7 +619,7 @@ var RefinedLayoutSettingTab = class extends import_obsidian.PluginSettingTab {
     input.click();
   }
   renderSettingsTabs(container) {
-    const tabs = SETTINGS_TABS.filter((tab) => tab.id !== "canvasReset" || this.mode === "read");
+    const tabs = SETTINGS_TABS;
     const firstTab = tabs[0];
     if (firstTab === void 0) {
       throw new Error("Refined Layout settings have no available tabs");
@@ -756,9 +753,6 @@ var RefinedLayoutSettingTab = class extends import_obsidian.PluginSettingTab {
         break;
       case "headingGap":
         this.renderHeadingGapSection(panel, tab);
-        break;
-      case "canvasReset":
-        this.renderCanvasSection(panel, tab);
         break;
     }
   }
@@ -1053,7 +1047,7 @@ var RefinedLayoutSettingTab = class extends import_obsidian.PluginSettingTab {
   renderMermaidSection(container, tab) {
     const content = this.createModuleCard(container, tab);
     const card = this.createGroupCard(content, "\u56FE\u8868\u81EA\u9002\u5E94\u4E0E\u5BBD\u5EA6\u89C4\u5219", "\u6309 SVG \u539F\u59CB viewBox \u5BBD\u9AD8\u6BD4\u533A\u5206\u7EB5\u5411\u56FE\u548C\u666E\u901A/\u6A2A\u5411\u56FE\u3002");
-    this.addNumber(card, ["mermaid", "portraitMaxWidthPct"], "\u7EB5\u5411\u56FE\u6700\u5927\u5BBD\u5EA6", "\u7EB5\u5411 Mermaid \u76F8\u5BF9\u6240\u5728\u5185\u5BB9\u533A\u57DF\u7684\u6700\u5927\u5BBD\u5EA6\uFF1B\u56FE\u8868\u4F1A\u6C34\u5E73\u5C45\u4E2D\u3002");
+    this.addNumber(card, ["mermaid", "portraitMaxWidthPct"], "\u7EB5\u5411\u56FE\u6700\u5927\u5BBD\u5EA6", "\u7EB5\u5411\u56FE\u6309\u539F\u59CB\u5C3A\u5BF8\u5C45\u4E2D\u663E\u793A\uFF0C\u4E0D\u4E3B\u52A8\u653E\u5927\uFF1B\u8D85\u8FC7\u6B64\u6B63\u6587\u5BBD\u5EA6\u6BD4\u4F8B\u65F6\u624D\u7B49\u6BD4\u7F29\u5C0F\u3002");
     this.addNumber(card, ["mermaid", "portraitAspectRatio"], "\u7EB5\u5411\u5224\u5B9A\u5BBD\u9AD8\u6BD4", "SVG \u539F\u59CB\u5BBD\u5EA6\u9664\u4EE5\u9AD8\u5EA6\uFF1B\u5C0F\u4E8E\u6216\u7B49\u4E8E\u8BE5\u503C\u65F6\u89C6\u4E3A\u7EB5\u5411\u56FE\u3002", { min: 0.05, max: 5, step: 0.05 });
     this.addNumber(card, ["mermaid", "landscapeMinWidthPx"], "\u6A2A\u5411\u56FE\u6700\u5C0F\u5BBD\u5EA6", "\u666E\u901A\u6216\u6A2A\u5411 Mermaid \u7684\u6700\u5C0F\u5BBD\u5EA6\uFF1B\u7A7A\u95F4\u4E0D\u8DB3\u65F6\u5141\u8BB8\u6A2A\u5411\u6EDA\u52A8\u3002", { min: 0, max: 4096, step: 10 });
   }
@@ -1121,21 +1115,14 @@ var RefinedLayoutSettingTab = class extends import_obsidian.PluginSettingTab {
       this.addNumber(card, ["headingGap", context, key], name, description);
     }
   }
-  renderCanvasSection(container, tab) {
-    const content = this.createModuleCard(container, tab);
-    const card = this.createGroupCard(content, "Canvas \u6837\u5F0F\u91CD\u7F6E");
-    card.createDiv({
-      cls: "rl-settings-card-note",
-      text: "\u542F\u7528\u540E\uFF0CCanvas \u5361\u7247\u4F1A\u6062\u590D\u7D27\u51D1\u7684\u9ED8\u8BA4\u6807\u9898\u3001\u6BB5\u843D\u3001Callout\u3001\u8868\u683C\u548C\u56FE\u7247\u5E03\u5C40\u3002"
-    });
-  }
 };
 
 // src/main.ts
 var ROOT_CLASS = "refined-layout-enabled";
 var MERMAID_PORTRAIT_CLASS = "rl-mermaid-portrait";
+var MERMAID_NATURAL_WIDTH_PROPERTY = "--rl-mermaid-natural-width";
 var MERMAID_SVG_SELECTOR = ".mermaid > svg";
-var DATAVIEW_JS_SELECTOR = ".block-language-dataviewjs";
+var MERMAID_BYPASS_SELECTOR = ".block-language-dataviewjs, .canvas-wrapper, .canvas-node";
 function toKebabCase(value) {
   return value.replace(/([a-z0-9])([A-Z])/g, "$1-$2").replace(/_/g, "-").toLowerCase();
 }
@@ -1242,7 +1229,7 @@ var RefinedLayoutPlugin = class extends import_obsidian2.Plugin {
         this.settings[mode].headings[level].bottomEm = defaults[mode].headings[level].bottomEm;
       }
       this.settings[mode].headingDecoration.firstHeadingPaddingTopPx = defaults[mode].headingDecoration.firstHeadingPaddingTopPx;
-    } else if (section !== "canvasReset") {
+    } else {
       this.settings[mode][section] = structuredClone(defaults[mode][section]);
     }
     this.applyAndScheduleSave();
@@ -1341,6 +1328,9 @@ var RefinedLayoutPlugin = class extends import_obsidian2.Plugin {
   startMermaidObserver() {
     this.mermaidObserver = new MutationObserver((records) => {
       for (const record of records) {
+        if (record.type === "attributes" && record.target instanceof Element && record.target.matches(MERMAID_SVG_SELECTOR)) {
+          this.classifyMermaid(record.target);
+        }
         for (const node of record.addedNodes) {
           if (!(node instanceof Element)) {
             continue;
@@ -1354,7 +1344,12 @@ var RefinedLayoutPlugin = class extends import_obsidian2.Plugin {
         }
       }
     });
-    this.mermaidObserver.observe(document.body, { childList: true, subtree: true });
+    this.mermaidObserver.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["viewBox"]
+    });
     this.refreshMermaidClassifications();
   }
   stopMermaidObserver() {
@@ -1371,19 +1366,22 @@ var RefinedLayoutPlugin = class extends import_obsidian2.Plugin {
     if (container === null || !container.classList.contains("mermaid")) {
       throw new Error("Mermaid SVG is missing its .mermaid parent container");
     }
-    if (container.closest(DATAVIEW_JS_SELECTOR) !== null) {
+    if (container.closest(MERMAID_BYPASS_SELECTOR) !== null) {
       container.classList.remove(MERMAID_PORTRAIT_CLASS);
+      svg.style.removeProperty(MERMAID_NATURAL_WIDTH_PROPERTY);
       return;
     }
     const mode = container.closest(".markdown-source-view.mod-cm6") !== null ? "edit" : container.closest(".markdown-preview-view.markdown-rendered") !== null ? "read" : null;
     if (mode === null || !this.settings[mode].modules.mermaid) {
       container.classList.remove(MERMAID_PORTRAIT_CLASS);
+      svg.style.removeProperty(MERMAID_NATURAL_WIDTH_PROPERTY);
       return;
     }
     const { width, height } = svg.viewBox.baseVal;
     const portraitAspectRatio = this.settings[mode].mermaid.portraitAspectRatio;
     if (!isPositiveFiniteNumber(width) || !isPositiveFiniteNumber(height) || !isPositiveFiniteNumber(portraitAspectRatio)) {
       container.classList.remove(MERMAID_PORTRAIT_CLASS);
+      svg.style.removeProperty(MERMAID_NATURAL_WIDTH_PROPERTY);
       if (!this.invalidMermaidSvgs.has(svg)) {
         console.error(
           "[Refined Layout] Mermaid SVG has an invalid viewBox or portrait aspect-ratio setting; diagram left unclassified.",
@@ -1394,6 +1392,7 @@ var RefinedLayoutPlugin = class extends import_obsidian2.Plugin {
       return;
     }
     this.invalidMermaidSvgs.delete(svg);
+    svg.style.setProperty(MERMAID_NATURAL_WIDTH_PROPERTY, `${width}px`);
     container.classList.toggle(
       MERMAID_PORTRAIT_CLASS,
       isPortraitMermaid(width, height, portraitAspectRatio)
@@ -1410,6 +1409,9 @@ var RefinedLayoutPlugin = class extends import_obsidian2.Plugin {
     }
     this.appliedModuleClasses.clear();
     this.appliedProperties.clear();
+    for (const svg of document.querySelectorAll(MERMAID_SVG_SELECTOR)) {
+      svg.style.removeProperty(MERMAID_NATURAL_WIDTH_PROPERTY);
+    }
     for (const container of document.querySelectorAll(`.mermaid.${MERMAID_PORTRAIT_CLASS}`)) {
       container.classList.remove(MERMAID_PORTRAIT_CLASS);
     }

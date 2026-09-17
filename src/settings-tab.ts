@@ -21,8 +21,7 @@ export type ResettableSection =
   | "mermaid"
   | "table"
   | "codeBlock"
-  | "headingGap"
-  | "canvasReset";
+  | "headingGap";
 
 type SettingsTabId =
   | "body"
@@ -34,8 +33,7 @@ type SettingsTabId =
   | "mermaid"
   | "table"
   | "codeBlock"
-  | "headingGap"
-  | "canvasReset";
+  | "headingGap";
 
 type ResetTarget = ResettableSection | "headingDecoration";
 
@@ -85,7 +83,6 @@ const SETTINGS_TABS: readonly SettingsTabDefinition[] = [
   { id: "table", label: "正文表格", description: "正文表格的单元格内边距、框线、圆角和外边距。", module: "tables", reset: "table" },
   { id: "codeBlock", label: "代码块", description: "代码块行高及模式相关的上下边距设置。", module: "codeBlocks", reset: "codeBlock" },
   { id: "headingGap", label: "标题后首元素", description: "标题后接正文、列表、代码块等元素时的间距补偿。", module: "headingGaps", reset: "headingGap" },
-  { id: "canvasReset", label: "Canvas 样式重置", description: "阅读模式 Canvas 白板卡片的紧凑布局重置。", module: "canvasReset", reset: "canvasReset" },
 ];
 
 function inferNumberOptions(path: string[], mode: ModeKey): Required<NumberOptions> {
@@ -253,7 +250,7 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
   }
 
   private renderSettingsTabs(container: HTMLElement): void {
-    const tabs = SETTINGS_TABS.filter((tab) => tab.id !== "canvasReset" || this.mode === "read");
+    const tabs = SETTINGS_TABS;
     const firstTab = tabs[0];
     if (firstTab === undefined) {
       throw new Error("Refined Layout settings have no available tabs");
@@ -397,9 +394,6 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
         break;
       case "headingGap":
         this.renderHeadingGapSection(panel, tab);
-        break;
-      case "canvasReset":
-        this.renderCanvasSection(panel, tab);
         break;
     }
   }
@@ -763,7 +757,7 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
   private renderMermaidSection(container: HTMLElement, tab: SettingsTabDefinition): void {
     const content = this.createModuleCard(container, tab);
     const card = this.createGroupCard(content, "图表自适应与宽度规则", "按 SVG 原始 viewBox 宽高比区分纵向图和普通/横向图。");
-    this.addNumber(card, ["mermaid", "portraitMaxWidthPct"], "纵向图最大宽度", "纵向 Mermaid 相对所在内容区域的最大宽度；图表会水平居中。");
+    this.addNumber(card, ["mermaid", "portraitMaxWidthPct"], "纵向图最大宽度", "纵向图按原始尺寸居中显示，不主动放大；超过此正文宽度比例时才等比缩小。");
     this.addNumber(card, ["mermaid", "portraitAspectRatio"], "纵向判定宽高比", "SVG 原始宽度除以高度；小于或等于该值时视为纵向图。", { min: 0.05, max: 5, step: 0.05 });
     this.addNumber(card, ["mermaid", "landscapeMinWidthPx"], "横向图最小宽度", "普通或横向 Mermaid 的最小宽度；空间不足时允许横向滚动。", { min: 0, max: 4096, step: 10 });
   }
@@ -844,12 +838,4 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
     }
   }
 
-  private renderCanvasSection(container: HTMLElement, tab: SettingsTabDefinition): void {
-    const content = this.createModuleCard(container, tab);
-    const card = this.createGroupCard(content, "Canvas 样式重置");
-    card.createDiv({
-      cls: "rl-settings-card-note",
-      text: "启用后，Canvas 卡片会恢复紧凑的默认标题、段落、Callout、表格和图片布局。",
-    });
-  }
 }
