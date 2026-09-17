@@ -1,4 +1,7 @@
 import { Notice, Plugin } from "obsidian";
+import { getTranslator } from "./i18n";
+import { normalizeLanguagePreference } from "./i18n/language";
+import { formatImportError } from "./i18n/import-error";
 import { isPortraitMermaid, isPositiveFiniteNumber } from "./mermaid";
 import {
   cloneDefaultSettings,
@@ -131,6 +134,11 @@ export default class RefinedLayoutPlugin extends Plugin {
     this.applyAndScheduleSave();
   }
 
+  setLanguage(language: string): void {
+    this.settings.language = normalizeLanguagePreference(language);
+    this.applyAndScheduleSave();
+  }
+
   resetSection(mode: ModeKey, section: ResettableSection, module: ModuleKey): void {
     const defaults = cloneDefaultSettings();
     this.settings[mode].modules[module] = defaults[mode].modules[module];
@@ -160,7 +168,9 @@ export default class RefinedLayoutPlugin extends Plugin {
   }
 
   resetAll(): void {
+    const language = this.settings.language;
     this.settings = cloneDefaultSettings();
+    this.settings.language = language;
     this.applyAndScheduleSave();
   }
 
@@ -174,7 +184,7 @@ export default class RefinedLayoutPlugin extends Plugin {
     anchor.click();
     anchor.remove();
     window.setTimeout(() => URL.revokeObjectURL(url), 0);
-    new Notice("Refined Layout：配置已导出。");
+    new Notice(getTranslator(this.settings.language)("notice.exported"));
   }
 
   async importSettings(file: File): Promise<boolean> {
@@ -183,7 +193,7 @@ export default class RefinedLayoutPlugin extends Plugin {
       json = await file.text();
     } catch (error) {
       console.error("[Refined Layout] Failed to read settings file.", error);
-      new Notice("Refined Layout：无法读取配置文件。");
+      new Notice(getTranslator(this.settings.language)("notice.readFailed"));
       return false;
     }
 
@@ -192,14 +202,13 @@ export default class RefinedLayoutPlugin extends Plugin {
       imported = parseSettingsJson(json);
     } catch (error) {
       console.error("[Refined Layout] Invalid settings file.", error);
-      const detail = error instanceof Error ? error.message : "文件格式无效";
-      new Notice(`Refined Layout：导入失败，${detail}。`);
+      new Notice(formatImportError(error, getTranslator(this.settings.language)));
       return false;
     }
 
     this.settings = imported;
     this.applyAndScheduleSave();
-    new Notice("Refined Layout：配置已导入。");
+    new Notice(getTranslator(this.settings.language)("notice.imported"));
     return true;
   }
 

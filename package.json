@@ -10,7 +10,8 @@
     "build": "tsc --noEmit --skipLibCheck && node esbuild.config.mjs production",
     "lint": "eslint . && stylelint styles.css",
     "check:css": "node scripts/check-css.mjs",
-    "check": "npm run lint && npm run check:css && npm run build"
+    "test:i18n": "node --test tests/i18n/*.test.mjs",
+    "check": "npm run lint && npm run check:css && npm run test:i18n && npm run build"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

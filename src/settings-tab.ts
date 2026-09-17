@@ -1,3 +1,5 @@
+import { getTranslator } from "./i18n";
+import type { Translator } from "./i18n/core";
 import {
   App,
   PluginSettingTab,
@@ -52,16 +54,18 @@ interface HeadingLevelCard {
 }
 
 interface NumberOptions {
-  unit?: "" | "em" | "px" | "%" | "倍";
+  unit?: "" | "em" | "px" | "%" | "ratio";
   min?: number;
   max?: number;
   step?: number;
 }
 
-const MODE_LABELS: Record<ModeKey, string> = {
-  edit: "编辑模式",
-  read: "阅读模式",
-};
+function getModeLabels(t: Translator): Record<ModeKey, string> {
+  return {
+    edit: t("mode.edit"),
+    read: t("mode.read"),
+  };
+}
 
 const HEADING_LABELS: Record<HeadingLevel, string> = {
   h1: "H1",
@@ -72,18 +76,20 @@ const HEADING_LABELS: Record<HeadingLevel, string> = {
   h6: "H6",
 };
 
-const SETTINGS_TABS: readonly SettingsTabDefinition[] = [
-  { id: "body", label: "正文与列表", description: "普通正文、空行和列表间距设置。", module: "body", reset: "body" },
-  { id: "headings", label: "正文标题 H1–H6", description: "正文标题各级别的行高和上下边距。", module: "headings", reset: "headings" },
-  { id: "headingDecoration", label: "标题伪元素", description: "主题标题装饰线的位置、尺寸和偏移。", module: "headings", reset: "headingDecoration" },
-  { id: "callout", label: "Callout", description: "Callout 卡片外观、标题栏、正文及内部元素排版。", module: "callouts", reset: "callout" },
-  { id: "blockquote", label: "引用块", description: "引用块内部正文、表格和各级标题排版。", module: "blockquotes", reset: "blockquote" },
-  { id: "image", label: "图片", description: "正文图片的尺寸、圆角与边框外观。", module: "images", reset: "image" },
-  { id: "mermaid", label: "Mermaid 图表", description: "纵向与横向 Mermaid 图表的自适应宽度规则。", module: "mermaid", reset: "mermaid" },
-  { id: "table", label: "正文表格", description: "正文表格的单元格内边距、框线、圆角和外边距。", module: "tables", reset: "table" },
-  { id: "codeBlock", label: "代码块", description: "代码块行高及模式相关的上下边距设置。", module: "codeBlocks", reset: "codeBlock" },
-  { id: "headingGap", label: "标题后首元素", description: "标题后接正文、列表、代码块等元素时的间距补偿。", module: "headingGaps", reset: "headingGap" },
-];
+function getSettingsTabs(t: Translator): readonly SettingsTabDefinition[] {
+  return [
+    { id: "body", label: t("tabs.body"), description: t("tabs.bodyDesc"), module: "body", reset: "body" },
+    { id: "headings", label: t("tabs.headings"), description: t("tabs.headingsDesc"), module: "headings", reset: "headings" },
+    { id: "headingDecoration", label: t("tabs.headingDecoration"), description: t("tabs.headingDecorationDesc"), module: "headings", reset: "headingDecoration" },
+    { id: "callout", label: "Callout", description: t("tabs.calloutDesc"), module: "callouts", reset: "callout" },
+    { id: "blockquote", label: t("context.blockquote"), description: t("tabs.blockquoteDesc"), module: "blockquotes", reset: "blockquote" },
+    { id: "image", label: t("tabs.image"), description: t("tabs.imageDesc"), module: "images", reset: "image" },
+    { id: "mermaid", label: t("tabs.mermaid"), description: t("tabs.mermaidDesc"), module: "mermaid", reset: "mermaid" },
+    { id: "table", label: t("tabs.table"), description: t("tabs.tableDesc"), module: "tables", reset: "table" },
+    { id: "codeBlock", label: t("tabs.codeBlock"), description: t("tabs.codeBlockDesc"), module: "codeBlocks", reset: "codeBlock" },
+    { id: "headingGap", label: t("tabs.headingGap"), description: t("tabs.headingGapDesc"), module: "headingGaps", reset: "headingGap" },
+  ];
+}
 
 function inferNumberOptions(path: string[], mode: ModeKey): Required<NumberOptions> {
   const key = path[path.length - 1] ?? "";
@@ -100,7 +106,7 @@ function inferNumberOptions(path: string[], mode: ModeKey): Required<NumberOptio
   // suffix are lengths even when "lineHeight" appears in the middle of the
   // name, as in emptyLineHeightEm.
   if (unit === "" && key.toLowerCase().includes("lineheight")) {
-    return { unit: "倍", min: 0.5, max: 3, step: 0.01 };
+    return { unit: "ratio", min: 0.5, max: 3, step: 0.01 };
   }
 
   // Body and blockquote list spacing is applied as padding on CodeMirror lines
@@ -137,6 +143,7 @@ function inferNumberOptions(path: string[], mode: ModeKey): Required<NumberOptio
 }
 
 export class RefinedLayoutSettingTab extends PluginSettingTab {
+  private t = getTranslator();
   private mode: ModeKey = "edit";
   private activeTabByMode: Record<ModeKey, SettingsTabId> = {
     edit: "body",
@@ -154,6 +161,7 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
   }
 
   display(): void {
+    this.t = getTranslator(this.plugin.settings.language);
     const { containerEl } = this;
     containerEl.empty();
     containerEl.addClass("refined-layout-settings");
@@ -169,22 +177,18 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
     const titleRow = header.createDiv({ cls: "rl-settings-title-row" });
     const titleBox = titleRow.createDiv({ cls: "rl-settings-title-box" });
     titleBox.createEl("h2", { cls: "rl-settings-title", text: "Refined Layout" });
-    titleBox.createDiv({
-      cls: "rl-settings-subtitle",
-      text: "编辑模式与阅读模式拥有各自的模块开关和排版参数，互不影响。",
-    });
 
     const actions = titleRow.createDiv({ cls: "rl-settings-header-actions" });
-    this.createHeaderButton(actions, "导出配置", "把当前编辑和阅读两套设置导出为 JSON 文件。", () => {
+    this.createHeaderButton(actions, this.t("actions.export"), this.t("actions.exportDesc"), () => {
       this.plugin.exportSettings();
     });
-    this.createHeaderButton(actions, "导入配置", "从 JSON 文件导入设置，导入成功后立即替换当前配置。", () => {
+    this.createHeaderButton(actions, this.t("actions.import"), this.t("actions.importDesc"), () => {
       this.pickSettingsFile();
     });
     this.createHeaderButton(
       actions,
-      "全部重置",
-      "恢复编辑和阅读两套设置以及全部模块开关。",
+      this.t("actions.resetAll"),
+      this.t("actions.resetAllDesc"),
       () => {
         this.plugin.resetAll();
         this.display();
@@ -192,15 +196,37 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
       "rl-settings-header-danger",
     );
 
+    new Setting(header)
+      .setName(this.t("language.name"))
+      .setDesc(this.t("language.description"))
+      .addDropdown((dropdown) => {
+        dropdown
+          .addOptions({
+            auto: this.t("language.auto"),
+            "zh-CN": "简体中文",
+            "zh-TW": "繁體中文",
+            en: "English",
+            ja: "日本語",
+          })
+          .setValue(this.plugin.settings.language)
+          .onChange((value) => {
+            this.plugin.setLanguage(value);
+            this.display();
+            this.containerEl.querySelector<HTMLSelectElement>(".rl-settings-language")?.focus();
+          });
+        dropdown.selectEl.addClass("rl-settings-language");
+        dropdown.selectEl.setAttribute("aria-label", this.t("language.name"));
+      });
+
     const modeSwitch = header.createDiv({
       cls: "rl-settings-mode-switch",
-      attr: { role: "group", "aria-label": "设置模式" },
+      attr: { role: "group", "aria-label": this.t("aria.mode") },
     });
     for (const mode of ["edit", "read"] as const) {
       const isActive = this.mode === mode;
       const button = modeSwitch.createEl("button", {
         cls: `rl-settings-mode-button ${isActive ? "rl-settings-mode-active" : ""}`,
-        text: MODE_LABELS[mode],
+        text: getModeLabels(this.t)[mode],
         attr: {
           type: "button",
           "aria-pressed": String(isActive),
@@ -250,7 +276,7 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
   }
 
   private renderSettingsTabs(container: HTMLElement): void {
-    const tabs = SETTINGS_TABS;
+    const tabs = getSettingsTabs(this.t);
     const firstTab = tabs[0];
     if (firstTab === undefined) {
       throw new Error("Refined Layout settings have no available tabs");
@@ -266,7 +292,7 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
       cls: "rl-settings-tab-nav",
       attr: {
         role: "tablist",
-        "aria-label": "设置分区",
+        "aria-label": this.t("aria.sections"),
         "aria-orientation": "horizontal",
       },
     });
@@ -420,7 +446,7 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
       .addExtraButton((button) => {
         button
           .setIcon("reset")
-          .setTooltip("恢复本区默认值")
+          .setTooltip(this.t("actions.resetSection"))
           .onClick(() => {
             if (tab.reset === "headingDecoration") {
               this.plugin.resetHeadingDecoration(this.mode);
@@ -479,7 +505,7 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
     const nav = container.createEl("nav", {
       cls: "rl-settings-subtab-nav",
       attr: {
-        "aria-label": "标题级别",
+        "aria-label": this.t("aria.headingLevel"),
         role: "tablist",
         "aria-orientation": "horizontal",
       },
@@ -585,46 +611,46 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
     });
 
     if (config.unit !== "") {
-      setting.controlEl.createSpan({ cls: "rl-settings-unit", text: config.unit });
+      setting.controlEl.createSpan({ cls: "rl-settings-unit", text: config.unit === "ratio" ? this.t("unit.ratio") : config.unit });
     }
   }
 
   private renderBodySection(container: HTMLElement, tab: SettingsTabDefinition): void {
     const content = this.createModuleCard(container, tab);
 
-    const bodyCard = this.createGroupCard(content, "正文排版", "普通正文行高、段落或空行高度设置。");
-    this.addNumber(bodyCard, ["body", "lineHeight"], "正文行高", "普通正文文本的行高。");
+    const bodyCard = this.createGroupCard(content, this.t("body.group"), this.t("body.groupDesc"));
+    this.addNumber(bodyCard, ["body", "lineHeight"], this.t("body.lineHeight"), this.t("body.lineHeightDesc"));
     if (this.mode === "edit") {
-      this.addNumber(bodyCard, ["body", "emptyLineHeightEm"], "空行高度", "CodeMirror 源码视图中空白行的高度。");
+      this.addNumber(bodyCard, ["body", "emptyLineHeightEm"], this.t("body.emptyLine"), this.t("body.emptyLineDesc"));
     } else {
-      this.addNumber(bodyCard, ["body", "paragraphSpacingEm"], "段落间距", "阅读视图中普通段落之间的垂直间距。");
+      this.addNumber(bodyCard, ["body", "paragraphSpacingEm"], this.t("body.paragraphSpacing"), this.t("body.paragraphSpacingDesc"));
     }
 
-    const listCard = this.createGroupCard(content, "列表间距", "「条目」控制条目与条目之间；「整体」控制列表首项上方和末项下方，即列表与前后内容的距离。首末两端由「整体」决定，不与「条目」叠加。");
-    this.addNumber(listCard, ["body", "listItemStartEm"], "列表条目上间距", "正文列表中，每个条目与上一个条目的间距。");
-    this.addNumber(listCard, ["body", "listItemEndEm"], "列表条目下间距", "正文列表中，每个条目与下一个条目的间距。");
-    this.addNumber(listCard, ["body", "listBlockStartEm"], "列表整体上间距", "正文列表首项与前方内容的距离。");
-    this.addNumber(listCard, ["body", "listBlockEndEm"], "列表整体下间距", "正文列表末项与后方内容的距离。");
+    const listCard = this.createGroupCard(content, this.t("list.group"), this.t("list.groupDesc"));
+    this.addNumber(listCard, ["body", "listItemStartEm"], this.t("list.itemTop"), this.t("body.listItemTopDesc"));
+    this.addNumber(listCard, ["body", "listItemEndEm"], this.t("list.itemBottom"), this.t("body.listItemBottomDesc"));
+    this.addNumber(listCard, ["body", "listBlockStartEm"], this.t("list.blockTop"), this.t("body.listBlockTopDesc"));
+    this.addNumber(listCard, ["body", "listBlockEndEm"], this.t("list.blockBottom"), this.t("body.listBlockBottomDesc"));
   }
 
   private renderHeadingsSection(container: HTMLElement, tab: SettingsTabDefinition): void {
     const content = this.createModuleCard(container, tab);
     if (this.mode === "edit") {
-      const firstHeadingCard = this.createGroupCard(content, "文档首行", "仅在文档第一行即为标题时的专项补偿。");
-      this.addNumber(firstHeadingCard, ["headingDecoration", "firstHeadingPaddingTopPx"], "首行标题顶部补偿", "文档第一行是标题时的顶部微调补偿。");
+      const firstHeadingCard = this.createGroupCard(content, this.t("headings.firstLine"), this.t("headings.firstLineDesc"));
+      this.addNumber(firstHeadingCard, ["headingDecoration", "firstHeadingPaddingTopPx"], this.t("headings.firstTop"), this.t("headings.firstTopDesc"));
     }
 
     const { subtabContainer, fieldsPanel, fieldsContainer } = this.createHeadingLevelCard(
       content,
-      "各级标题排版与间距",
-      "切换下方 H1–H6 标签页，微调对应级别标题的行高与上下外边距。",
+      this.t("headings.group"),
+      this.t("headings.groupDesc"),
     );
 
     const renderLevelFields = (level: HeadingLevel): void => {
       fieldsContainer.empty();
-      this.addNumber(fieldsContainer, ["headings", level, "lineHeight"], `${HEADING_LABELS[level]} 行高`, "标题文字行高。");
-      this.addNumber(fieldsContainer, ["headings", level, "topEm"], `${HEADING_LABELS[level]} 上间距`, "标题顶部间距。");
-      this.addNumber(fieldsContainer, ["headings", level, "bottomEm"], `${HEADING_LABELS[level]} 下间距`, "标题底部间距。");
+      this.addNumber(fieldsContainer, ["headings", level, "lineHeight"], this.t("headings.lineHeight", { level: HEADING_LABELS[level] }), this.t("headings.lineHeightDesc"));
+      this.addNumber(fieldsContainer, ["headings", level, "topEm"], this.t("headings.top", { level: HEADING_LABELS[level] }), this.t("headings.topDesc"));
+      this.addNumber(fieldsContainer, ["headings", level, "bottomEm"], this.t("headings.bottom", { level: HEADING_LABELS[level] }), this.t("headings.bottomDesc"));
     };
 
     this.renderHeadingLevelTabs(subtabContainer, "headings", fieldsPanel, (level) => {
@@ -634,25 +660,25 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
 
   private renderHeadingDecorationSection(container: HTMLElement, tab: SettingsTabDefinition): void {
     const content = this.createModuleCard(container, tab);
-    const appearanceCard = this.createGroupCard(content, "位置与外观", "调整主题已经提供的标题 ::before 伪元素装饰线；没有标题伪元素的主题不会新增装饰。");
-    this.addNumber(appearanceCard, ["headingDecoration", "leftPx"], "水平偏移", "伪元素相对标题文字的水平偏移位置。");
-    this.addNumber(appearanceCard, ["headingDecoration", "widthPx"], "宽度", "伪元素装饰线的宽度。");
-    this.addNumber(appearanceCard, ["headingDecoration", "radiusPx"], "圆角", "伪元素装饰线的圆角半径。");
-    this.addNumber(appearanceCard, ["headingDecoration", "marginRightPx"], "右间距", "伪元素右侧与标题文本的距离。", { min: 0 });
+    const appearanceCard = this.createGroupCard(content, this.t("decoration.group"), this.t("decoration.groupDesc"));
+    this.addNumber(appearanceCard, ["headingDecoration", "leftPx"], this.t("decoration.left"), this.t("decoration.leftDesc"));
+    this.addNumber(appearanceCard, ["headingDecoration", "widthPx"], this.t("decoration.width"), this.t("decoration.widthDesc"));
+    this.addNumber(appearanceCard, ["headingDecoration", "radiusPx"], this.t("decoration.radius"), this.t("decoration.radiusDesc"));
+    this.addNumber(appearanceCard, ["headingDecoration", "marginRightPx"], this.t("decoration.right"), this.t("decoration.rightDesc"), { min: 0 });
     if (this.mode === "edit") {
-      this.addNumber(appearanceCard, ["headingDecoration", "firstHeadingDecorOffsetPx"], "文档首标题额外补偿", "仅在文档第一行就是标题时叠加；正值向下，负值向上。");
+      this.addNumber(appearanceCard, ["headingDecoration", "firstHeadingDecorOffsetPx"], this.t("decoration.firstOffset"), this.t("decoration.firstOffsetDesc"));
     }
 
     const { subtabContainer, fieldsPanel, fieldsContainer } = this.createHeadingLevelCard(
       content,
-      "各级标题装饰高度与垂直补偿",
-      "切换下方 H1–H6 标签页，微调各级标题装饰线的高度和垂直居中补偿。",
+      this.t("decoration.levels"),
+      this.t("decoration.levelsDesc"),
     );
 
     const renderLevelFields = (level: HeadingLevel): void => {
       fieldsContainer.empty();
-      this.addNumber(fieldsContainer, ["headings", level, "decorHeightPx"], `${HEADING_LABELS[level]} 高度`, "伪元素高度。");
-      this.addNumber(fieldsContainer, ["headings", level, "decorOffsetPx"], `${HEADING_LABELS[level]} 垂直补偿`, "在第一行垂直居中的基础上微调；正值向下，负值向上。");
+      this.addNumber(fieldsContainer, ["headings", level, "decorHeightPx"], this.t("decoration.height", { level: HEADING_LABELS[level] }), this.t("decoration.heightDesc"));
+      this.addNumber(fieldsContainer, ["headings", level, "decorOffsetPx"], this.t("decoration.offset", { level: HEADING_LABELS[level] }), this.t("decoration.offsetDesc"));
     };
 
     this.renderHeadingLevelTabs(subtabContainer, "headingDecoration", fieldsPanel, (level) => {
@@ -663,56 +689,56 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
   private renderCalloutSection(container: HTMLElement, tab: SettingsTabDefinition): void {
     const content = this.createModuleCard(container, tab);
 
-    const appearanceCard = this.createGroupCard(content, "卡片外观与外边距", "Callout 卡片的圆角以及与前后内容的距离。");
-    this.addNumber(appearanceCard, ["callout", "radiusPx"], "卡片圆角", "Callout 卡片圆角半径。");
-    this.addNumber(appearanceCard, ["callout", "marginTopPx"], "卡片上外边距", "Callout 与前方内容的距离。");
-    this.addNumber(appearanceCard, ["callout", "marginBottomPx"], "卡片下外边距", "Callout 与后方内容的距离。");
+    const appearanceCard = this.createGroupCard(content, this.t("callout.appearance"), this.t("callout.appearanceDesc"));
+    this.addNumber(appearanceCard, ["callout", "radiusPx"], this.t("callout.radius"), this.t("callout.radiusDesc"));
+    this.addNumber(appearanceCard, ["callout", "marginTopPx"], this.t("callout.marginTop"), this.t("callout.marginTopDesc"));
+    this.addNumber(appearanceCard, ["callout", "marginBottomPx"], this.t("callout.marginBottom"), this.t("callout.marginBottomDesc"));
 
-    const paddingCard = this.createGroupCard(content, "卡片内边距", "Callout 内部各边缘与内容的内边距。");
-    this.addNumber(paddingCard, ["callout", "paddingTopPx"], "卡片上内边距", "Callout 卡片顶部内边距。");
-    this.addNumber(paddingCard, ["callout", "paddingBottomPx"], "卡片下内边距", "Callout 卡片底部内边距。");
-    this.addNumber(paddingCard, ["callout", "paddingLeftPx"], "卡片左内边距", "Callout 卡片左侧内边距。");
-    this.addNumber(paddingCard, ["callout", "paddingRightPx"], "卡片右内边距", "Callout 卡片右侧内边距。");
+    const paddingCard = this.createGroupCard(content, this.t("callout.padding"), this.t("callout.paddingDesc"));
+    this.addNumber(paddingCard, ["callout", "paddingTopPx"], this.t("callout.paddingTop"), this.t("callout.paddingTopDesc"));
+    this.addNumber(paddingCard, ["callout", "paddingBottomPx"], this.t("callout.paddingBottom"), this.t("callout.paddingBottomDesc"));
+    this.addNumber(paddingCard, ["callout", "paddingLeftPx"], this.t("callout.paddingLeft"), this.t("callout.paddingLeftDesc"));
+    this.addNumber(paddingCard, ["callout", "paddingRightPx"], this.t("callout.paddingRight"), this.t("callout.paddingRightDesc"));
 
-    const titleCard = this.createGroupCard(content, "标题栏排版与常规内边距", "Callout 标题栏文字及标准内边距。");
-    this.addNumber(titleCard, ["callout", "titleLineHeight"], "标题行高", "标题栏文字行高。");
-    this.addNumber(titleCard, ["callout", "titlePaddingTopEm"], "标题上内边距", "标题栏顶部内边距。");
-    this.addNumber(titleCard, ["callout", "titlePaddingBottomEm"], "标题下内边距", "标题栏底部内边距；仅标题、折叠或后接标题时会自动抑制冲突空白。");
-    this.addNumber(titleCard, ["callout", "titlePaddingLeftPx"], "标题左内边距", "标题栏左侧内边距。");
-    this.addNumber(titleCard, ["callout", "titlePaddingRightPx"], "标题右内边距", "标题栏右侧内边距。");
+    const titleCard = this.createGroupCard(content, this.t("callout.title"), this.t("callout.titleDesc"));
+    this.addNumber(titleCard, ["callout", "titleLineHeight"], this.t("callout.titleLineHeight"), this.t("callout.titleLineHeightDesc"));
+    this.addNumber(titleCard, ["callout", "titlePaddingTopEm"], this.t("callout.titleTop"), this.t("callout.titleTopDesc"));
+    this.addNumber(titleCard, ["callout", "titlePaddingBottomEm"], this.t("callout.titleBottom"), this.t("callout.titleBottomDesc"));
+    this.addNumber(titleCard, ["callout", "titlePaddingLeftPx"], this.t("callout.titleLeft"), this.t("callout.titleLeftDesc"));
+    this.addNumber(titleCard, ["callout", "titlePaddingRightPx"], this.t("callout.titleRight"), this.t("callout.titleRightDesc"));
 
-    const specialTitleCard = this.createGroupCard(content, "特殊状态标题栏内边距", "仅标题状态或折叠状态下的专属内边距控制。");
-    this.addNumber(specialTitleCard, ["callout", "titleOnlyPaddingTopEm"], "仅标题时上内边距", "Callout 只有标题时的顶部内边距。");
-    this.addNumber(specialTitleCard, ["callout", "titleOnlyPaddingBottomEm"], "仅标题时下内边距", "Callout 只有标题时的底部内边距；独立于有内容 Callout 的卡片下内边距。");
-    this.addNumber(specialTitleCard, ["callout", "collapsedPaddingTopEm"], "折叠状态上内边距", "折叠 Callout 的顶部内边距。");
-    this.addNumber(specialTitleCard, ["callout", "collapsedPaddingBottomEm"], "折叠状态下内边距", "折叠 Callout 的底部内边距。");
+    const specialTitleCard = this.createGroupCard(content, this.t("callout.specialTitle"), this.t("callout.specialTitleDesc"));
+    this.addNumber(specialTitleCard, ["callout", "titleOnlyPaddingTopEm"], this.t("callout.titleOnlyTop"), this.t("callout.titleOnlyTopDesc"));
+    this.addNumber(specialTitleCard, ["callout", "titleOnlyPaddingBottomEm"], this.t("callout.titleOnlyBottom"), this.t("callout.titleOnlyBottomDesc"));
+    this.addNumber(specialTitleCard, ["callout", "collapsedPaddingTopEm"], this.t("callout.collapsedTop"), this.t("callout.collapsedTopDesc"));
+    this.addNumber(specialTitleCard, ["callout", "collapsedPaddingBottomEm"], this.t("callout.collapsedBottom"), this.t("callout.collapsedBottomDesc"));
 
-    const bodyCard = this.createGroupCard(content, "内部正文与列表", "Callout 内部段落及列表的独立间距；列表分「条目」与「整体」两层。");
-    this.addNumber(bodyCard, ["callout", "paragraphLineHeight"], "内部正文行高", "Callout 正文行高，独立于普通正文。");
-    this.addNumber(bodyCard, ["callout", "paragraphSpacingEm"], "内部段落间距", "Callout 段落间距。");
-    this.addNumber(bodyCard, ["callout", "listItemStartEm"], "列表条目上间距", "Callout 列表中，每个条目与上一个条目的间距。");
-    this.addNumber(bodyCard, ["callout", "listItemEndEm"], "列表条目下间距", "Callout 列表中，每个条目与下一个条目的间距。");
-    this.addNumber(bodyCard, ["callout", "listBlockStartEm"], "列表整体上间距", "Callout 列表首项与前方内容的距离。");
-    this.addNumber(bodyCard, ["callout", "listBlockEndEm"], "列表整体下间距", "Callout 列表末项与后方内容的距离。");
-    this.addNumber(bodyCard, ["callout", "lastListEndEm"], "末尾列表整体下间距", "列表是 Callout 最后一个元素时，覆盖「列表整体下间距」。");
+    const bodyCard = this.createGroupCard(content, this.t("context.bodyGroup"), this.t("callout.bodyDesc"));
+    this.addNumber(bodyCard, ["callout", "paragraphLineHeight"], this.t("context.lineHeight"), this.t("callout.lineHeightDesc"));
+    this.addNumber(bodyCard, ["callout", "paragraphSpacingEm"], this.t("context.paragraphSpacing"), this.t("callout.paragraphSpacingDesc"));
+    this.addNumber(bodyCard, ["callout", "listItemStartEm"], this.t("list.itemTop"), this.t("callout.listItemTopDesc"));
+    this.addNumber(bodyCard, ["callout", "listItemEndEm"], this.t("list.itemBottom"), this.t("callout.listItemBottomDesc"));
+    this.addNumber(bodyCard, ["callout", "listBlockStartEm"], this.t("list.blockTop"), this.t("callout.listBlockTopDesc"));
+    this.addNumber(bodyCard, ["callout", "listBlockEndEm"], this.t("list.blockBottom"), this.t("callout.listBlockBottomDesc"));
+    this.addNumber(bodyCard, ["callout", "lastListEndEm"], this.t("callout.lastList"), this.t("callout.lastListDesc"));
 
-    this.renderImageFields(content, ["callout", "image"], "Callout 内部图片", "Callout 内部图片的尺寸和外观设置。");
-    this.renderTableFields(content, ["callout", "table"], "Callout 内部表格", "Callout 内部表格的内边距、边框和间距。");
+    this.renderImageFields(content, ["callout", "image"], this.t("callout.image"), this.t("callout.imageDesc"));
+    this.renderTableFields(content, ["callout", "table"], this.t("callout.table"), this.t("callout.tableDesc"));
     this.renderContextHeadings(content, "callout", this.mode === "read");
   }
 
   private renderBlockquoteSection(container: HTMLElement, tab: SettingsTabDefinition): void {
     const content = this.createModuleCard(container, tab);
 
-    const bodyCard = this.createGroupCard(content, "内部正文与列表", "引用块内部段落及列表的独立排版与间距；列表分「条目」与「整体」两层。");
-    this.addNumber(bodyCard, ["blockquote", "paragraphLineHeight"], "内部正文行高", "引用块正文行高，独立于普通正文。");
-    this.addNumber(bodyCard, ["blockquote", "paragraphSpacingEm"], "内部段落间距", "引用块段落间距。");
-    this.addNumber(bodyCard, ["blockquote", "listItemStartEm"], "列表条目上间距", "引用块列表中，每个条目与上一个条目的间距。");
-    this.addNumber(bodyCard, ["blockquote", "listItemEndEm"], "列表条目下间距", "引用块列表中，每个条目与下一个条目的间距。");
-    this.addNumber(bodyCard, ["blockquote", "listBlockStartEm"], "列表整体上间距", "引用块列表首项与前方内容的距离。");
-    this.addNumber(bodyCard, ["blockquote", "listBlockEndEm"], "列表整体下间距", "引用块列表末项与后方内容的距离。");
+    const bodyCard = this.createGroupCard(content, this.t("context.bodyGroup"), this.t("blockquote.bodyDesc"));
+    this.addNumber(bodyCard, ["blockquote", "paragraphLineHeight"], this.t("context.lineHeight"), this.t("blockquote.lineHeightDesc"));
+    this.addNumber(bodyCard, ["blockquote", "paragraphSpacingEm"], this.t("context.paragraphSpacing"), this.t("blockquote.paragraphSpacingDesc"));
+    this.addNumber(bodyCard, ["blockquote", "listItemStartEm"], this.t("list.itemTop"), this.t("blockquote.listItemTopDesc"));
+    this.addNumber(bodyCard, ["blockquote", "listItemEndEm"], this.t("list.itemBottom"), this.t("blockquote.listItemBottomDesc"));
+    this.addNumber(bodyCard, ["blockquote", "listBlockStartEm"], this.t("list.blockTop"), this.t("blockquote.listBlockTopDesc"));
+    this.addNumber(bodyCard, ["blockquote", "listBlockEndEm"], this.t("list.blockBottom"), this.t("blockquote.listBlockBottomDesc"));
 
-    this.renderTableFields(content, ["blockquote", "table"], "引用块内部表格", "引用块内部表格的内边距、边框和间距。");
+    this.renderTableFields(content, ["blockquote", "table"], this.t("blockquote.table"), this.t("blockquote.tableDesc"));
     this.renderContextHeadings(content, "blockquote", false);
   }
 
@@ -721,20 +747,20 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
     context: "callout" | "blockquote",
     bottomUsesPx: boolean,
   ): void {
-    const label = context === "callout" ? "Callout" : "引用块";
+    const label = context === "callout" ? "Callout" : this.t("context.blockquote");
     const { subtabContainer, fieldsPanel, fieldsContainer } = this.createHeadingLevelCard(
       container,
-      `${label} 内部各级标题 (H1–H6)`,
-      `切换下方 H1–H6 标签页，微调 ${label} 内部各级标题的行高与间距。`,
+      this.t("context.headings", { context: label }),
+      this.t("context.headingsDesc", { context: label }),
     );
 
     const renderLevelFields = (level: HeadingLevel): void => {
       fieldsContainer.empty();
       const prefix = [context, "headings", level];
-      this.addNumber(fieldsContainer, [...prefix, "lineHeight"], `${HEADING_LABELS[level]} 行高`, "内部标题行高。");
-      this.addNumber(fieldsContainer, [...prefix, "topEm"], `${HEADING_LABELS[level]} 上间距`, "内部标题顶部间距。");
+      this.addNumber(fieldsContainer, [...prefix, "lineHeight"], this.t("headings.lineHeight", { level: HEADING_LABELS[level] }), this.t("context.headingLineHeightDesc"));
+      this.addNumber(fieldsContainer, [...prefix, "topEm"], this.t("headings.top", { level: HEADING_LABELS[level] }), this.t("context.headingTopDesc"));
       const bottomKey = bottomUsesPx ? "bottomPx" : "bottomEm";
-      this.addNumber(fieldsContainer, [...prefix, bottomKey], `${HEADING_LABELS[level]} 下间距`, "内部标题底部间距。");
+      this.addNumber(fieldsContainer, [...prefix, bottomKey], this.t("headings.bottom", { level: HEADING_LABELS[level] }), this.t("context.headingBottomDesc"));
     };
 
     this.renderHeadingLevelTabs(subtabContainer, `${context}-headings`, fieldsPanel, (level) => {
@@ -744,56 +770,56 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
 
   private renderImageSection(container: HTMLElement, tab: SettingsTabDefinition): void {
     const content = this.createModuleCard(container, tab);
-    this.renderImageFields(content, ["image"], "正文图片尺寸与外观", "普通正文图片的尺寸、圆角和边框设置。");
+    this.renderImageFields(content, ["image"], this.t("image.group"), this.t("image.groupDesc"));
   }
 
   private renderImageFields(container: HTMLElement, prefix: string[], label: string, description?: string): void {
     const card = this.createGroupCard(container, label, description);
-    this.addNumber(card, [...prefix, "maxWidthPct"], "最大宽度", "图片相对所在内容区域的最大宽度。");
-    this.addNumber(card, [...prefix, "radiusPx"], "图片圆角", "图片圆角半径。");
-    this.addNumber(card, [...prefix, "borderPx"], "图片边框", "图片边框宽度。");
+    this.addNumber(card, [...prefix, "maxWidthPct"], this.t("image.maxWidth"), this.t("image.maxWidthDesc"));
+    this.addNumber(card, [...prefix, "radiusPx"], this.t("image.radius"), this.t("image.radiusDesc"));
+    this.addNumber(card, [...prefix, "borderPx"], this.t("image.border"), this.t("image.borderDesc"));
   }
 
   private renderMermaidSection(container: HTMLElement, tab: SettingsTabDefinition): void {
     const content = this.createModuleCard(container, tab);
-    const card = this.createGroupCard(content, "图表自适应与宽度规则", "按 SVG 原始 viewBox 宽高比区分纵向图和普通/横向图。");
-    this.addNumber(card, ["mermaid", "portraitMaxWidthPct"], "纵向图最大宽度", "纵向图按原始尺寸居中显示，不主动放大；超过此正文宽度比例时才等比缩小。");
-    this.addNumber(card, ["mermaid", "portraitAspectRatio"], "纵向判定宽高比", "SVG 原始宽度除以高度；小于或等于该值时视为纵向图。", { min: 0.05, max: 5, step: 0.05 });
-    this.addNumber(card, ["mermaid", "landscapeMinWidthPx"], "横向图最小宽度", "普通或横向 Mermaid 的最小宽度；空间不足时允许横向滚动。", { min: 0, max: 4096, step: 10 });
+    const card = this.createGroupCard(content, this.t("mermaid.group"), this.t("mermaid.groupDesc"));
+    this.addNumber(card, ["mermaid", "portraitMaxWidthPct"], this.t("mermaid.portraitWidth"), this.t("mermaid.portraitWidthDesc"));
+    this.addNumber(card, ["mermaid", "portraitAspectRatio"], this.t("mermaid.portraitRatio"), this.t("mermaid.portraitRatioDesc"), { min: 0.05, max: 5, step: 0.05 });
+    this.addNumber(card, ["mermaid", "landscapeMinWidthPx"], this.t("mermaid.landscapeWidth"), this.t("mermaid.landscapeWidthDesc"), { min: 0, max: 4096, step: 10 });
   }
 
   private renderTableSection(container: HTMLElement, tab: SettingsTabDefinition): void {
     const content = this.createModuleCard(container, tab);
-    this.renderTableFields(content, ["table"], "正文表格外观与间距", "正文表格的单元格内边距、内外部边框、圆角和上下间距。");
+    this.renderTableFields(content, ["table"], this.t("table.group"), this.t("table.groupDesc"));
   }
 
   private renderTableFields(container: HTMLElement, prefix: string[], label: string, description?: string): void {
     const card = this.createGroupCard(container, label, description);
-    this.addNumber(card, [...prefix, "cellPaddingPx"], "单元格内边距", "表格单元格内边距。");
-    this.addNumber(card, [...prefix, "innerBorderPx"], "内框线宽度", "表格内部边框宽度。");
-    this.addNumber(card, [...prefix, "outerBorderPx"], "外边框宽度", "表格外边框宽度。");
-    this.addNumber(card, [...prefix, "radiusPx"], "表格圆角", "表格整体圆角。");
-    this.addNumber(card, [...prefix, "spacingTopPx"], "表格上间距", "表格与前方内容的距离。");
-    this.addNumber(card, [...prefix, "spacingBottomPx"], "表格下间距", "表格与后方内容的距离。");
+    this.addNumber(card, [...prefix, "cellPaddingPx"], this.t("table.cellPadding"), this.t("table.cellPaddingDesc"));
+    this.addNumber(card, [...prefix, "innerBorderPx"], this.t("table.innerBorder"), this.t("table.innerBorderDesc"));
+    this.addNumber(card, [...prefix, "outerBorderPx"], this.t("table.outerBorder"), this.t("table.outerBorderDesc"));
+    this.addNumber(card, [...prefix, "radiusPx"], this.t("table.radius"), this.t("table.radiusDesc"));
+    this.addNumber(card, [...prefix, "spacingTopPx"], this.t("table.top"), this.t("table.topDesc"));
+    this.addNumber(card, [...prefix, "spacingBottomPx"], this.t("table.bottom"), this.t("table.bottomDesc"));
   }
 
   private renderCodeBlockSection(container: HTMLElement, tab: SettingsTabDefinition): void {
     const content = this.createModuleCard(container, tab);
-    const card = this.createGroupCard(content, "代码块排版与间距", "代码块内部行高及在不同模式下的边距。");
-    this.addNumber(card, ["codeBlock", "lineHeight"], "代码行高", "代码块内部行高。");
+    const card = this.createGroupCard(content, this.t("code.group"), this.t("code.groupDesc"));
+    this.addNumber(card, ["codeBlock", "lineHeight"], this.t("code.lineHeight"), this.t("code.lineHeightDesc"));
     if (this.mode === "edit") {
-      this.addNumber(card, ["codeBlock", "innerSpacingEm"], "内部空行间距", "编辑模式代码块内部空行的间距。");
+      this.addNumber(card, ["codeBlock", "innerSpacingEm"], this.t("code.emptyLine"), this.t("code.emptyLineDesc"));
     } else {
-      this.addNumber(card, ["codeBlock", "marginTopEm"], "代码块上间距", "阅读模式代码块顶部间距。");
-      this.addNumber(card, ["codeBlock", "marginBottomEm"], "代码块下间距", "阅读模式代码块底部间距。");
+      this.addNumber(card, ["codeBlock", "marginTopEm"], this.t("code.top"), this.t("code.topDesc"));
+      this.addNumber(card, ["codeBlock", "marginBottomEm"], this.t("code.bottom"), this.t("code.bottomDesc"));
     }
   }
 
   private renderHeadingGapSection(container: HTMLElement, tab: SettingsTabDefinition): void {
     const content = this.createModuleCard(container, tab);
-    this.renderHeadingGapGroup(content, "body", "正文");
+    this.renderHeadingGapGroup(content, "body", this.t("context.body"));
     this.renderHeadingGapGroup(content, "callout", "Callout");
-    this.renderHeadingGapGroup(content, "blockquote", "Quote (引用块)");
+    this.renderHeadingGapGroup(content, "blockquote", this.t("context.quote"));
   }
 
   private renderHeadingGapGroup(
@@ -801,18 +827,18 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
     context: "body" | "callout" | "blockquote",
     label: string,
   ): void {
-    const card = this.createGroupCard(container, `${label} 内标题后首元素间距`, `${label} 内标题后接不同类型首元素时的顶部补偿间距。`);
+    const card = this.createGroupCard(container, this.t("gap.group", { context: label }), this.t("gap.groupDesc", { context: label }));
 
     if (context === "body") {
       const bodyFields: Array<[string, string, string]> = [
-        ["emptyLineEm", "标题后空行高度", "标题、空行、非标题元素组合中的空行高度。"],
-        ["paragraphEm", "紧邻正文间距", "正文标题后没有空行且紧邻正文时的顶部补偿。"],
-        ["listEm", "紧邻列表间距", "正文标题后紧邻列表时的顶部补偿。"],
-        ["quoteEm", "紧邻 Quote 间距", "正文标题后紧邻 Quote 时的顶部补偿。"],
-        ["codeEm", "紧邻代码块间距", "正文标题后紧邻代码块时的顶部补偿。"],
-        ["tableEm", "紧邻表格间距", "正文标题后紧邻表格时的顶部补偿。"],
-        ["imageEm", "紧邻图片间距", "正文标题后紧邻图片时的顶部补偿。"],
-        ["calloutEm", "紧邻 Callout 间距", "正文标题后紧邻 Callout 时的顶部补偿。"],
+        ["emptyLineEm", this.t("gap.emptyLine"), this.t("gap.emptyLineDesc")],
+        ["paragraphEm", this.t("gap.paragraph"), this.t("gap.paragraphDesc")],
+        ["listEm", this.t("gap.list"), this.t("gap.listDesc")],
+        ["quoteEm", this.t("gap.quote"), this.t("gap.quoteDesc")],
+        ["codeEm", this.t("gap.code"), this.t("gap.codeDesc")],
+        ["tableEm", this.t("gap.table"), this.t("gap.tableDesc")],
+        ["imageEm", this.t("gap.image"), this.t("gap.imageDesc")],
+        ["calloutEm", this.t("gap.callout"), this.t("gap.calloutDesc")],
       ];
       for (const [key, name, description] of bodyFields) {
         this.addNumber(card, ["headingGap", "body", key], name, description);
@@ -821,17 +847,17 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
     }
 
     if (this.mode === "edit") {
-      this.addNumber(card, ["headingGap", context, "emptyLineEm"], "标题后空行高度", `${label} 内标题后空行的高度。`);
+      this.addNumber(card, ["headingGap", context, "emptyLineEm"], this.t("gap.emptyLine"), this.t("gap.contextEmptyLine", { context: label }));
     }
 
     const contextFields: Array<[string, string, string]> = [
-      ["paragraphPx", "紧邻正文间距", `${label} 内标题后紧邻正文时的间距。`],
-      ["listPx", "紧邻列表间距", `${label} 内标题后紧邻列表时的间距。`],
-      ["quotePx", "紧邻 Quote 间距", `${label} 内标题后紧邻 Quote 时的间距。`],
-      ["codePx", "紧邻代码块间距", `${label} 内标题后紧邻代码块时的间距。`],
-      ["tablePx", "紧邻表格间距", `${label} 内标题后紧邻表格时的间距。`],
-      ["imagePx", "紧邻图片间距", `${label} 内标题后紧邻图片时的间距。`],
-      ["calloutPx", "紧邻 Callout 间距", `${label} 内标题后紧邻 Callout 时的间距。`],
+      ["paragraphPx", this.t("gap.paragraph"), this.t("gap.contextParagraph", { context: label })],
+      ["listPx", this.t("gap.list"), this.t("gap.contextList", { context: label })],
+      ["quotePx", this.t("gap.quote"), this.t("gap.contextQuote", { context: label })],
+      ["codePx", this.t("gap.code"), this.t("gap.contextCode", { context: label })],
+      ["tablePx", this.t("gap.table"), this.t("gap.contextTable", { context: label })],
+      ["imagePx", this.t("gap.image"), this.t("gap.contextImage", { context: label })],
+      ["calloutPx", this.t("gap.callout"), this.t("gap.contextCallout", { context: label })],
     ];
     for (const [key, name, description] of contextFields) {
       this.addNumber(card, ["headingGap", context, key], name, description);

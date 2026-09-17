@@ -1,3 +1,5 @@
+import { normalizeLanguagePreference, type LanguagePreference } from "./i18n/language";
+
 export const MODE_KEYS = ["edit", "read"] as const;
 export type ModeKey = (typeof MODE_KEYS)[number];
 
@@ -175,6 +177,7 @@ export interface ModeSettings {
 
 export interface RefinedLayoutSettings {
   schemaVersion: 3;
+  language: LanguagePreference;
   edit: ModeSettings;
   read: ModeSettings;
 }
@@ -267,6 +270,7 @@ const ALL_MODULES: ModuleSettings = {
 };
 
 export const DEFAULT_SETTINGS: RefinedLayoutSettings = {
+  language: "auto",
   schemaVersion: 3,
   edit: {
     modules: { ...ALL_MODULES },
@@ -618,18 +622,38 @@ function migrateSettings(candidate: unknown): unknown {
 }
 
 export function mergeSettings(candidate: unknown): RefinedLayoutSettings {
-  return mergeKnown(cloneDefaultSettings(), migrateSettings(candidate));
+  const settings = mergeKnown(cloneDefaultSettings(), migrateSettings(candidate));
+  settings.language = normalizeLanguagePreference(
+    typeof candidate === "object" && candidate !== null
+      ? (candidate as Record<string, unknown>).language
+      : undefined,
+  );
+  return settings;
+}
+
+export type SettingsImportErrorCode = "invalidJson" | "invalidRoot" | "unsupportedVersion";
+
+export class SettingsImportError extends Error {
+  constructor(readonly code: SettingsImportErrorCode, readonly originalError?: unknown) {
+    super(`Invalid settings file: ${code}`);
+    this.name = "SettingsImportError";
+  }
 }
 
 export function parseSettingsJson(json: string): RefinedLayoutSettings {
-  const candidate = JSON.parse(json) as unknown;
+  let candidate: unknown;
+  try {
+    candidate = JSON.parse(json) as unknown;
+  } catch (error) {
+    throw new SettingsImportError("invalidJson", error);
+  }
   if (typeof candidate !== "object" || candidate === null || Array.isArray(candidate)) {
-    throw new Error("配置文件根节点必须是对象");
+    throw new SettingsImportError("invalidRoot");
   }
 
   const schemaVersion = (candidate as Record<string, unknown>).schemaVersion;
   if (schemaVersion !== 1 && schemaVersion !== 2 && schemaVersion !== 3) {
-    throw new Error("配置文件的 schemaVersion 必须是 1、2 或 3");
+    throw new SettingsImportError("unsupportedVersion");
   }
 
   return mergeSettings(candidate);

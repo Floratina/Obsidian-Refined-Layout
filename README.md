@@ -12,6 +12,12 @@ Refined Layout 将原来的 Obsidian CSS snippet 改造成可独立配置的本�
 插件不会修改 `.obsidian/appearance.json`。用户设置保存在未纳入 Git 的 `data.json` 中。
 设置页顶部提供“导出配置”和“导入配置”，可将两种模式的完整设置保存为 JSON 或从 JSON 恢复。
 
+## 界面语言
+
+设置页顶部的「界面语言」下拉框提供「跟随 Obsidian」、简体中文、繁體中文（台灣用語）、English 和日本語。默认跟随 Obsidian；自动模式下，其他语言或无法读取语言时使用 English。手动选择后立即更新界面，无需重启。
+
+设置项、说明、按钮及导入导出提示均支持四种语言。翻译随插件打包，离线可用。语言选择保存在 `data.json` 中，随配置一起导入导出；旧配置没有语言字段时使用「跟随 Obsidian」。更改语言不影响排版参数，「全部重置」保留当前语言选择。
+
 ## 排版作用范围
 
 Canvas 白板（包括卡片阅读和编辑）整体绕过插件排版，保留 Obsidian 与主题的原有样式。旧配置中的 `canvasReset` 字段会在加载时忽略。
@@ -32,6 +38,6 @@ npm install
 npm run check
 ```
 
-`npm run check` 会执行 ESLint、Stylelint、无 `calc()` 检查、变量映射检查、TypeScript 类型检查和生产构建。
+`npm run check` 会执行 ESLint、Stylelint、无 `calc()` 检查、变量映射检查、多语言测试、TypeScript 类型检查和生产构建。可单独执行 `npm run test:i18n` 检查语言识别、翻译完整性与导入错误提示；测试位于 `tests/i18n/`。
 
 原始 CSS 保存在 `reference/`，不应直接修改。人工回归测试内容位于 `tests/layout-fixture.md`。
