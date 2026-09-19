@@ -120,6 +120,11 @@ export interface ImageSettings {
   borderPx: number;
 }
 
+export interface BodyImageSettings extends ImageSettings {
+  marginTopPx: number;
+  marginBottomPx: number;
+}
+
 export interface MermaidSettings {
   portraitMaxWidthPct: number;
   portraitAspectRatio: number;
@@ -168,7 +173,7 @@ export interface ModeSettings {
   headingDecoration: HeadingDecorationSettings;
   callout: CalloutSettings;
   blockquote: BlockquoteSettings;
-  image: ImageSettings;
+  image: BodyImageSettings;
   mermaid: MermaidSettings;
   table: TableSettings;
   codeBlock: CodeBlockSettings;
@@ -330,7 +335,7 @@ export const DEFAULT_SETTINGS: RefinedLayoutSettings = {
       headings: EDIT_BLOCKQUOTE_HEADINGS,
       table: { ...EDIT_TABLE },
     },
-    image: { ...EDIT_IMAGE },
+    image: { ...EDIT_IMAGE, marginTopPx: 0, marginBottomPx: 0 },
     mermaid: {
       portraitMaxWidthPct: 55,
       portraitAspectRatio: 1,
@@ -434,7 +439,7 @@ export const DEFAULT_SETTINGS: RefinedLayoutSettings = {
       headings: READ_BLOCKQUOTE_HEADINGS,
       table: { ...READ_TABLE },
     },
-    image: { ...READ_IMAGE },
+    image: { ...READ_IMAGE, marginTopPx: 0, marginBottomPx: 0 },
     mermaid: {
       portraitMaxWidthPct: 55,
       portraitAspectRatio: 1,

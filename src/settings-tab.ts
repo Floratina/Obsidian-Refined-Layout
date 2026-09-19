@@ -778,6 +778,10 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
     this.addNumber(card, [...prefix, "maxWidthPct"], this.t("image.maxWidth"), this.t("image.maxWidthDesc"));
     this.addNumber(card, [...prefix, "radiusPx"], this.t("image.radius"), this.t("image.radiusDesc"));
     this.addNumber(card, [...prefix, "borderPx"], this.t("image.border"), this.t("image.borderDesc"));
+    if (prefix.length === 1 && prefix[0] === "image") {
+      this.addNumber(card, [...prefix, "marginTopPx"], this.t("image.marginTop"), this.t(this.mode === "edit" ? "image.marginTopEditDesc" : "image.marginTopReadDesc"), { min: 0 });
+      this.addNumber(card, [...prefix, "marginBottomPx"], this.t("image.marginBottom"), this.t(this.mode === "edit" ? "image.marginBottomEditDesc" : "image.marginBottomReadDesc"), { min: 0 });
+    }
   }
 
   private renderMermaidSection(container: HTMLElement, tab: SettingsTabDefinition): void {

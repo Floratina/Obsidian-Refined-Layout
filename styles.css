@@ -673,6 +673,61 @@ body.refined-layout-enabled.rl-read-images .markdown-preview-view.markdown-rende
   object-fit: cover;
 }
 
+/* CM6 places zero-width cursor buffers on both sides of an inline widget.
+   A block-level embed splits those buffers into two anonymous line boxes,
+   adding a full line of space above and below the image. Keep the widget
+   inline, and center its inner wrapper within a full-width inline flex box. */
+body.refined-layout-enabled.rl-edit-images .markdown-source-view.mod-cm6 .cm-content > .cm-line .image-embed:not(:where(.canvas-wrapper, .canvas-wrapper *, .canvas-node, .canvas-node *, .mermaid, .mermaid *, .block-language-dataviewjs *, .callout *, .cm-callout *)) {
+  display: inline-flex !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  justify-content: center;
+  vertical-align: bottom;
+}
+
+body.refined-layout-enabled.rl-edit-images .markdown-source-view.mod-cm6 .cm-content > .cm-line .image-embed > .image-wrapper:not(:where(.canvas-wrapper, .canvas-wrapper *, .canvas-node, .canvas-node *, .mermaid, .mermaid *, .block-language-dataviewjs *, .callout *, .cm-callout *)) {
+  width: fit-content !important;
+  max-width: var(--rl-edit-image-max-width-pct) !important;
+  min-width: 0;
+  margin-block: 0 !important;
+  padding-block: 0 !important;
+}
+
+/* Keep source-view spacing inside the measured box, including block widgets.
+   Real source blank lines retain the body's blank-line height. */
+body.refined-layout-enabled.rl-edit-images .markdown-source-view.mod-cm6 .cm-content > .image-embed:not(:where(.canvas-wrapper, .canvas-wrapper *, .canvas-node, .canvas-node *, .mermaid, .mermaid *, .block-language-dataviewjs *, .callout *, .cm-callout *)),
+body.refined-layout-enabled.rl-edit-images .markdown-source-view.mod-cm6 .cm-content > .cm-line:where(:has(.image-embed, img[src][contenteditable="false"])):not(:where(.HyperMD-quote, .HyperMD-list-line, .HyperMD-header)):not(:where(.canvas-wrapper, .canvas-wrapper *, .canvas-node, .canvas-node *, .mermaid, .mermaid *, .block-language-dataviewjs *, .callout *, .cm-callout *)) {
+  margin-block-start: 0 !important;
+  margin-block-end: 0 !important;
+  padding-block-start: var(--rl-edit-image-margin-top-px) !important;
+  padding-block-end: var(--rl-edit-image-margin-bottom-px) !important;
+}
+
+/* Nested image widgets must not add a second layer of vertical spacing. */
+body.refined-layout-enabled.rl-edit-images .markdown-source-view.mod-cm6 .cm-content > .cm-line .image-embed:not(:where(.canvas-wrapper, .canvas-wrapper *, .canvas-node, .canvas-node *, .mermaid, .mermaid *, .block-language-dataviewjs *, .callout *, .cm-callout *)),
+body.refined-layout-enabled.rl-edit-images .markdown-source-view.mod-cm6 .cm-content > .cm-line img[src][contenteditable="false"]:not(:where(.canvas-wrapper, .canvas-wrapper *, .canvas-node, .canvas-node *, .mermaid, .mermaid *, .block-language-dataviewjs *, .callout *, .cm-callout *)) {
+  margin-block-start: 0 !important;
+  margin-block-end: 0 !important;
+  padding-block-start: 0 !important;
+  padding-block-end: 0 !important;
+}
+
+body.refined-layout-enabled.rl-edit-images .markdown-source-view.mod-cm6 .cm-content > img[src][contenteditable="false"]:not(:where(.canvas-wrapper, .canvas-wrapper *, .canvas-node, .canvas-node *, .mermaid, .mermaid *, .block-language-dataviewjs *, .callout *, .cm-callout *)) {
+  margin-block-start: var(--rl-edit-image-margin-top-px) !important;
+  margin-block-end: var(--rl-edit-image-margin-bottom-px) !important;
+}
+
+/* Own the paragraph margins rather than adding image margins on top of them. */
+body.refined-layout-enabled.rl-read-images .markdown-preview-view.markdown-rendered .markdown-preview-section > .el-p > p:where(:has(> img[src], > .image-embed)):not(:where(.block-language-dataviewjs *)):not(:where(.canvas-wrapper, .canvas-wrapper *, .canvas-node, .canvas-node *, .mermaid, .mermaid *)) {
+  margin-block-start: var(--rl-read-image-margin-top-px) !important;
+  margin-block-end: var(--rl-read-image-margin-bottom-px) !important;
+}
+
+body.refined-layout-enabled.rl-read-images .markdown-preview-view.markdown-rendered .markdown-preview-section > .el-p > p:where(:has(> img[src], > .image-embed)) > :is(img[src], .image-embed):not(:where(.block-language-dataviewjs *)):not(:where(.canvas-wrapper, .canvas-wrapper *, .canvas-node, .canvas-node *, .mermaid, .mermaid *)) {
+  margin-block-start: 0 !important;
+  margin-block-end: 0 !important;
+}
+
 /* Callout images use their own settings and never inherit body-image values. */
 body.refined-layout-enabled.rl-edit-callouts .markdown-source-view.mod-cm6 :is(.callout.drop-shadow, .cm-callout) .callout-content :is(
   .image-embed,
@@ -1005,7 +1060,11 @@ body.refined-layout-enabled.rl-edit-heading-gaps .markdown-source-view.mod-cm6 .
 }
 
 body.refined-layout-enabled.rl-edit-heading-gaps .markdown-source-view.mod-cm6 .cm-content > [class*="HyperMD-header"] + .image-embed:not(:where(.canvas-wrapper, .canvas-wrapper *, .canvas-node, .canvas-node *, .mermaid, .mermaid *)) {
-  margin-block-start: var(--rl-edit-heading-gap-body-image-em) !important;
+  padding-block-start: var(--rl-edit-heading-gap-body-image-em) !important;
+}
+
+body.refined-layout-enabled.rl-edit-heading-gaps .markdown-source-view.mod-cm6 .cm-content > [class*="HyperMD-header"] + .cm-line:not([class*="HyperMD"]):has(.image-embed, img[src][contenteditable="false"]):not(:where(.canvas-wrapper, .canvas-wrapper *, .canvas-node, .canvas-node *, .mermaid, .mermaid *, .block-language-dataviewjs *, .callout *, .cm-callout *)) {
+  padding-block-start: var(--rl-edit-heading-gap-body-image-em) !important;
 }
 
 body.refined-layout-enabled.rl-edit-heading-gaps .markdown-source-view.mod-cm6 .cm-content > [class*="HyperMD-header"] + .callout.drop-shadow:not(:where(.canvas-wrapper, .canvas-wrapper *, .canvas-node, .canvas-node *, .mermaid, .mermaid *)),
@@ -1102,6 +1161,10 @@ body.refined-layout-enabled.rl-read-heading-gaps .markdown-rendered .markdown-pr
 
 body.refined-layout-enabled.rl-read-heading-gaps .markdown-rendered .markdown-preview-section > :is(.el-h1, .el-h2, .el-h3, .el-h4, .el-h5, .el-h6) + .el-p:has(> p > img[src]):not(:where(.block-language-dataviewjs *)):not(:where(.canvas-wrapper, .canvas-wrapper *, .canvas-node, .canvas-node *, .mermaid, .mermaid *)) {
   margin-top: var(--rl-read-heading-gap-body-image-em) !important;
+}
+
+body.refined-layout-enabled.rl-read-heading-gaps.rl-read-images .markdown-preview-view.markdown-rendered .markdown-preview-section > :is(.el-h1, .el-h2, .el-h3, .el-h4, .el-h5, .el-h6) + .el-p > p:has(> img[src]):not(:where(.block-language-dataviewjs *)):not(:where(.canvas-wrapper, .canvas-wrapper *, .canvas-node, .canvas-node *, .mermaid, .mermaid *)) {
+  margin-block-start: 0 !important;
 }
 
 body.refined-layout-enabled.rl-read-heading-gaps .markdown-rendered .markdown-preview-section > :is(.el-h1, .el-h2, .el-h3, .el-h4, .el-h5, .el-h6) + .callout:not(:where(.block-language-dataviewjs *)):not(:where(.canvas-wrapper, .canvas-wrapper *, .canvas-node, .canvas-node *, .mermaid, .mermaid *)) {

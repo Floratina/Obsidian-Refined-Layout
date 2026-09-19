@@ -185,6 +185,12 @@ var en = {
   "context.headingBottomDesc": "Space below inner headings.",
   "image.group": "Body image size & appearance",
   "image.groupDesc": "Size, corner radius, and borders of regular body images.",
+  "image.marginTop": "Image top spacing",
+  "image.marginBottom": "Image bottom spacing",
+  "image.marginTopEditDesc": "Space above the image. Source blank lines are controlled by Body \u2192 Blank line height.",
+  "image.marginBottomEditDesc": "Space below the image. Source blank lines are controlled by Body \u2192 Blank line height.",
+  "image.marginTopReadDesc": "Top margin of a body image paragraph, replacing its regular paragraph margin.",
+  "image.marginBottomReadDesc": "Bottom margin of a body image paragraph, replacing its regular paragraph margin.",
   "image.maxWidth": "Maximum width",
   "image.maxWidthDesc": "Maximum image width relative to its containing content area.",
   "image.radius": "Image corner radius",
@@ -418,6 +424,12 @@ var translations = {
   "context.headingBottomDesc": "\u5185\u90E8\u6807\u9898\u5E95\u90E8\u95F4\u8DDD\u3002",
   "image.group": "\u6B63\u6587\u56FE\u7247\u5C3A\u5BF8\u4E0E\u5916\u89C2",
   "image.groupDesc": "\u666E\u901A\u6B63\u6587\u56FE\u7247\u7684\u5C3A\u5BF8\u3001\u5706\u89D2\u548C\u8FB9\u6846\u8BBE\u7F6E\u3002",
+  "image.marginTop": "\u56FE\u7247\u4E0A\u95F4\u8DDD",
+  "image.marginBottom": "\u56FE\u7247\u4E0B\u95F4\u8DDD",
+  "image.marginTopEditDesc": "\u56FE\u7247\u4E0A\u65B9\u7684\u7559\u767D\u3002\u6E90\u7801\u4E2D\u7684\u5B9E\u9645\u7A7A\u884C\u4ECD\u7531\u300C\u6B63\u6587 \u2192 \u7A7A\u884C\u9AD8\u5EA6\u300D\u63A7\u5236\u3002",
+  "image.marginBottomEditDesc": "\u56FE\u7247\u4E0B\u65B9\u7684\u7559\u767D\u3002\u6E90\u7801\u4E2D\u7684\u5B9E\u9645\u7A7A\u884C\u4ECD\u7531\u300C\u6B63\u6587 \u2192 \u7A7A\u884C\u9AD8\u5EA6\u300D\u63A7\u5236\u3002",
+  "image.marginTopReadDesc": "\u6B63\u6587\u56FE\u7247\u6240\u5728\u6BB5\u843D\u7684\u4E0A\u8FB9\u8DDD\uFF0C\u66FF\u4EE3\u8BE5\u6BB5\u843D\u539F\u6709\u7684\u4E0A\u8FB9\u8DDD\u3002",
+  "image.marginBottomReadDesc": "\u6B63\u6587\u56FE\u7247\u6240\u5728\u6BB5\u843D\u7684\u4E0B\u8FB9\u8DDD\uFF0C\u66FF\u4EE3\u8BE5\u6BB5\u843D\u539F\u6709\u7684\u4E0B\u8FB9\u8DDD\u3002",
   "image.maxWidth": "\u6700\u5927\u5BBD\u5EA6",
   "image.maxWidthDesc": "\u56FE\u7247\u76F8\u5BF9\u6240\u5728\u5185\u5BB9\u533A\u57DF\u7684\u6700\u5927\u5BBD\u5EA6\u3002",
   "image.radius": "\u56FE\u7247\u5706\u89D2",
@@ -651,6 +663,12 @@ var translations2 = {
   "context.headingBottomDesc": "\u5167\u90E8\u6A19\u984C\u5E95\u90E8\u9593\u8DDD\u3002",
   "image.group": "\u5167\u6587\u5716\u7247\u5C3A\u5BF8\u8207\u5916\u89C0",
   "image.groupDesc": "\u4E00\u822C\u5167\u6587\u5716\u7247\u7684\u5C3A\u5BF8\u3001\u5713\u89D2\u8207\u6846\u7DDA\u8A2D\u5B9A\u3002",
+  "image.marginTop": "\u5716\u7247\u4E0A\u9593\u8DDD",
+  "image.marginBottom": "\u5716\u7247\u4E0B\u9593\u8DDD",
+  "image.marginTopEditDesc": "\u5716\u7247\u4E0A\u65B9\u7684\u7559\u767D\u3002\u539F\u59CB\u78BC\u4E2D\u7684\u5BE6\u969B\u7A7A\u767D\u884C\u4ECD\u7531\u300C\u5167\u6587 \u2192 \u7A7A\u767D\u884C\u9AD8\u5EA6\u300D\u63A7\u5236\u3002",
+  "image.marginBottomEditDesc": "\u5716\u7247\u4E0B\u65B9\u7684\u7559\u767D\u3002\u539F\u59CB\u78BC\u4E2D\u7684\u5BE6\u969B\u7A7A\u767D\u884C\u4ECD\u7531\u300C\u5167\u6587 \u2192 \u7A7A\u767D\u884C\u9AD8\u5EA6\u300D\u63A7\u5236\u3002",
+  "image.marginTopReadDesc": "\u5167\u6587\u5716\u7247\u6240\u5728\u6BB5\u843D\u7684\u4E0A\u908A\u754C\uFF0C\u53D6\u4EE3\u8A72\u6BB5\u843D\u539F\u6709\u7684\u4E0A\u908A\u754C\u3002",
+  "image.marginBottomReadDesc": "\u5167\u6587\u5716\u7247\u6240\u5728\u6BB5\u843D\u7684\u4E0B\u908A\u754C\uFF0C\u53D6\u4EE3\u8A72\u6BB5\u843D\u539F\u6709\u7684\u4E0B\u908A\u754C\u3002",
   "image.maxWidth": "\u6700\u5927\u5BEC\u5EA6",
   "image.maxWidthDesc": "\u5716\u7247\u76F8\u5C0D\u65BC\u6240\u5728\u5167\u5BB9\u5340\u57DF\u7684\u6700\u5927\u5BEC\u5EA6\u3002",
   "image.radius": "\u5716\u7247\u5713\u89D2",
@@ -884,6 +902,12 @@ var translations3 = {
   "context.headingBottomDesc": "\u5185\u90E8\u306E\u898B\u51FA\u3057\u306E\u4E0B\u306E\u9593\u9694\u3002",
   "image.group": "\u672C\u6587\u306E\u753B\u50CF\u306E\u30B5\u30A4\u30BA\u3068\u5916\u89B3",
   "image.groupDesc": "\u901A\u5E38\u306E\u672C\u6587\u306E\u753B\u50CF\u306E\u30B5\u30A4\u30BA\u3001\u89D2\u306E\u4E38\u307F\u3001\u67A0\u7DDA\u3092\u8A2D\u5B9A\u3057\u307E\u3059\u3002",
+  "image.marginTop": "\u753B\u50CF\u306E\u4E0A\u90E8\u9593\u9694",
+  "image.marginBottom": "\u753B\u50CF\u306E\u4E0B\u90E8\u9593\u9694",
+  "image.marginTopEditDesc": "\u753B\u50CF\u306E\u4E0A\u5074\u306E\u4F59\u767D\u3002\u30BD\u30FC\u30B9\u5185\u306E\u7A7A\u884C\u306F\u300C\u672C\u6587 \u2192 \u7A7A\u884C\u306E\u9AD8\u3055\u300D\u3067\u8ABF\u6574\u3057\u307E\u3059\u3002",
+  "image.marginBottomEditDesc": "\u753B\u50CF\u306E\u4E0B\u5074\u306E\u4F59\u767D\u3002\u30BD\u30FC\u30B9\u5185\u306E\u7A7A\u884C\u306F\u300C\u672C\u6587 \u2192 \u7A7A\u884C\u306E\u9AD8\u3055\u300D\u3067\u8ABF\u6574\u3057\u307E\u3059\u3002",
+  "image.marginTopReadDesc": "\u672C\u6587\u306E\u753B\u50CF\u3092\u542B\u3080\u6BB5\u843D\u306E\u4E0A\u30DE\u30FC\u30B8\u30F3\u3002\u901A\u5E38\u306E\u6BB5\u843D\u306E\u4E0A\u30DE\u30FC\u30B8\u30F3\u306B\u4EE3\u308F\u3063\u3066\u9069\u7528\u3057\u307E\u3059\u3002",
+  "image.marginBottomReadDesc": "\u672C\u6587\u306E\u753B\u50CF\u3092\u542B\u3080\u6BB5\u843D\u306E\u4E0B\u30DE\u30FC\u30B8\u30F3\u3002\u901A\u5E38\u306E\u6BB5\u843D\u306E\u4E0B\u30DE\u30FC\u30B8\u30F3\u306B\u4EE3\u308F\u3063\u3066\u9069\u7528\u3057\u307E\u3059\u3002",
   "image.maxWidth": "\u6700\u5927\u5E45",
   "image.maxWidthDesc": "\u753B\u50CF\u3092\u542B\u3080\u9818\u57DF\u306B\u5BFE\u3059\u308B\u753B\u50CF\u306E\u6700\u5927\u5E45\u3002",
   "image.radius": "\u753B\u50CF\u306E\u89D2\u306E\u4E38\u307F",
@@ -1169,7 +1193,7 @@ var DEFAULT_SETTINGS = {
       headings: EDIT_BLOCKQUOTE_HEADINGS,
       table: { ...EDIT_TABLE }
     },
-    image: { ...EDIT_IMAGE },
+    image: { ...EDIT_IMAGE, marginTopPx: 0, marginBottomPx: 0 },
     mermaid: {
       portraitMaxWidthPct: 55,
       portraitAspectRatio: 1,
@@ -1273,7 +1297,7 @@ var DEFAULT_SETTINGS = {
       headings: READ_BLOCKQUOTE_HEADINGS,
       table: { ...READ_TABLE }
     },
-    image: { ...READ_IMAGE },
+    image: { ...READ_IMAGE, marginTopPx: 0, marginBottomPx: 0 },
     mermaid: {
       portraitMaxWidthPct: 55,
       portraitAspectRatio: 1,
@@ -2075,6 +2099,10 @@ var RefinedLayoutSettingTab = class extends import_obsidian2.PluginSettingTab {
     this.addNumber(card, [...prefix, "maxWidthPct"], this.t("image.maxWidth"), this.t("image.maxWidthDesc"));
     this.addNumber(card, [...prefix, "radiusPx"], this.t("image.radius"), this.t("image.radiusDesc"));
     this.addNumber(card, [...prefix, "borderPx"], this.t("image.border"), this.t("image.borderDesc"));
+    if (prefix.length === 1 && prefix[0] === "image") {
+      this.addNumber(card, [...prefix, "marginTopPx"], this.t("image.marginTop"), this.t(this.mode === "edit" ? "image.marginTopEditDesc" : "image.marginTopReadDesc"), { min: 0 });
+      this.addNumber(card, [...prefix, "marginBottomPx"], this.t("image.marginBottom"), this.t(this.mode === "edit" ? "image.marginBottomEditDesc" : "image.marginBottomReadDesc"), { min: 0 });
+    }
   }
   renderMermaidSection(container, tab) {
     const content = this.createModuleCard(container, tab);

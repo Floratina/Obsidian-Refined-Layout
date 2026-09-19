@@ -1,0 +1,70 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Image widget spacing regression</title>
+<link rel="stylesheet" href="../../styles.css">
+<style>
+  body {
+    --rl-edit-body-line-height: 1.7;
+    --rl-edit-body-empty-line-height-em: 0.45em;
+    --rl-edit-image-max-width-pct: 85%;
+    --rl-edit-image-radius-px: 8px;
+    --rl-edit-image-border-px: 2px;
+    --rl-edit-image-margin-top-px: 0px;
+    --rl-edit-image-margin-bottom-px: 0px;
+    --background-modifier-border: gray;
+    font-size: 16px;
+  }
+  .cm-content { width: 784px; }
+  .cm-widgetBuffer {
+    display: inline !important;
+    width: 0 !important;
+    height: 1em;
+    vertical-align: text-top;
+    border: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  .image-wrapper { display: inline-flex; position: relative; }
+  .image-wrapper img:not([width]) { width: 100%; }
+  img { box-sizing: border-box; }
+</style>
+<body class="refined-layout-enabled rl-edit-body rl-edit-images">
+<div class="markdown-source-view mod-cm6"><div class="cm-content">
+  <div id="before" class="cm-line"><br></div>
+  <div id="line" class="cm-line"><img class="cm-widgetBuffer" aria-hidden="true"><div class="image-embed" contenteditable="false"><div class="image-wrapper"><img id="photo" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='800'%3E%3Crect width='1200' height='800' fill='teal'/%3E%3C/svg%3E"></div></div><img class="cm-widgetBuffer" aria-hidden="true"></div>
+  <div id="after" class="cm-line"><br></div>
+</div></div>
+<pre id="result">Waiting for image</pre>
+<script>
+  (async () => {
+    const photo = document.querySelector("#photo");
+    const line = document.querySelector("#line");
+    const before = document.querySelector("#before");
+    const after = document.querySelector("#after");
+    const rect = element => element.getBoundingClientRect();
+    const near = (actual, expected, message) => {
+      if (Math.abs(actual - expected) > 1) {
+        throw new Error(message + ": expected " + expected + ", got " + actual);
+      }
+    };
+    try {
+      await photo.decode();
+      const blankHeight = rect(before).height;
+      near(rect(line).height, rect(photo).height, "No extra buffer rows");
+      near(rect(photo).left - rect(line).left,
+        (rect(line).width - rect(photo).width) / 2, "Image stays centered");
+      near(rect(photo).width, rect(line).width * 0.85, "Maximum image width");
+      document.body.style.setProperty("--rl-edit-image-margin-top-px", "12px");
+      document.body.style.setProperty("--rl-edit-image-margin-bottom-px", "20px");
+      near(rect(photo).top - rect(line).top, 12, "Top spacing");
+      near(rect(line).bottom - rect(photo).bottom, 20, "Bottom spacing");
+      near(rect(before).height, blankHeight, "Preceding blank line unchanged");
+      near(rect(after).height, blankHeight, "Following blank line unchanged");
+      photo.setAttribute("width", "320");
+      near(rect(photo).width, 320, "Explicit image width preserved");
+      document.querySelector("#result").textContent = "PASS: spacing, centering, width and adjacent blank lines";
+    } catch (error) {
+      document.querySelector("#result").textContent = "FAIL: " + error.message;
+    }
+  })();
+</script>
