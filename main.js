@@ -1193,7 +1193,7 @@ var DEFAULT_SETTINGS = {
       headings: EDIT_BLOCKQUOTE_HEADINGS,
       table: { ...EDIT_TABLE }
     },
-    image: { ...EDIT_IMAGE, marginTopPx: 0, marginBottomPx: 0 },
+    image: { ...EDIT_IMAGE, marginTopPx: 5, marginBottomPx: 10 },
     mermaid: {
       portraitMaxWidthPct: 55,
       portraitAspectRatio: 1,
@@ -1297,7 +1297,7 @@ var DEFAULT_SETTINGS = {
       headings: READ_BLOCKQUOTE_HEADINGS,
       table: { ...READ_TABLE }
     },
-    image: { ...READ_IMAGE, marginTopPx: 0, marginBottomPx: 0 },
+    image: { ...READ_IMAGE, marginTopPx: 0, marginBottomPx: 10 },
     mermaid: {
       portraitMaxWidthPct: 55,
       portraitAspectRatio: 1,
