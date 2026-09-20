@@ -1,6 +1,7 @@
 import type { TranslationDictionary } from "./en";
 
 export const translations = {
+  "actions.back": "返回",
   "language.name": "界面语言",
   "language.description": "选择插件的显示语言，切换后立即生效。",
   "language.auto": "跟随 Obsidian",

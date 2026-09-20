@@ -1,6 +1,7 @@
 import type { TranslationDictionary } from "./en";
 
 export const translations = {
+  "actions.back": "戻る",
   "language.name": "表示言語",
   "language.description": "プラグインの表示言語を選択します。変更はすぐに反映されます。",
   "language.auto": "Obsidian に合わせる",

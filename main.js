@@ -31,6 +31,7 @@ var import_obsidian = require("obsidian");
 
 // src/i18n/en.ts
 var en = {
+  "actions.back": "Back",
   "language.name": "Language",
   "language.description": "Choose the plugin's language. Changes apply immediately.",
   "language.auto": "Follow Obsidian",
@@ -270,6 +271,7 @@ var en = {
 
 // src/i18n/zh-CN.ts
 var translations = {
+  "actions.back": "\u8FD4\u56DE",
   "language.name": "\u754C\u9762\u8BED\u8A00",
   "language.description": "\u9009\u62E9\u63D2\u4EF6\u7684\u663E\u793A\u8BED\u8A00\uFF0C\u5207\u6362\u540E\u7ACB\u5373\u751F\u6548\u3002",
   "language.auto": "\u8DDF\u968F Obsidian",
@@ -509,6 +511,7 @@ var translations = {
 
 // src/i18n/zh-TW.ts
 var translations2 = {
+  "actions.back": "\u8FD4\u56DE",
   "language.name": "\u4ECB\u9762\u8A9E\u8A00",
   "language.description": "\u9078\u64C7\u5916\u639B\u7A0B\u5F0F\u7684\u986F\u793A\u8A9E\u8A00\uFF0C\u5207\u63DB\u5F8C\u7ACB\u5373\u751F\u6548\u3002",
   "language.auto": "\u8DDF\u96A8 Obsidian",
@@ -748,6 +751,7 @@ var translations2 = {
 
 // src/i18n/ja.ts
 var translations3 = {
+  "actions.back": "\u623B\u308B",
   "language.name": "\u8868\u793A\u8A00\u8A9E",
   "language.description": "\u30D7\u30E9\u30B0\u30A4\u30F3\u306E\u8868\u793A\u8A00\u8A9E\u3092\u9078\u629E\u3057\u307E\u3059\u3002\u5909\u66F4\u306F\u3059\u3050\u306B\u53CD\u6620\u3055\u308C\u307E\u3059\u3002",
   "language.auto": "Obsidian \u306B\u5408\u308F\u305B\u308B",
@@ -1509,6 +1513,8 @@ function isPortraitMermaid(width, height, portraitAspectRatio) {
 
 // src/settings-tab.ts
 var import_obsidian2 = require("obsidian");
+
+// src/settings-catalog.ts
 function getModeLabels(t) {
   return {
     edit: t("mode.edit"),
@@ -1563,447 +1569,97 @@ function inferNumberOptions(path, mode) {
   }
   return { unit, min: allowsNegative ? -10 : 0, max: 100, step: 0.01 };
 }
-var RefinedLayoutSettingTab = class extends import_obsidian2.PluginSettingTab {
-  constructor(app, plugin) {
-    super(app, plugin);
-    this.plugin = plugin;
-    this.t = getTranslator();
-    this.mode = "edit";
-    this.activeTabByMode = {
-      edit: "body",
-      read: "body"
-    };
-    this.activeHeadingLevelByContext = {
-      headings: "h1",
-      headingDecoration: "h1",
-      callout: "h1",
-      blockquote: "h1"
-    };
+var SettingsCatalog = class {
+  constructor(t, mode) {
+    this.t = t;
+    this.mode = mode;
   }
-  display() {
-    this.t = getTranslator(this.plugin.settings.language);
-    const { containerEl } = this;
-    containerEl.empty();
-    containerEl.addClass("refined-layout-settings");
-    const page = containerEl.createDiv({ cls: "rl-settings-page-content" });
-    this.renderHeader(page);
-    this.renderSettingsTabs(page);
-  }
-  renderHeader(container) {
-    const header = container.createDiv({ cls: "rl-settings-header" });
-    const titleRow = header.createDiv({ cls: "rl-settings-title-row" });
-    const titleBox = titleRow.createDiv({ cls: "rl-settings-title-box" });
-    titleBox.createEl("h2", { cls: "rl-settings-title", text: "Refined Layout" });
-    const actions = titleRow.createDiv({ cls: "rl-settings-header-actions" });
-    this.createHeaderButton(actions, this.t("actions.export"), this.t("actions.exportDesc"), () => {
-      this.plugin.exportSettings();
-    });
-    this.createHeaderButton(actions, this.t("actions.import"), this.t("actions.importDesc"), () => {
-      this.pickSettingsFile();
-    });
-    this.createHeaderButton(
-      actions,
-      this.t("actions.resetAll"),
-      this.t("actions.resetAllDesc"),
-      () => {
-        this.plugin.resetAll();
-        this.display();
-      },
-      "rl-settings-header-danger"
-    );
-    new import_obsidian2.Setting(header).setName(this.t("language.name")).setDesc(this.t("language.description")).addDropdown((dropdown) => {
-      dropdown.addOptions({
-        auto: this.t("language.auto"),
-        "zh-CN": "\u7B80\u4F53\u4E2D\u6587",
-        "zh-TW": "\u7E41\u9AD4\u4E2D\u6587",
-        en: "English",
-        ja: "\u65E5\u672C\u8A9E"
-      }).setValue(this.plugin.settings.language).onChange((value) => {
-        this.plugin.setLanguage(value);
-        this.display();
-        this.containerEl.querySelector(".rl-settings-language")?.focus();
-      });
-      dropdown.selectEl.addClass("rl-settings-language");
-      dropdown.selectEl.setAttribute("aria-label", this.t("language.name"));
-    });
-    const modeSwitch = header.createDiv({
-      cls: "rl-settings-mode-switch",
-      attr: { role: "group", "aria-label": this.t("aria.mode") }
-    });
-    for (const mode of ["edit", "read"]) {
-      const isActive = this.mode === mode;
-      const button = modeSwitch.createEl("button", {
-        cls: `rl-settings-mode-button ${isActive ? "rl-settings-mode-active" : ""}`,
-        text: getModeLabels(this.t)[mode],
-        attr: {
-          type: "button",
-          "aria-pressed": String(isActive)
-        }
-      });
-      button.addEventListener("click", () => {
-        if (this.mode === mode) {
-          return;
-        }
-        this.mode = mode;
-        this.display();
-      });
-    }
-  }
-  createHeaderButton(container, label, tooltip, onClick, extraClass = "") {
-    const button = container.createEl("button", {
-      cls: `rl-settings-header-button ${extraClass}`.trim(),
-      text: label,
-      attr: { type: "button", "aria-label": tooltip }
-    });
-    button.addEventListener("click", onClick);
-  }
-  pickSettingsFile() {
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = ".json,application/json";
-    input.addEventListener("change", () => {
-      const file = input.files?.[0];
-      if (file === void 0) {
-        return;
-      }
-      void this.plugin.importSettings(file).then((imported) => {
-        if (imported) {
-          this.display();
-        }
-      });
-    });
-    input.click();
-  }
-  renderSettingsTabs(container) {
-    const tabs = getSettingsTabs(this.t);
-    const firstTab = tabs[0];
-    if (firstTab === void 0) {
-      throw new Error("Refined Layout settings have no available tabs");
-    }
-    const currentTab = tabs.some((tab) => tab.id === this.activeTabByMode[this.mode]) ? this.activeTabByMode[this.mode] : firstTab.id;
-    this.activeTabByMode[this.mode] = currentTab;
-    const shell = container.createDiv({ cls: "rl-settings-tabs" });
-    const nav = shell.createEl("nav", {
-      cls: "rl-settings-tab-nav",
-      attr: {
-        role: "tablist",
-        "aria-label": this.t("aria.sections"),
-        "aria-orientation": "horizontal"
-      }
-    });
-    const panels = shell.createDiv({ cls: "rl-settings-tab-panels" });
-    const buttons = [];
-    const panelById = /* @__PURE__ */ new Map();
-    const activateTab = (tabId, focusButton = false) => {
-      this.activeTabByMode[this.mode] = tabId;
-      tabs.forEach((tab, index) => {
-        const button = buttons[index];
-        const panel = panelById.get(tab.id);
-        if (button === void 0 || panel === void 0) {
-          throw new Error(`Settings tab DOM is incomplete for ${tab.id}`);
-        }
-        const isActive = tab.id === tabId;
-        button.classList.toggle("rl-settings-tab-active", isActive);
-        button.setAttribute("aria-selected", isActive ? "true" : "false");
-        button.tabIndex = isActive ? 0 : -1;
-        panel.classList.toggle("rl-settings-tab-hidden", !isActive);
-        panel.setAttribute("aria-hidden", isActive ? "false" : "true");
-        if (focusButton && isActive) {
-          button.focus();
-        }
-      });
-    };
-    tabs.forEach((tab) => {
-      const buttonId = `refined-layout-settings-tab-${this.mode}-${tab.id}`;
-      const panelId = `refined-layout-settings-panel-${this.mode}-${tab.id}`;
-      const button = nav.createEl("button", {
-        cls: "rl-settings-tab-button",
-        attr: {
-          id: buttonId,
-          role: "tab",
-          type: "button",
-          "aria-selected": tab.id === currentTab ? "true" : "false",
-          "aria-controls": panelId
-        }
-      });
-      button.tabIndex = tab.id === currentTab ? 0 : -1;
-      button.setText(tab.label);
-      buttons.push(button);
-      const panel = panels.createEl("section", {
-        cls: `rl-settings-tab-panel ${tab.id === currentTab ? "" : "rl-settings-tab-hidden"}`,
-        attr: {
-          id: panelId,
-          role: "tabpanel",
-          "aria-labelledby": buttonId,
-          "aria-hidden": tab.id === currentTab ? "false" : "true",
-          tabindex: "0"
-        }
-      });
-      panelById.set(tab.id, panel);
-      this.renderTabPanel(panel, tab);
-      button.addEventListener("click", () => {
-        activateTab(tab.id);
-      });
-      button.addEventListener("keydown", (event) => {
-        const currentIndex = tabs.findIndex((item) => item.id === tab.id);
-        if (currentIndex === -1) {
-          return;
-        }
-        let targetIndex;
-        switch (event.key) {
-          case "ArrowRight":
-          case "ArrowDown":
-            targetIndex = (currentIndex + 1) % tabs.length;
-            break;
-          case "ArrowLeft":
-          case "ArrowUp":
-            targetIndex = (currentIndex - 1 + tabs.length) % tabs.length;
-            break;
-          case "Home":
-            targetIndex = 0;
-            break;
-          case "End":
-            targetIndex = tabs.length - 1;
-            break;
-          default:
-            return;
-        }
-        event.preventDefault();
-        const target = tabs[targetIndex];
-        if (target === void 0) {
-          throw new Error(`Settings tab target is missing at index ${targetIndex}`);
-        }
-        activateTab(target.id, true);
-      });
-    });
-    activateTab(currentTab);
-  }
-  renderTabPanel(panel, tab) {
+  build(tab) {
+    const panel = [];
     switch (tab.id) {
       case "body":
-        this.renderBodySection(panel, tab);
+        this.renderBodySection(panel);
         break;
       case "headings":
-        this.renderHeadingsSection(panel, tab);
+        this.renderHeadingsSection(panel);
         break;
       case "headingDecoration":
-        this.renderHeadingDecorationSection(panel, tab);
+        this.renderHeadingDecorationSection(panel);
         break;
       case "callout":
-        this.renderCalloutSection(panel, tab);
+        this.renderCalloutSection(panel);
         break;
       case "blockquote":
-        this.renderBlockquoteSection(panel, tab);
+        this.renderBlockquoteSection(panel);
         break;
       case "image":
-        this.renderImageSection(panel, tab);
+        this.renderImageSection(panel);
         break;
       case "mermaid":
-        this.renderMermaidSection(panel, tab);
+        this.renderMermaidSection(panel);
         break;
       case "table":
-        this.renderTableSection(panel, tab);
+        this.renderTableSection(panel);
         break;
       case "codeBlock":
-        this.renderCodeBlockSection(panel, tab);
+        this.renderCodeBlockSection(panel);
         break;
       case "headingGap":
-        this.renderHeadingGapSection(panel, tab);
+        this.renderHeadingGapSection(panel);
         break;
     }
+    return panel;
   }
-  createModuleCard(container, tab) {
-    const isModuleEnabled = this.plugin.settings[this.mode].modules[tab.module];
-    const group = container.createDiv({ cls: "setting-group rl-settings-group rl-settings-module-group" });
-    const card = group.createDiv({ cls: "setting-items rl-settings-card rl-settings-module-card" });
-    const contentContainer = container.createDiv({
-      cls: `rl-settings-content-wrapper ${isModuleEnabled ? "" : "rl-settings-disabled"}`
-    });
-    new import_obsidian2.Setting(card).setName(tab.label).setDesc(tab.description).addToggle((toggle) => {
-      toggle.setValue(isModuleEnabled).onChange((value) => {
-        this.plugin.setModule(this.mode, tab.module, value);
-        contentContainer.classList.toggle("rl-settings-disabled", !value);
-      });
-    }).addExtraButton((button) => {
-      button.setIcon("reset").setTooltip(this.t("actions.resetSection")).onClick(() => {
-        if (tab.reset === "headingDecoration") {
-          this.plugin.resetHeadingDecoration(this.mode);
-        } else {
-          this.plugin.resetSection(this.mode, tab.reset, tab.module);
-        }
-        this.display();
-      });
-    });
-    return contentContainer;
+  addGroup(groups, title, description) {
+    const fields = [];
+    groups.push({ title, description, fields });
+    return fields;
   }
-  createGroupCard(container, title, description) {
-    const group = this.createSettingsGroup(container, title, description);
-    return group.createDiv({ cls: "setting-items rl-settings-card rl-settings-fields" });
+  addHeadingGroup(groups, title, description, context) {
+    const levels = { h1: [], h2: [], h3: [], h4: [], h5: [], h6: [] };
+    groups.push({ title, description, context, levels });
+    return levels;
   }
-  createSettingsGroup(container, title, description) {
-    const group = container.createDiv({ cls: "setting-group rl-settings-group" });
-    if (title !== void 0) {
-      const header = group.createDiv({ cls: "rl-settings-group-header" });
-      header.createEl("h4", { text: title, cls: "rl-settings-group-title" });
-      if (description !== void 0) {
-        header.createDiv({ cls: "rl-settings-group-description", text: description });
-      }
-    }
-    return group;
+  addNumber(fields, path, name, description, options = {}) {
+    fields.push({ path, name, description, options: { ...inferNumberOptions(path, this.mode), ...options } });
   }
-  createHeadingLevelCard(container, title, description) {
-    const group = this.createSettingsGroup(container, title, description);
-    const subtabContainer = group.createDiv({ cls: "rl-settings-subtab-container" });
-    const card = group.createDiv({ cls: "setting-items rl-settings-card rl-settings-heading-fields-card" });
-    const fieldsContainer = card.createDiv({ cls: "rl-settings-heading-fields" });
-    return { subtabContainer, fieldsPanel: card, fieldsContainer };
-  }
-  renderHeadingLevelTabs(container, contextKey, panel, onLevelChange) {
-    const currentLevel = this.activeHeadingLevelByContext[contextKey] ?? "h1";
-    const idBase = `refined-layout-settings-${this.mode}-${contextKey.replace(/[^a-zA-Z0-9_-]/g, "-")}`;
-    const panelId = `${idBase}-panel`;
-    panel.id = panelId;
-    panel.setAttribute("role", "tabpanel");
-    panel.setAttribute("tabindex", "0");
-    const nav = container.createEl("nav", {
-      cls: "rl-settings-subtab-nav",
-      attr: {
-        "aria-label": this.t("aria.headingLevel"),
-        role: "tablist",
-        "aria-orientation": "horizontal"
-      }
-    });
-    const buttons = [];
-    const activateLevel = (level, focusButton = false) => {
-      this.activeHeadingLevelByContext[contextKey] = level;
-      const activeButtonId = `${idBase}-tab-${level}`;
-      panel.setAttribute("aria-labelledby", activeButtonId);
-      HEADING_LEVELS.forEach((candidate, index) => {
-        const button = buttons[index];
-        if (button === void 0) {
-          throw new Error(`Heading level tab DOM is incomplete for ${candidate}`);
-        }
-        const isActive = candidate === level;
-        button.classList.toggle("rl-settings-tab-active", isActive);
-        button.setAttribute("aria-selected", String(isActive));
-        button.tabIndex = isActive ? 0 : -1;
-        if (focusButton && isActive) {
-          button.focus();
-        }
-      });
-      onLevelChange(level);
-    };
-    for (const level of HEADING_LEVELS) {
-      const button = nav.createEl("button", {
-        cls: `rl-settings-subtab-button ${level === currentLevel ? "rl-settings-tab-active" : ""}`,
-        text: HEADING_LABELS[level],
-        attr: {
-          id: `${idBase}-tab-${level}`,
-          type: "button",
-          role: "tab",
-          "aria-selected": String(level === currentLevel),
-          "aria-controls": panelId
-        }
-      });
-      button.tabIndex = level === currentLevel ? 0 : -1;
-      buttons.push(button);
-      button.addEventListener("click", () => {
-        activateLevel(level);
-      });
-      button.addEventListener("keydown", (event) => {
-        const currentIndex = HEADING_LEVELS.indexOf(level);
-        let targetIndex;
-        switch (event.key) {
-          case "ArrowRight":
-          case "ArrowDown":
-            targetIndex = (currentIndex + 1) % HEADING_LEVELS.length;
-            break;
-          case "ArrowLeft":
-          case "ArrowUp":
-            targetIndex = (currentIndex - 1 + HEADING_LEVELS.length) % HEADING_LEVELS.length;
-            break;
-          case "Home":
-            targetIndex = 0;
-            break;
-          case "End":
-            targetIndex = HEADING_LEVELS.length - 1;
-            break;
-          default:
-            return;
-        }
-        event.preventDefault();
-        const targetLevel = HEADING_LEVELS[targetIndex];
-        if (targetLevel === void 0) {
-          throw new Error(`Heading level tab target is missing at index ${targetIndex}`);
-        }
-        activateLevel(targetLevel, true);
-      });
-    }
-    activateLevel(currentLevel);
-  }
-  addNumber(container, path, name, description, options = {}) {
-    const inferred = inferNumberOptions(path, this.mode);
-    const config = { ...inferred, ...options };
-    const value = this.plugin.getNumber(this.mode, path);
-    const setting = new import_obsidian2.Setting(container).setName(name).setDesc(description);
-    setting.addText((text) => {
-      text.setValue(String(value));
-      text.inputEl.type = "number";
-      text.inputEl.step = String(config.step);
-      text.inputEl.min = String(config.min);
-      text.inputEl.max = String(config.max);
-      text.inputEl.addClass("rl-settings-number");
-      text.onChange((rawValue) => {
-        const parsed = Number(rawValue);
-        if (!Number.isFinite(parsed) || parsed < config.min || parsed > config.max) {
-          return;
-        }
-        this.plugin.setNumber(this.mode, path, parsed);
-      });
-    });
-    if (config.unit !== "") {
-      setting.controlEl.createSpan({ cls: "rl-settings-unit", text: config.unit === "ratio" ? this.t("unit.ratio") : config.unit });
-    }
-  }
-  renderBodySection(container, tab) {
-    const content = this.createModuleCard(container, tab);
-    const bodyCard = this.createGroupCard(content, this.t("body.group"), this.t("body.groupDesc"));
+  renderBodySection(container) {
+    const content = container;
+    const bodyCard = this.addGroup(content, this.t("body.group"), this.t("body.groupDesc"));
     this.addNumber(bodyCard, ["body", "lineHeight"], this.t("body.lineHeight"), this.t("body.lineHeightDesc"));
     if (this.mode === "edit") {
       this.addNumber(bodyCard, ["body", "emptyLineHeightEm"], this.t("body.emptyLine"), this.t("body.emptyLineDesc"));
     } else {
       this.addNumber(bodyCard, ["body", "paragraphSpacingEm"], this.t("body.paragraphSpacing"), this.t("body.paragraphSpacingDesc"));
     }
-    const listCard = this.createGroupCard(content, this.t("list.group"), this.t("list.groupDesc"));
+    const listCard = this.addGroup(content, this.t("list.group"), this.t("list.groupDesc"));
     this.addNumber(listCard, ["body", "listItemStartEm"], this.t("list.itemTop"), this.t("body.listItemTopDesc"));
     this.addNumber(listCard, ["body", "listItemEndEm"], this.t("list.itemBottom"), this.t("body.listItemBottomDesc"));
     this.addNumber(listCard, ["body", "listBlockStartEm"], this.t("list.blockTop"), this.t("body.listBlockTopDesc"));
     this.addNumber(listCard, ["body", "listBlockEndEm"], this.t("list.blockBottom"), this.t("body.listBlockBottomDesc"));
   }
-  renderHeadingsSection(container, tab) {
-    const content = this.createModuleCard(container, tab);
+  renderHeadingsSection(container) {
+    const content = container;
     if (this.mode === "edit") {
-      const firstHeadingCard = this.createGroupCard(content, this.t("headings.firstLine"), this.t("headings.firstLineDesc"));
+      const firstHeadingCard = this.addGroup(content, this.t("headings.firstLine"), this.t("headings.firstLineDesc"));
       this.addNumber(firstHeadingCard, ["headingDecoration", "firstHeadingPaddingTopPx"], this.t("headings.firstTop"), this.t("headings.firstTopDesc"));
     }
-    const { subtabContainer, fieldsPanel, fieldsContainer } = this.createHeadingLevelCard(
+    const levels = this.addHeadingGroup(
       content,
       this.t("headings.group"),
-      this.t("headings.groupDesc")
+      this.t("headings.groupDesc"),
+      "headings"
     );
-    const renderLevelFields = (level) => {
-      fieldsContainer.empty();
+    for (const level of HEADING_LEVELS) {
+      const fieldsContainer = levels[level];
       this.addNumber(fieldsContainer, ["headings", level, "lineHeight"], this.t("headings.lineHeight", { level: HEADING_LABELS[level] }), this.t("headings.lineHeightDesc"));
       this.addNumber(fieldsContainer, ["headings", level, "topEm"], this.t("headings.top", { level: HEADING_LABELS[level] }), this.t("headings.topDesc"));
       this.addNumber(fieldsContainer, ["headings", level, "bottomEm"], this.t("headings.bottom", { level: HEADING_LABELS[level] }), this.t("headings.bottomDesc"));
-    };
-    this.renderHeadingLevelTabs(subtabContainer, "headings", fieldsPanel, (level) => {
-      renderLevelFields(level);
-    });
+    }
   }
-  renderHeadingDecorationSection(container, tab) {
-    const content = this.createModuleCard(container, tab);
-    const appearanceCard = this.createGroupCard(content, this.t("decoration.group"), this.t("decoration.groupDesc"));
+  renderHeadingDecorationSection(container) {
+    const content = container;
+    const appearanceCard = this.addGroup(content, this.t("decoration.group"), this.t("decoration.groupDesc"));
     this.addNumber(appearanceCard, ["headingDecoration", "leftPx"], this.t("decoration.left"), this.t("decoration.leftDesc"));
     this.addNumber(appearanceCard, ["headingDecoration", "widthPx"], this.t("decoration.width"), this.t("decoration.widthDesc"));
     this.addNumber(appearanceCard, ["headingDecoration", "radiusPx"], this.t("decoration.radius"), this.t("decoration.radiusDesc"));
@@ -2011,43 +1667,41 @@ var RefinedLayoutSettingTab = class extends import_obsidian2.PluginSettingTab {
     if (this.mode === "edit") {
       this.addNumber(appearanceCard, ["headingDecoration", "firstHeadingDecorOffsetPx"], this.t("decoration.firstOffset"), this.t("decoration.firstOffsetDesc"));
     }
-    const { subtabContainer, fieldsPanel, fieldsContainer } = this.createHeadingLevelCard(
+    const levels = this.addHeadingGroup(
       content,
       this.t("decoration.levels"),
-      this.t("decoration.levelsDesc")
+      this.t("decoration.levelsDesc"),
+      "headingDecoration"
     );
-    const renderLevelFields = (level) => {
-      fieldsContainer.empty();
+    for (const level of HEADING_LEVELS) {
+      const fieldsContainer = levels[level];
       this.addNumber(fieldsContainer, ["headings", level, "decorHeightPx"], this.t("decoration.height", { level: HEADING_LABELS[level] }), this.t("decoration.heightDesc"));
       this.addNumber(fieldsContainer, ["headings", level, "decorOffsetPx"], this.t("decoration.offset", { level: HEADING_LABELS[level] }), this.t("decoration.offsetDesc"));
-    };
-    this.renderHeadingLevelTabs(subtabContainer, "headingDecoration", fieldsPanel, (level) => {
-      renderLevelFields(level);
-    });
+    }
   }
-  renderCalloutSection(container, tab) {
-    const content = this.createModuleCard(container, tab);
-    const appearanceCard = this.createGroupCard(content, this.t("callout.appearance"), this.t("callout.appearanceDesc"));
+  renderCalloutSection(container) {
+    const content = container;
+    const appearanceCard = this.addGroup(content, this.t("callout.appearance"), this.t("callout.appearanceDesc"));
     this.addNumber(appearanceCard, ["callout", "radiusPx"], this.t("callout.radius"), this.t("callout.radiusDesc"));
     this.addNumber(appearanceCard, ["callout", "marginTopPx"], this.t("callout.marginTop"), this.t("callout.marginTopDesc"));
     this.addNumber(appearanceCard, ["callout", "marginBottomPx"], this.t("callout.marginBottom"), this.t("callout.marginBottomDesc"));
-    const paddingCard = this.createGroupCard(content, this.t("callout.padding"), this.t("callout.paddingDesc"));
+    const paddingCard = this.addGroup(content, this.t("callout.padding"), this.t("callout.paddingDesc"));
     this.addNumber(paddingCard, ["callout", "paddingTopPx"], this.t("callout.paddingTop"), this.t("callout.paddingTopDesc"));
     this.addNumber(paddingCard, ["callout", "paddingBottomPx"], this.t("callout.paddingBottom"), this.t("callout.paddingBottomDesc"));
     this.addNumber(paddingCard, ["callout", "paddingLeftPx"], this.t("callout.paddingLeft"), this.t("callout.paddingLeftDesc"));
     this.addNumber(paddingCard, ["callout", "paddingRightPx"], this.t("callout.paddingRight"), this.t("callout.paddingRightDesc"));
-    const titleCard = this.createGroupCard(content, this.t("callout.title"), this.t("callout.titleDesc"));
+    const titleCard = this.addGroup(content, this.t("callout.title"), this.t("callout.titleDesc"));
     this.addNumber(titleCard, ["callout", "titleLineHeight"], this.t("callout.titleLineHeight"), this.t("callout.titleLineHeightDesc"));
     this.addNumber(titleCard, ["callout", "titlePaddingTopEm"], this.t("callout.titleTop"), this.t("callout.titleTopDesc"));
     this.addNumber(titleCard, ["callout", "titlePaddingBottomEm"], this.t("callout.titleBottom"), this.t("callout.titleBottomDesc"));
     this.addNumber(titleCard, ["callout", "titlePaddingLeftPx"], this.t("callout.titleLeft"), this.t("callout.titleLeftDesc"));
     this.addNumber(titleCard, ["callout", "titlePaddingRightPx"], this.t("callout.titleRight"), this.t("callout.titleRightDesc"));
-    const specialTitleCard = this.createGroupCard(content, this.t("callout.specialTitle"), this.t("callout.specialTitleDesc"));
+    const specialTitleCard = this.addGroup(content, this.t("callout.specialTitle"), this.t("callout.specialTitleDesc"));
     this.addNumber(specialTitleCard, ["callout", "titleOnlyPaddingTopEm"], this.t("callout.titleOnlyTop"), this.t("callout.titleOnlyTopDesc"));
     this.addNumber(specialTitleCard, ["callout", "titleOnlyPaddingBottomEm"], this.t("callout.titleOnlyBottom"), this.t("callout.titleOnlyBottomDesc"));
     this.addNumber(specialTitleCard, ["callout", "collapsedPaddingTopEm"], this.t("callout.collapsedTop"), this.t("callout.collapsedTopDesc"));
     this.addNumber(specialTitleCard, ["callout", "collapsedPaddingBottomEm"], this.t("callout.collapsedBottom"), this.t("callout.collapsedBottomDesc"));
-    const bodyCard = this.createGroupCard(content, this.t("context.bodyGroup"), this.t("callout.bodyDesc"));
+    const bodyCard = this.addGroup(content, this.t("context.bodyGroup"), this.t("callout.bodyDesc"));
     this.addNumber(bodyCard, ["callout", "paragraphLineHeight"], this.t("context.lineHeight"), this.t("callout.lineHeightDesc"));
     this.addNumber(bodyCard, ["callout", "paragraphSpacingEm"], this.t("context.paragraphSpacing"), this.t("callout.paragraphSpacingDesc"));
     this.addNumber(bodyCard, ["callout", "listItemStartEm"], this.t("list.itemTop"), this.t("callout.listItemTopDesc"));
@@ -2059,9 +1713,9 @@ var RefinedLayoutSettingTab = class extends import_obsidian2.PluginSettingTab {
     this.renderTableFields(content, ["callout", "table"], this.t("callout.table"), this.t("callout.tableDesc"));
     this.renderContextHeadings(content, "callout", this.mode === "read");
   }
-  renderBlockquoteSection(container, tab) {
-    const content = this.createModuleCard(container, tab);
-    const bodyCard = this.createGroupCard(content, this.t("context.bodyGroup"), this.t("blockquote.bodyDesc"));
+  renderBlockquoteSection(container) {
+    const content = container;
+    const bodyCard = this.addGroup(content, this.t("context.bodyGroup"), this.t("blockquote.bodyDesc"));
     this.addNumber(bodyCard, ["blockquote", "paragraphLineHeight"], this.t("context.lineHeight"), this.t("blockquote.lineHeightDesc"));
     this.addNumber(bodyCard, ["blockquote", "paragraphSpacingEm"], this.t("context.paragraphSpacing"), this.t("blockquote.paragraphSpacingDesc"));
     this.addNumber(bodyCard, ["blockquote", "listItemStartEm"], this.t("list.itemTop"), this.t("blockquote.listItemTopDesc"));
@@ -2073,29 +1727,27 @@ var RefinedLayoutSettingTab = class extends import_obsidian2.PluginSettingTab {
   }
   renderContextHeadings(container, context, bottomUsesPx) {
     const label = context === "callout" ? "Callout" : this.t("context.blockquote");
-    const { subtabContainer, fieldsPanel, fieldsContainer } = this.createHeadingLevelCard(
+    const levels = this.addHeadingGroup(
       container,
       this.t("context.headings", { context: label }),
-      this.t("context.headingsDesc", { context: label })
+      this.t("context.headingsDesc", { context: label }),
+      `${context}-headings`
     );
-    const renderLevelFields = (level) => {
-      fieldsContainer.empty();
+    for (const level of HEADING_LEVELS) {
+      const fieldsContainer = levels[level];
       const prefix = [context, "headings", level];
       this.addNumber(fieldsContainer, [...prefix, "lineHeight"], this.t("headings.lineHeight", { level: HEADING_LABELS[level] }), this.t("context.headingLineHeightDesc"));
       this.addNumber(fieldsContainer, [...prefix, "topEm"], this.t("headings.top", { level: HEADING_LABELS[level] }), this.t("context.headingTopDesc"));
       const bottomKey = bottomUsesPx ? "bottomPx" : "bottomEm";
       this.addNumber(fieldsContainer, [...prefix, bottomKey], this.t("headings.bottom", { level: HEADING_LABELS[level] }), this.t("context.headingBottomDesc"));
-    };
-    this.renderHeadingLevelTabs(subtabContainer, `${context}-headings`, fieldsPanel, (level) => {
-      renderLevelFields(level);
-    });
+    }
   }
-  renderImageSection(container, tab) {
-    const content = this.createModuleCard(container, tab);
+  renderImageSection(container) {
+    const content = container;
     this.renderImageFields(content, ["image"], this.t("image.group"), this.t("image.groupDesc"));
   }
   renderImageFields(container, prefix, label, description) {
-    const card = this.createGroupCard(container, label, description);
+    const card = this.addGroup(container, label, description);
     this.addNumber(card, [...prefix, "maxWidthPct"], this.t("image.maxWidth"), this.t("image.maxWidthDesc"));
     this.addNumber(card, [...prefix, "radiusPx"], this.t("image.radius"), this.t("image.radiusDesc"));
     this.addNumber(card, [...prefix, "borderPx"], this.t("image.border"), this.t("image.borderDesc"));
@@ -2104,19 +1756,19 @@ var RefinedLayoutSettingTab = class extends import_obsidian2.PluginSettingTab {
       this.addNumber(card, [...prefix, "marginBottomPx"], this.t("image.marginBottom"), this.t(this.mode === "edit" ? "image.marginBottomEditDesc" : "image.marginBottomReadDesc"), { min: 0 });
     }
   }
-  renderMermaidSection(container, tab) {
-    const content = this.createModuleCard(container, tab);
-    const card = this.createGroupCard(content, this.t("mermaid.group"), this.t("mermaid.groupDesc"));
+  renderMermaidSection(container) {
+    const content = container;
+    const card = this.addGroup(content, this.t("mermaid.group"), this.t("mermaid.groupDesc"));
     this.addNumber(card, ["mermaid", "portraitMaxWidthPct"], this.t("mermaid.portraitWidth"), this.t("mermaid.portraitWidthDesc"));
     this.addNumber(card, ["mermaid", "portraitAspectRatio"], this.t("mermaid.portraitRatio"), this.t("mermaid.portraitRatioDesc"), { min: 0.05, max: 5, step: 0.05 });
     this.addNumber(card, ["mermaid", "landscapeMinWidthPx"], this.t("mermaid.landscapeWidth"), this.t("mermaid.landscapeWidthDesc"), { min: 0, max: 4096, step: 10 });
   }
-  renderTableSection(container, tab) {
-    const content = this.createModuleCard(container, tab);
+  renderTableSection(container) {
+    const content = container;
     this.renderTableFields(content, ["table"], this.t("table.group"), this.t("table.groupDesc"));
   }
   renderTableFields(container, prefix, label, description) {
-    const card = this.createGroupCard(container, label, description);
+    const card = this.addGroup(container, label, description);
     this.addNumber(card, [...prefix, "cellPaddingPx"], this.t("table.cellPadding"), this.t("table.cellPaddingDesc"));
     this.addNumber(card, [...prefix, "innerBorderPx"], this.t("table.innerBorder"), this.t("table.innerBorderDesc"));
     this.addNumber(card, [...prefix, "outerBorderPx"], this.t("table.outerBorder"), this.t("table.outerBorderDesc"));
@@ -2124,9 +1776,9 @@ var RefinedLayoutSettingTab = class extends import_obsidian2.PluginSettingTab {
     this.addNumber(card, [...prefix, "spacingTopPx"], this.t("table.top"), this.t("table.topDesc"));
     this.addNumber(card, [...prefix, "spacingBottomPx"], this.t("table.bottom"), this.t("table.bottomDesc"));
   }
-  renderCodeBlockSection(container, tab) {
-    const content = this.createModuleCard(container, tab);
-    const card = this.createGroupCard(content, this.t("code.group"), this.t("code.groupDesc"));
+  renderCodeBlockSection(container) {
+    const content = container;
+    const card = this.addGroup(content, this.t("code.group"), this.t("code.groupDesc"));
     this.addNumber(card, ["codeBlock", "lineHeight"], this.t("code.lineHeight"), this.t("code.lineHeightDesc"));
     if (this.mode === "edit") {
       this.addNumber(card, ["codeBlock", "innerSpacingEm"], this.t("code.emptyLine"), this.t("code.emptyLineDesc"));
@@ -2135,14 +1787,14 @@ var RefinedLayoutSettingTab = class extends import_obsidian2.PluginSettingTab {
       this.addNumber(card, ["codeBlock", "marginBottomEm"], this.t("code.bottom"), this.t("code.bottomDesc"));
     }
   }
-  renderHeadingGapSection(container, tab) {
-    const content = this.createModuleCard(container, tab);
+  renderHeadingGapSection(container) {
+    const content = container;
     this.renderHeadingGapGroup(content, "body", this.t("context.body"));
     this.renderHeadingGapGroup(content, "callout", "Callout");
     this.renderHeadingGapGroup(content, "blockquote", this.t("context.quote"));
   }
   renderHeadingGapGroup(container, context, label) {
-    const card = this.createGroupCard(container, this.t("gap.group", { context: label }), this.t("gap.groupDesc", { context: label }));
+    const card = this.addGroup(container, this.t("gap.group", { context: label }), this.t("gap.groupDesc", { context: label }));
     if (context === "body") {
       const bodyFields = [
         ["emptyLineEm", this.t("gap.emptyLine"), this.t("gap.emptyLineDesc")],
@@ -2173,6 +1825,228 @@ var RefinedLayoutSettingTab = class extends import_obsidian2.PluginSettingTab {
     ];
     for (const [key, name, description] of contextFields) {
       this.addNumber(card, ["headingGap", context, key], name, description);
+    }
+  }
+};
+
+// src/settings-tab.ts
+var RefinedLayoutSettingTab = class extends import_obsidian2.PluginSettingTab {
+  constructor(app, plugin) {
+    super(app, plugin);
+    this.plugin = plugin;
+    this.t = getTranslator();
+    this.mode = "edit";
+    this.legacyPage = null;
+  }
+  display() {
+    this.renderHome(this.containerEl);
+  }
+  refresh() {
+    if (typeof import_obsidian2.PluginSettingTab.prototype.update === "function") {
+      this.update();
+    } else {
+      this.renderHome(this.containerEl);
+    }
+  }
+  renderHome(containerEl) {
+    containerEl.empty();
+    containerEl.addClass("refined-layout-settings");
+    const items = this.getSettingDefinitions();
+    const pages = items.flatMap((item) => "items" in item ? item.items ?? [] : []);
+    const page = pages.find((item) => "type" in item && item.type === "page" && item.name === this.legacyPage);
+    if (page) {
+      new import_obsidian2.Setting(containerEl).setName(page.name).setHeading().addExtraButton((button) => {
+        button.setIcon("arrow-left").setTooltip(this.t("actions.back")).onClick(() => {
+          this.legacyPage = null;
+          this.refresh();
+        });
+      });
+    }
+    this.renderLegacyItems(containerEl, page?.items ?? items);
+  }
+  // Older hosts use the same two-level definitions, without native navigation.
+  renderLegacyItems(container, items) {
+    for (const item of items) {
+      if ("type" in item) {
+        if (item.type === "page") {
+          new import_obsidian2.Setting(container).setName(item.name).setDesc(item.desc ?? "").addExtraButton((button) => button.setIcon("chevron-right").setTooltip(item.name).onClick(() => {
+            this.legacyPage = item.name;
+            this.refresh();
+          }));
+        } else {
+          const group = container.createDiv({ cls: `setting-group ${item.cls ?? ""}` });
+          if (item.heading) new import_obsidian2.Setting(group).setName(item.heading).setHeading();
+          this.renderLegacyItems(group, item.items ?? []);
+        }
+      } else if ("render" in item && item.render) {
+        const setting = new import_obsidian2.Setting(container).setName(item.name).setDesc(item.desc ?? "");
+        item.render(setting);
+      }
+    }
+  }
+  getSettingDefinitions() {
+    this.t = getTranslator(this.plugin.settings.language);
+    const t = this.t;
+    const mode = this.mode;
+    const modes = getModeLabels(t);
+    const pages = getSettingsTabs(t).map((tab) => ({
+      type: "page",
+      name: `${modes[mode]} \xB7 ${tab.label}`,
+      desc: tab.description,
+      items: [
+        {
+          name: tab.label,
+          desc: tab.description,
+          render: (setting) => {
+            this.renderModule(setting, mode, tab, () => this.refresh());
+          }
+        },
+        ...new SettingsCatalog(t, mode).build(tab).flatMap((group) => {
+          const makeGroup = (heading, fields) => ({
+            type: "group",
+            heading,
+            cls: "refined-layout-settings rl-settings-native-group",
+            items: fields.map((field) => ({
+              name: field.name,
+              desc: field.description,
+              aliases: [modes[mode], tab.label, group.title, field.path.join(" ")],
+              render: (setting) => {
+                this.renderNumber(setting, mode, field);
+                setting.setDisabled(!this.plugin.settings[mode].modules[tab.module]);
+              }
+            }))
+          });
+          return "fields" in group ? [makeGroup(group.title, group.fields)] : HEADING_LEVELS.map((level) => makeGroup(`${group.title} \xB7 ${HEADING_LABELS[level]}`, group.levels[level]));
+        })
+      ]
+    }));
+    return [
+      {
+        type: "group",
+        items: [
+          { name: t("language.name"), desc: t("language.description"), render: (setting) => {
+            this.renderLanguage(setting);
+          } },
+          ...[
+            ["actions.export", "actions.exportDesc", () => this.plugin.exportSettings()],
+            ["actions.import", "actions.importDesc", () => this.pickSettingsFile()],
+            ["actions.resetAll", "actions.resetAllDesc", () => {
+              this.plugin.resetAll();
+              this.refresh();
+            }]
+          ].map(([name, desc, onClick]) => ({
+            name: t(name),
+            desc: t(desc),
+            render: (setting) => {
+              setting.addButton((button) => button.setButtonText(t(name)).onClick(onClick));
+            }
+          }))
+        ]
+      },
+      {
+        type: "group",
+        cls: "rl-settings-mode-group",
+        items: [{
+          name: "",
+          searchable: false,
+          render: (setting) => {
+            setting.settingEl.empty();
+            setting.settingEl.addClass("refined-layout-settings", "rl-settings-mode-row");
+            this.renderModeSwitch(setting.settingEl);
+          }
+        }]
+      },
+      { type: "group", items: pages }
+    ];
+  }
+  renderModeSwitch(container) {
+    const modeSwitch = container.createDiv({
+      cls: "rl-settings-mode-switch",
+      attr: { role: "group", "aria-label": this.t("aria.mode") }
+    });
+    for (const mode of ["edit", "read"]) {
+      const button = modeSwitch.createEl("button", {
+        cls: `rl-settings-mode-button ${this.mode === mode ? "rl-settings-mode-active" : ""}`,
+        text: getModeLabels(this.t)[mode],
+        attr: { type: "button", "aria-pressed": String(this.mode === mode) }
+      });
+      button.addEventListener("click", () => {
+        if (this.mode === mode) return;
+        this.mode = mode;
+        this.refresh();
+        this.containerEl.querySelector(".rl-settings-mode-active")?.focus();
+      });
+    }
+  }
+  renderLanguage(setting) {
+    setting.setName(this.t("language.name")).setDesc(this.t("language.description")).addDropdown((dropdown) => {
+      dropdown.addOptions({
+        auto: this.t("language.auto"),
+        "zh-CN": "\u7B80\u4F53\u4E2D\u6587",
+        "zh-TW": "\u7E41\u9AD4\u4E2D\u6587",
+        en: "English",
+        ja: "\u65E5\u672C\u8A9E"
+      }).setValue(this.plugin.settings.language).onChange((value) => {
+        this.plugin.setLanguage(value);
+        this.refresh();
+        setting.settingEl.doc.querySelector(".rl-settings-language")?.focus();
+      });
+      dropdown.selectEl.addClass("rl-settings-language");
+      dropdown.selectEl.setAttribute("aria-label", this.t("language.name"));
+    });
+  }
+  pickSettingsFile() {
+    const input = createEl("input");
+    input.type = "file";
+    input.accept = ".json,application/json";
+    input.addEventListener("change", () => {
+      const file = input.files?.[0];
+      if (file === void 0) {
+        return;
+      }
+      void this.plugin.importSettings(file).then((imported) => {
+        if (imported) {
+          this.refresh();
+        }
+      });
+    });
+    input.click();
+  }
+  renderModule(setting, mode, tab, onToggle) {
+    setting.setName(tab.label).setDesc(`${getModeLabels(this.t)[mode]} \xB7 ${tab.description}`).addToggle((toggle) => {
+      toggle.setValue(this.plugin.settings[mode].modules[tab.module]).onChange((value) => {
+        this.plugin.setModule(mode, tab.module, value);
+        onToggle(value);
+      });
+    }).addExtraButton((button) => {
+      button.setIcon("reset").setTooltip(this.t("actions.resetSection")).onClick(() => {
+        if (tab.reset === "headingDecoration") {
+          this.plugin.resetHeadingDecoration(mode);
+        } else {
+          this.plugin.resetSection(mode, tab.reset, tab.module);
+        }
+        this.refresh();
+      });
+    });
+  }
+  renderNumber(setting, mode, field) {
+    const { path, name, description, options: config } = field;
+    setting.setName(name).setDesc(description);
+    setting.addText((text) => {
+      text.setValue(String(this.plugin.getNumber(mode, path)));
+      text.inputEl.type = "number";
+      text.inputEl.step = String(config.step);
+      text.inputEl.min = String(config.min);
+      text.inputEl.max = String(config.max);
+      text.inputEl.addClass("rl-settings-number");
+      text.onChange((rawValue) => {
+        const parsed = Number(rawValue);
+        if (!Number.isFinite(parsed) || parsed < config.min || parsed > config.max) return;
+        this.plugin.setNumber(mode, path, parsed);
+      });
+    });
+    if (config.unit !== "") {
+      setting.controlEl.createSpan({ cls: "rl-settings-unit", text: config.unit === "ratio" ? this.t("unit.ratio") : config.unit });
     }
   }
 };
@@ -2318,7 +2192,7 @@ var RefinedLayoutPlugin = class extends import_obsidian3.Plugin {
   exportSettings() {
     const blob = new Blob([JSON.stringify(this.settings, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
-    const anchor = document.createElement("a");
+    const anchor = createEl("a");
     anchor.href = url;
     anchor.download = "refined-layout-settings.json";
     document.body.appendChild(anchor);
@@ -2393,11 +2267,11 @@ var RefinedLayoutPlugin = class extends import_obsidian3.Plugin {
   startMermaidObserver() {
     this.mermaidObserver = new MutationObserver((records) => {
       for (const record of records) {
-        if (record.type === "attributes" && record.target instanceof Element && record.target.matches(MERMAID_SVG_SELECTOR)) {
+        if (record.type === "attributes" && record.target.instanceOf(Element) && record.target.matches(MERMAID_SVG_SELECTOR)) {
           this.classifyMermaid(record.target);
         }
         for (const node of record.addedNodes) {
-          if (!(node instanceof Element)) {
+          if (!node.instanceOf(Element)) {
             continue;
           }
           if (node.matches(MERMAID_SVG_SELECTOR)) {

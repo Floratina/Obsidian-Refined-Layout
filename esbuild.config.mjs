@@ -3,7 +3,8 @@ import { copyFile, mkdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-const production = process.argv[2] === "production";
+const production = process.argv.includes("production");
+const syncToObsidian = !process.argv.includes("--no-sync");
 const projectDir = path.dirname(fileURLToPath(import.meta.url));
 const pluginDir = "D:/文件/Obsidian Vault/Floratina/.obsidian/plugins/refined-layout";
 const assets = ["styles.css", "manifest.json"];
@@ -20,7 +21,7 @@ const context = await esbuild.context({
         watchFiles: assets.map((file) => path.join(projectDir, file)),
       }));
       build.onEnd(async (result) => {
-        if (result.errors.length > 0) return;
+        if (result.errors.length > 0 || !syncToObsidian) return;
         await mkdir(pluginDir, { recursive: true });
         for (const file of [...assets, "main.js"]) {
           await copyFile(path.join(projectDir, file), path.join(pluginDir, file));

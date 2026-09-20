@@ -1,0 +1,85 @@
+name: Prepare release assets
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing version tag (for example 0.1.0); select the same tag under Run workflow"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    steps:
+      # Keep the attested workflow source and the checked-out source on the same tag.
+      - name: Check workflow ref
+        env:
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: |
+          if [[ "$GITHUB_REF" != "refs/tags/$RELEASE_TAG" ]]; then
+            echo 'Select the same existing tag as the workflow ref and the tag input.' >&2
+            exit 1
+          fi
+
+      - name: Check out tagged source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: refs/tags/${{ inputs.tag }}
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Check release version
+        env:
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFileSync } from 'node:fs';
+          import { execFileSync } from 'node:child_process';
+          const manifest = JSON.parse(readFileSync('manifest.json', 'utf8'));
+          const pkg = JSON.parse(readFileSync('package.json', 'utf8'));
+          const commit = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
+          if (process.env.RELEASE_TAG !== manifest.version || pkg.version !== manifest.version) {
+            throw new Error('The tag, manifest version, and package version must match exactly.');
+          }
+          if (commit !== process.env.GITHUB_SHA) {
+            throw new Error('The checked-out commit must match the workflow source commit.');
+          }
+          NODE
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check and build without local deployment
+        run: npm run check
+
+      - name: Stage release assets
+        run: |
+          mkdir release-assets
+          cp main.js styles.css manifest.json release-assets/
+
+      - name: Attest release assets
+        uses: actions/attest-build-provenance@43d14bc2b83dec42d39ecae14e916627a18bb661 # v3
+        with:
+          subject-path: release-assets/*
+
+      - name: Save attested assets and release notes
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: refined-layout-${{ inputs.tag }}
+          if-no-files-found: error
+          path: |
+            release-assets/
+            RELEASE_NOTES.md

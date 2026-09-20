@@ -3,7 +3,7 @@
   "name": "Refined Layout",
   "version": "0.1.0",
   "minAppVersion": "1.12.7",
-  "description": "Independent layout controls for Obsidian editing and reading views.",
+  "description": "Independent layout and typography controls for editing and reading views.",
   "author": "Floratina",
   "isDesktopOnly": false
 }

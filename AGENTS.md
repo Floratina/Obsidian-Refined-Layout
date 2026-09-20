@@ -19,11 +19,13 @@ Refined Layout 是 Floratina 的本地 Obsidian 插件，插件标识为 `refine
 
 设置修改后即时应用，并保存到插件目录中的 `data.json`。设置页支持按区域恢复默认值、全部重置，以及通过 JSON 文件导入和导出两种模式的完整配置。
 
+Obsidian 1.13 及以上版本通过 `getSettingDefinitions()` 接入原生设置搜索。首页显示全局配置、编辑／阅读模式切换和分类入口；分类详细设置为第二级页面。搜索跟随首页当前选择的模式。较早的受支持版本通过 `display()` 渲染同一份字段定义和两级结构。
+
 排版主要围绕普通笔记内容展开，并对 Canvas（白板）、DataviewJS（脚本生成的视图）和 Mermaid 图内元素做了样式隔离。
 
 ## 实现与文件结构
 
-开发目录为 `D:\AppData\obsidian-refined-layout-dev`。Obsidian 运行目录为 `D:\文件\Obsidian Vault\Floratina\.obsidian\plugins\refined-layout`，仅用于插件运行文件和用户设置 `data.json`。请在开发目录修改源码、样式和清单；`npm run build` 与 `npm run dev` 会通过 esbuild 配置自动同步 `main.js`、`styles.css`、`manifest.json`，不会覆盖用户设置。开发监听同时覆盖 TypeScript 源码、样式和清单。
+开发目录为 `D:\AppData\obsidian-refined-layout-dev`。Obsidian 运行目录为 `D:\文件\Obsidian Vault\Floratina\.obsidian\plugins\refined-layout`，仅用于插件运行文件和用户设置 `data.json`。请在开发目录修改源码、样式和清单；`npm run build` 与 `npm run dev` 默认通过 esbuild 配置自动同步 `main.js`、`styles.css`、`manifest.json`，不会覆盖用户设置。两条命令均可追加 `-- --no-sync` 跳过同步，`npm run check` 默认使用无同步构建。开发监听同时覆盖 TypeScript 源码、样式和清单。
 
 插件逻辑使用 TypeScript 编写，通过 Obsidian 插件接口加载。具体排版由 CSS（层叠样式表）实现；插件将设置转换为 CSS 变量和模块开关对应的样式类，让编辑模式与阅读模式分别使用各自的参数。esbuild（代码打包工具）将入口源码打包为 Obsidian 加载的 `main.js`。
 
@@ -32,6 +34,7 @@ Refined Layout 是 Floratina 的本地 Obsidian 插件，插件标识为 `refine
 | `src/main.ts` | 插件入口，负责加载与保存设置、应用样式参数、配置导入导出，以及监听和处理 Mermaid 图表。 |
 | `src/settings.ts` | 定义设置结构、默认值，以及旧版配置的转换和导入数据的解析。 |
 | `src/settings-tab.ts` | 多语言设置界面，包括模式切换、功能分区、数值输入、模块开关和重置操作。 |
+| `src/settings-catalog.ts` | 设置页面共用的字段、分组、数值范围和单位。 |
 | `src/i18n/` | 四种语言的翻译、语言识别与回退，以及配置导入错误的翻译。 |
 | `src/mermaid.ts` | Mermaid 图表尺寸校验与纵横方向判定。 |
 | `styles.css` | 实时预览、阅读模式和插件设置页的样式。 |

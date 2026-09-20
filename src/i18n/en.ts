@@ -1,4 +1,5 @@
 export const en = {
+  "actions.back": "Back",
   "language.name": "Language",
   "language.description": "Choose the plugin's language. Changes apply immediately.",
   "language.auto": "Follow Obsidian",

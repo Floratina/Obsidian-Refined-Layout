@@ -177,7 +177,7 @@ export default class RefinedLayoutPlugin extends Plugin {
   exportSettings(): void {
     const blob = new Blob([JSON.stringify(this.settings, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
-    const anchor = document.createElement("a");
+    const anchor = createEl("a");
     anchor.href = url;
     anchor.download = "refined-layout-settings.json";
     document.body.appendChild(anchor);
@@ -263,12 +263,12 @@ export default class RefinedLayoutPlugin extends Plugin {
     this.mermaidObserver = new MutationObserver((records) => {
       for (const record of records) {
         // Mermaid can finish its viewBox after inserting the SVG into the page.
-        if (record.type === "attributes" && record.target instanceof Element
+        if (record.type === "attributes" && record.target.instanceOf(Element)
           && record.target.matches(MERMAID_SVG_SELECTOR)) {
           this.classifyMermaid(record.target as SVGSVGElement);
         }
         for (const node of record.addedNodes) {
-          if (!(node instanceof Element)) {
+          if (!node.instanceOf(Element)) {
             continue;
           }
           if (node.matches(MERMAID_SVG_SELECTOR)) {
