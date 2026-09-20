@@ -25,6 +25,10 @@ const result = await build({
         export class App {}
         export class Notice {}
         export function getLanguage() { return "en"; }
+        export function requireApiVersion(version) {
+          if (version !== "1.13.0") throw new Error("Unexpected API boundary");
+          return typeof PluginSettingTab.prototype.update === "function";
+        }
         export class PluginSettingTab {
           update() { this.updates = (this.updates ?? 0) + 1; this.settingItems = this.getSettingDefinitions(); }
         }

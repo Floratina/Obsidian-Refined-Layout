@@ -1842,7 +1842,7 @@ var RefinedLayoutSettingTab = class extends import_obsidian2.PluginSettingTab {
     this.renderHome(this.containerEl);
   }
   refresh() {
-    if (typeof import_obsidian2.PluginSettingTab.prototype.update === "function") {
+    if ((0, import_obsidian2.requireApiVersion)("1.13.0")) {
       this.update();
     } else {
       this.renderHome(this.containerEl);

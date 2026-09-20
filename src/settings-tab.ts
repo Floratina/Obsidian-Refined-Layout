@@ -3,6 +3,7 @@ import {
   App,
   PluginSettingTab,
   Setting,
+  requireApiVersion,
   type SettingDefinitionItem,
   type SettingDefinitionGroup,
   type SettingDefinitionPage,
@@ -20,6 +21,25 @@ import {
 } from "./settings-catalog";
 export type { ResettableSection } from "./settings-catalog";
 
+// Plugin-owned data consumed by the older-host renderer. These objects do not
+// require the host's declarative settings implementation to exist at runtime.
+interface LegacyPage {
+  type: "page";
+  name: string;
+  desc?: string | DocumentFragment;
+  items?: LegacyItem[];
+}
+type LegacyItem = LegacyPage | {
+  type: "group" | "list";
+  heading?: string;
+  cls?: string;
+  items?: LegacyItem[];
+} | {
+  name: string;
+  desc?: string | DocumentFragment;
+  render?: (setting: Setting, ...args: never[]) => void | (() => void);
+};
+
 export class RefinedLayoutSettingTab extends PluginSettingTab {
   private t = getTranslator();
   private mode: ModeKey = "edit";
@@ -35,7 +55,7 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
   }
 
   private refresh(): void {
-    if (typeof PluginSettingTab.prototype.update === "function") {
+    if (requireApiVersion("1.13.0")) {
       this.update();
     } else {
       this.renderHome(this.containerEl);
@@ -45,9 +65,9 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
   private renderHome(containerEl: HTMLElement): void {
     containerEl.empty();
     containerEl.addClass("refined-layout-settings");
-    const items = this.getSettingDefinitions();
+    const items: LegacyItem[] = this.getSettingDefinitions();
     const pages = items.flatMap((item) => "items" in item ? item.items ?? [] : []);
-    const page = pages.find((item): item is SettingDefinitionPage =>
+    const page = pages.find((item): item is LegacyPage =>
       "type" in item && item.type === "page" && item.name === this.legacyPage);
     if (page) {
       new Setting(containerEl).setName(page.name).setHeading().addExtraButton((button) => {
@@ -61,7 +81,7 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
   }
 
   // Older hosts use the same two-level definitions, without native navigation.
-  private renderLegacyItems(container: HTMLElement, items: SettingDefinitionItem[]): void {
+  private renderLegacyItems(container: HTMLElement, items: LegacyItem[]): void {
     for (const item of items) {
       if ("type" in item) {
         if (item.type === "page") {
@@ -79,7 +99,7 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
       } else if ("render" in item && item.render) {
         const setting = new Setting(container).setName(item.name).setDesc(item.desc ?? "");
         // Our definitions only use Setting; the native group argument is unused.
-        (item.render as (setting: Setting) => void)(setting);
+        item.render(setting);
       }
     }
   }
