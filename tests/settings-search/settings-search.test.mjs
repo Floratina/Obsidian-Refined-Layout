@@ -23,6 +23,7 @@ const result = await build({
       builder.onLoad({ filter: /.*/, namespace: "host" }, () => ({ contents: `
         export class Plugin { constructor(app, manifest) { this.app = app; this.manifest = manifest; } }
         export class App {}
+        export class Modal {}
         export class Notice {}
         export function getLanguage() { return "en"; }
         export function requireApiVersion(version) {

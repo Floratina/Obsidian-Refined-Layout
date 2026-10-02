@@ -15,6 +15,7 @@ import {
   type RefinedLayoutSettings,
 } from "./settings";
 import { RefinedLayoutSettingTab, type ResettableSection } from "./settings-tab";
+import { shouldShowUpdateNotes, UPDATE_NOTES_ID, UpdateNotesModal } from "./update-notes";
 
 const ROOT_CLASS = "refined-layout-enabled";
 const MERMAID_PORTRAIT_CLASS = "rl-mermaid-portrait";
@@ -104,23 +105,55 @@ export default class RefinedLayoutPlugin extends Plugin {
   private mermaidObserver: MutationObserver | null = null;
   private invalidMermaidSvgs = new WeakSet<SVGSVGElement>();
   private blankLineNavigation = createBlankLineNavigation();
+  private lastSeenUpdateNotesId: string | undefined;
+  private saveQueue: Promise<void> = Promise.resolve();
+  private unloaded = false;
+  private updateNotesModal: UpdateNotesModal | null = null;
 
   async onload(): Promise<void> {
-    this.settings = mergeSettings(await this.loadData());
+    const data: unknown = await this.loadData();
+    this.settings = mergeSettings(data);
+    if (data && typeof data === "object" && "lastSeenUpdateNotesId" in data
+      && typeof data.lastSeenUpdateNotesId === "string") {
+      this.lastSeenUpdateNotesId = data.lastSeenUpdateNotesId;
+    }
     this.registerEditorExtension(this.blankLineNavigation.extension);
     this.applySettings();
     this.startMermaidObserver();
     this.addSettingTab(new RefinedLayoutSettingTab(this.app, this));
+    this.app.workspace.onLayoutReady(() => this.showUpdateNotes());
   }
 
   onunload(): void {
+    this.unloaded = true;
+    this.updateNotesModal?.close();
+    this.updateNotesModal = null;
     this.stopMermaidObserver();
     if (this.saveTimer !== null) {
       window.clearTimeout(this.saveTimer);
       this.saveTimer = null;
-      void this.saveData(this.settings);
+      void this.savePluginData();
     }
     this.clearAppliedStyles();
+  }
+
+  private showUpdateNotes(): void {
+    if (this.unloaded || !shouldShowUpdateNotes(this.lastSeenUpdateNotesId)) return;
+    this.updateNotesModal = new UpdateNotesModal(this.app, this.settings.language);
+    this.updateNotesModal.open();
+    this.lastSeenUpdateNotesId = UPDATE_NOTES_ID;
+    void this.savePluginData();
+  }
+
+  private savePluginData(): Promise<void> {
+    const data = structuredClone({
+      ...this.settings,
+      lastSeenUpdateNotesId: this.lastSeenUpdateNotesId,
+    });
+    this.saveQueue = this.saveQueue
+      .then(() => this.saveData(data))
+      .catch((error: unknown) => console.error("[Refined Layout] Failed to save plugin data.", error));
+    return this.saveQueue;
   }
 
   getNumber(mode: ModeKey, path: string[]): number {
@@ -222,7 +255,7 @@ export default class RefinedLayoutPlugin extends Plugin {
     }
     this.saveTimer = window.setTimeout(() => {
       this.saveTimer = null;
-      void this.saveData(this.settings);
+      void this.savePluginData();
     }, 150);
   }
 

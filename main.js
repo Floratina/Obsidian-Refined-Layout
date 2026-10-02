@@ -24,7 +24,7 @@ __export(main_exports, {
   default: () => RefinedLayoutPlugin
 });
 module.exports = __toCommonJS(main_exports);
-var import_obsidian3 = require("obsidian");
+var import_obsidian4 = require("obsidian");
 
 // src/blank-line-navigation.ts
 var import_state = require("@codemirror/state");
@@ -2174,6 +2174,44 @@ var RefinedLayoutSettingTab = class extends import_obsidian2.PluginSettingTab {
   }
 };
 
+// src/update-notes.ts
+var import_obsidian3 = require("obsidian");
+var UPDATE_NOTES_ID = "cursor-navigation-improved";
+function shouldShowUpdateNotes(lastSeen, currentId = UPDATE_NOTES_ID) {
+  return lastSeen !== currentId;
+}
+function getUpdateNotes(preference, readLanguage = import_obsidian3.getLanguage) {
+  const locale = selectLocale(preference, readLanguage);
+  return locale === "zh-CN" || locale === "zh-TW" ? {
+    title: "Refined Layout \u66F4\u65B0\u8BF4\u660E",
+    heading: "\u5149\u6807\u5BFC\u822A\u5DF2\u6539\u8FDB\uFF1A",
+    body: "\u7F16\u8F91\u6A21\u5F0F\u4E2D\u7684\u4E0A\u3001\u4E0B\u65B9\u5411\u952E\u73B0\u5728\u53EF\u4EE5\u9010\u884C\u505C\u7559\u5728\u88AB\u63D2\u4EF6\u538B\u7F29\u7684\u7A7A\u884C\u4E0A\uFF0C\u4E5F\u652F\u6301\u4F7F\u7528 Shift + \u2191/\u2193 \u8DE8\u8D8A\u8FD9\u4E9B\u7A7A\u884C\u6269\u5C55\u9009\u533A\u3002",
+    close: "\u77E5\u9053\u4E86"
+  } : {
+    title: "Refined Layout Update Notes",
+    heading: "Improved cursor navigation:",
+    body: "In editing mode, Up/Down now stop at blank lines compressed by the plugin. Shift+Up/Down also extends selections across these lines.",
+    close: "Got it"
+  };
+}
+var UpdateNotesModal = class extends import_obsidian3.Modal {
+  constructor(app, preference) {
+    super(app);
+    this.preference = preference;
+  }
+  onOpen() {
+    const notes = getUpdateNotes(this.preference);
+    this.setTitle(notes.title);
+    const paragraph = this.contentEl.createEl("p");
+    paragraph.createEl("strong", { text: notes.heading });
+    paragraph.appendText(` ${notes.body}`);
+    new import_obsidian3.Setting(this.contentEl).addButton((button) => button.setButtonText(notes.close).setCta().onClick(() => this.close()));
+  }
+  onClose() {
+    this.contentEl.empty();
+  }
+};
+
 // src/main.ts
 var ROOT_CLASS = "refined-layout-enabled";
 var MERMAID_PORTRAIT_CLASS = "rl-mermaid-portrait";
@@ -2240,7 +2278,7 @@ function writeNestedNumber(source, path, value) {
   }
   cursor[lastKey] = value;
 }
-var RefinedLayoutPlugin = class extends import_obsidian3.Plugin {
+var RefinedLayoutPlugin = class extends import_obsidian4.Plugin {
   constructor() {
     super(...arguments);
     this.settings = cloneDefaultSettings();
@@ -2250,22 +2288,48 @@ var RefinedLayoutPlugin = class extends import_obsidian3.Plugin {
     this.mermaidObserver = null;
     this.invalidMermaidSvgs = /* @__PURE__ */ new WeakSet();
     this.blankLineNavigation = createBlankLineNavigation();
+    this.saveQueue = Promise.resolve();
+    this.unloaded = false;
+    this.updateNotesModal = null;
   }
   async onload() {
-    this.settings = mergeSettings(await this.loadData());
+    const data = await this.loadData();
+    this.settings = mergeSettings(data);
+    if (data && typeof data === "object" && "lastSeenUpdateNotesId" in data && typeof data.lastSeenUpdateNotesId === "string") {
+      this.lastSeenUpdateNotesId = data.lastSeenUpdateNotesId;
+    }
     this.registerEditorExtension(this.blankLineNavigation.extension);
     this.applySettings();
     this.startMermaidObserver();
     this.addSettingTab(new RefinedLayoutSettingTab(this.app, this));
+    this.app.workspace.onLayoutReady(() => this.showUpdateNotes());
   }
   onunload() {
+    this.unloaded = true;
+    this.updateNotesModal?.close();
+    this.updateNotesModal = null;
     this.stopMermaidObserver();
     if (this.saveTimer !== null) {
       window.clearTimeout(this.saveTimer);
       this.saveTimer = null;
-      void this.saveData(this.settings);
+      void this.savePluginData();
     }
     this.clearAppliedStyles();
+  }
+  showUpdateNotes() {
+    if (this.unloaded || !shouldShowUpdateNotes(this.lastSeenUpdateNotesId)) return;
+    this.updateNotesModal = new UpdateNotesModal(this.app, this.settings.language);
+    this.updateNotesModal.open();
+    this.lastSeenUpdateNotesId = UPDATE_NOTES_ID;
+    void this.savePluginData();
+  }
+  savePluginData() {
+    const data = structuredClone({
+      ...this.settings,
+      lastSeenUpdateNotesId: this.lastSeenUpdateNotesId
+    });
+    this.saveQueue = this.saveQueue.then(() => this.saveData(data)).catch((error) => console.error("[Refined Layout] Failed to save plugin data.", error));
+    return this.saveQueue;
   }
   getNumber(mode, path) {
     return readNestedNumber(this.settings[mode], path);
@@ -2324,7 +2388,7 @@ var RefinedLayoutPlugin = class extends import_obsidian3.Plugin {
     anchor.click();
     anchor.remove();
     window.setTimeout(() => URL.revokeObjectURL(url), 0);
-    new import_obsidian3.Notice(getTranslator(this.settings.language)("notice.exported"));
+    new import_obsidian4.Notice(getTranslator(this.settings.language)("notice.exported"));
   }
   async importSettings(file) {
     let json;
@@ -2332,7 +2396,7 @@ var RefinedLayoutPlugin = class extends import_obsidian3.Plugin {
       json = await file.text();
     } catch (error) {
       console.error("[Refined Layout] Failed to read settings file.", error);
-      new import_obsidian3.Notice(getTranslator(this.settings.language)("notice.readFailed"));
+      new import_obsidian4.Notice(getTranslator(this.settings.language)("notice.readFailed"));
       return false;
     }
     let imported;
@@ -2340,12 +2404,12 @@ var RefinedLayoutPlugin = class extends import_obsidian3.Plugin {
       imported = parseSettingsJson(json);
     } catch (error) {
       console.error("[Refined Layout] Invalid settings file.", error);
-      new import_obsidian3.Notice(formatImportError(error, getTranslator(this.settings.language)));
+      new import_obsidian4.Notice(formatImportError(error, getTranslator(this.settings.language)));
       return false;
     }
     this.settings = imported;
     this.applyAndScheduleSave();
-    new import_obsidian3.Notice(getTranslator(this.settings.language)("notice.imported"));
+    new import_obsidian4.Notice(getTranslator(this.settings.language)("notice.imported"));
     return true;
   }
   applyAndScheduleSave() {
@@ -2355,7 +2419,7 @@ var RefinedLayoutPlugin = class extends import_obsidian3.Plugin {
     }
     this.saveTimer = window.setTimeout(() => {
       this.saveTimer = null;
-      void this.saveData(this.settings);
+      void this.savePluginData();
     }, 150);
   }
   applySettings() {

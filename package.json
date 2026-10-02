@@ -13,8 +13,9 @@
     "test:i18n": "node --test tests/i18n/*.test.mjs",
     "test:settings-search": "node --test tests/settings-search/*.test.mjs",
     "test:navigation": "node --test tests/blank-line-navigation/*.test.mjs",
+    "test:update-notes": "node --test tests/update-notes/*.test.mjs",
     "test:navigation:browser": "node scripts/test-navigation-browser.mjs",
-    "check": "npm run lint && npm run check:css && npm run test:i18n && npm run test:settings-search && npm run test:navigation && npm run build -- --no-sync"
+    "check": "npm run lint && npm run check:css && npm run test:i18n && npm run test:settings-search && npm run test:navigation && npm run test:update-notes && npm run build -- --no-sync"
   },
   "devDependencies": {
     "@codemirror/commands": "6.8.1",
