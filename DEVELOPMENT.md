@@ -20,7 +20,7 @@ GitHub Actions 的 **Prepare release assets** 工作流通过手动触发运行�
 1. 确认已有版本标签、`manifest.json` 和 `package.json` 中的版本号完全一致，例如 `0.1.0`，不添加 `v` 前缀。
 2. 在 **Run workflow** 中选择该标签，并在 `tag` 输入框填写相同标签。
 3. 工作流检出该版本源码，安装依赖，运行完整检查，生成三个插件运行文件的构建来源证明（GitHub artifact attestations）。
-4. 从成功运行的工作流下载 `refined-layout-<版本号>` 产物。解压后，`release-assets/` 中包含三个运行文件，`RELEASE_NOTES.md` 提供发行说明。
+4. 从成功运行的工作流下载 `refined-layout-<版本号>` 产物。解压后，`release-assets/` 中包含三个运行文件，`RELEASE_NOTES.md` 和 `RELEASE_NOTES_zh-CN.md` 分别提供英文和中文发行说明。
 5. 发布时使用 `release-assets/` 中的原始文件，并将发行说明填写到 Release 正文中。不要重新构建或修改这些文件，否则其内容将不再匹配来源证明。
 
 此工作流只准备产物，不创建标签、不创建 Release，也不覆盖已有发行资产。正式插件资产只包含 `main.js`、`styles.css` 和 `manifest.json`。

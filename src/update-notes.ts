@@ -1,48 +1,77 @@
-import { getLanguage, Modal, Setting, type App } from "obsidian";
+import { Component, getLanguage, MarkdownRenderer, Modal, Setting, type App } from "obsidian";
+import englishNotes from "../RELEASE_NOTES.md";
+import chineseNotes from "../RELEASE_NOTES_zh-CN.md";
 import { selectLocale } from "./i18n/core";
 import type { LanguagePreference } from "./i18n/language";
 
-export const UPDATE_NOTES_ID = "cursor-navigation-improved";
-
-export function shouldShowUpdateNotes(lastSeen: unknown, currentId = UPDATE_NOTES_ID): boolean {
+export function shouldShowUpdateNotes(lastSeen: unknown, currentId: string): boolean {
   return lastSeen !== currentId;
 }
 
-export function getUpdateNotes(preference: LanguagePreference, readLanguage = getLanguage) {
-  const locale = selectLocale(preference, readLanguage);
-  return locale === "zh-CN" || locale === "zh-TW"
-    ? {
-      title: "Refined Layout 更新说明",
-      heading: "光标导航已改进：",
-      body: "编辑模式中的上、下方向键现在可以逐行停留在被插件压缩的空行上，也支持使用 Shift + ↑/↓ 跨越这些空行扩展选区。",
-      close: "知道了",
+export function extractVersionNotes(markdown: string, version: string): string {
+  const lines = markdown.split(/\r?\n/);
+  let collecting = false;
+  let fence: string | undefined;
+  const content: string[] = [];
+  for (const line of lines) {
+    const fenceMatch = /^ {0,3}(`{3,}|~{3,})/.exec(line);
+    if (fenceMatch) {
+      const marker = fenceMatch[1]!;
+      if (!fence) fence = marker;
+      else if (marker[0] === fence[0] && marker.length >= fence.length
+        && line.trim() === marker) fence = undefined;
     }
-    : {
-      title: "Refined Layout Update Notes",
-      heading: "Improved cursor navigation:",
-      body: "In editing mode, Up/Down now stop at blank lines compressed by the plugin. Shift+Up/Down also extends selections across these lines.",
-      close: "Got it",
-    };
+    const heading = !fence && /^##\s+(.+?)\s*#*\s*$/.exec(line);
+    if (heading) {
+      if (collecting) break;
+      collecting = heading[1] === version;
+      continue;
+    }
+    if (collecting) content.push(line);
+  }
+  return content.join("\n").trim();
+}
+
+export function getUpdateNotes(preference: LanguagePreference, version: string, readLanguage = getLanguage) {
+  const locale = selectLocale(preference, readLanguage);
+  const chinese = locale === "zh-CN" || locale === "zh-TW";
+  const markdown = extractVersionNotes(chinese ? chineseNotes : englishNotes, version);
+  if (!markdown) return null;
+  return {
+    id: version,
+    title: chinese ? `Refined Layout ${version} 更新说明` : `Refined Layout ${version} Update Notes`,
+    markdown,
+    close: chinese ? "知道了" : "Got it",
+  };
 }
 
 export class UpdateNotesModal extends Modal {
-  constructor(app: App, private readonly preference: LanguagePreference) {
+  private readonly renderComponent = new Component();
+
+  constructor(app: App, private readonly notes: NonNullable<ReturnType<typeof getUpdateNotes>>,
+    private readonly onShown: () => void) {
     super(app);
   }
 
-  onOpen(): void {
-    const notes = getUpdateNotes(this.preference);
-    this.setTitle(notes.title);
-    const paragraph = this.contentEl.createEl("p");
-    paragraph.createEl("strong", { text: notes.heading });
-    paragraph.appendText(` ${notes.body}`);
-    new Setting(this.contentEl).addButton((button) => button
-      .setButtonText(notes.close)
-      .setCta()
-      .onClick(() => this.close()));
+  async onOpen(): Promise<void> {
+    this.setTitle(this.notes.title);
+    this.renderComponent.load();
+    try {
+      await MarkdownRenderer.render(this.app, this.notes.markdown, this.contentEl, "", this.renderComponent);
+      if (!this.containerEl.isConnected) return;
+      new Setting(this.contentEl).addButton((button) => button
+        .setButtonText(this.notes.close)
+        .setCta()
+        .onClick(() => this.close()));
+      this.onShown();
+    } catch (error) {
+      console.error("[Refined Layout] Failed to render update notes.", error);
+      this.close();
+    }
   }
 
   onClose(): void {
+    this.renderComponent.unload();
     this.contentEl.empty();
   }
 }

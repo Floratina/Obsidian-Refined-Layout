@@ -83,3 +83,4 @@ jobs:
           path: |
             release-assets/
             RELEASE_NOTES.md
+            RELEASE_NOTES_zh-CN.md

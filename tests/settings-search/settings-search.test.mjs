@@ -24,6 +24,8 @@ const result = await build({
         export class Plugin { constructor(app, manifest) { this.app = app; this.manifest = manifest; } }
         export class App {}
         export class Modal {}
+        export class Component {}
+        export class MarkdownRenderer {}
         export class Notice {}
         export function getLanguage() { return "en"; }
         export function requireApiVersion(version) {
@@ -52,6 +54,7 @@ const result = await build({
     },
   }],
   bundle: true,
+  loader: { ".md": "text" },
   platform: "node",
   format: "esm",
   write: false,

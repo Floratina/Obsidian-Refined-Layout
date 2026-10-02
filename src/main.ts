@@ -15,7 +15,7 @@ import {
   type RefinedLayoutSettings,
 } from "./settings";
 import { RefinedLayoutSettingTab, type ResettableSection } from "./settings-tab";
-import { shouldShowUpdateNotes, UPDATE_NOTES_ID, UpdateNotesModal } from "./update-notes";
+import { getUpdateNotes, shouldShowUpdateNotes, UpdateNotesModal } from "./update-notes";
 
 const ROOT_CLASS = "refined-layout-enabled";
 const MERMAID_PORTRAIT_CLASS = "rl-mermaid-portrait";
@@ -138,11 +138,15 @@ export default class RefinedLayoutPlugin extends Plugin {
   }
 
   private showUpdateNotes(): void {
-    if (this.unloaded || !shouldShowUpdateNotes(this.lastSeenUpdateNotesId)) return;
-    this.updateNotesModal = new UpdateNotesModal(this.app, this.settings.language);
+    if (this.unloaded || this.updateNotesModal) return;
+    const notes = getUpdateNotes(this.settings.language, this.manifest.version);
+    if (!notes || !shouldShowUpdateNotes(this.lastSeenUpdateNotesId, notes.id)) return;
+    this.updateNotesModal = new UpdateNotesModal(this.app, notes, () => {
+      if (this.unloaded) return;
+      this.lastSeenUpdateNotesId = notes.id;
+      void this.savePluginData();
+    });
     this.updateNotesModal.open();
-    this.lastSeenUpdateNotesId = UPDATE_NOTES_ID;
-    void this.savePluginData();
   }
 
   private savePluginData(): Promise<void> {

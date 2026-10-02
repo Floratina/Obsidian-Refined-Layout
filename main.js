@@ -2176,38 +2176,73 @@ var RefinedLayoutSettingTab = class extends import_obsidian2.PluginSettingTab {
 
 // src/update-notes.ts
 var import_obsidian3 = require("obsidian");
-var UPDATE_NOTES_ID = "cursor-navigation-improved";
-function shouldShowUpdateNotes(lastSeen, currentId = UPDATE_NOTES_ID) {
+
+// RELEASE_NOTES.md
+var RELEASE_NOTES_default = "# Refined Layout \u2014 Release Notes\n\n**English** | [\u7B80\u4F53\u4E2D\u6587](RELEASE_NOTES_zh-CN.md)\n\n## 1.0.0\n\n### Fixed an issue where the cursor skipped some blank lines when moving up or down with the arrow keys.\n\n- **Improved cursor navigation:** In editing mode, Up/Down now stop at blank lines compressed by the plugin. Shift+Up/Down also extends selections across these lines.\n\n## 0.2.0\n\n- **Native settings search:** On Obsidian 1.13 and later, search follows the selected editing or reading view and provides direct access to every heading level.\n- **Simpler settings navigation:** The home page brings together global controls, the view switcher, and category links. Each category opens its own detail page with native controls.\n- **Compatibility improvements:** Configuration import and export use native element helpers, and Mermaid diagram detection works more reliably across separate windows.\n\nExisting settings and configuration files remain compatible. The minimum supported Obsidian version is 1.12.7.\n\n## 0.1.0\n\nInitial release.\n\n- **Independent view settings:** Customize Live Preview and Reading view separately, with module switches and layout values for each view. Changes apply immediately and save automatically.\n- **Typography and layout controls:** Adjust line height, spacing, and appearance for body text, lists, headings, callouts, blockquotes, images, tables, and code blocks. Set the gap after headings according to the content that follows.\n- **Mermaid diagram layout:** Control diagram width and centering, with horizontal scrolling for wide diagrams.\n- **Configuration management:** Reset individual sections or all layout settings, and import or export complete configurations as JSON files.\n- **Multilingual settings:** Choose English, Simplified Chinese, Traditional Chinese, or Japanese, or follow Obsidian\u2019s language.\n";
+
+// RELEASE_NOTES_zh-CN.md
+var RELEASE_NOTES_zh_CN_default = "# Refined Layout \u66F4\u65B0\u65E5\u5FD7\n\n[English](RELEASE_NOTES.md) | **\u7B80\u4F53\u4E2D\u6587**\n\n## 1.0.0\n### \u4FEE\u590D\u4E86\u4F7F\u7528\u65B9\u5411\u952E\u4E0A\u4E0B\u5BFC\u822A\u8F93\u5165\u5149\u6807\u65F6\uFF0C\u5149\u6807\u4F1A\u8DF3\u8FC7\u90E8\u5206\u7A7A\u884C\u7684\u95EE\u9898\u3002\n\n- **\u5149\u6807\u5BFC\u822A\u5DF2\u6539\u8FDB\uFF1A** \u7F16\u8F91\u6A21\u5F0F\u4E2D\u7684\u4E0A\u3001\u4E0B\u65B9\u5411\u952E\u73B0\u5728\u53EF\u4EE5\u9010\u884C\u505C\u7559\u5728\u88AB\u63D2\u4EF6\u538B\u7F29\u7684\u7A7A\u884C\u4E0A\uFF0C\u4E5F\u652F\u6301\u4F7F\u7528 Shift + \u2191/\u2193 \u8DE8\u8D8A\u8FD9\u4E9B\u7A7A\u884C\u6269\u5C55\u9009\u533A\u3002\n\n## 0.2.0\n\n- **\u539F\u751F\u8BBE\u7F6E\u641C\u7D22\uFF1A** Obsidian 1.13 \u53CA\u4EE5\u4E0A\u7248\u672C\u652F\u6301\u641C\u7D22\u5F53\u524D\u7F16\u8F91\u6216\u9605\u8BFB\u6A21\u5F0F\u7684\u8BBE\u7F6E\uFF0C\u5E76\u53EF\u76F4\u63A5\u5B9A\u4F4D\u5404\u7EA7\u6807\u9898\u9009\u9879\u3002\n- **\u66F4\u7B80\u6D01\u7684\u8BBE\u7F6E\u5BFC\u822A\uFF1A** \u9996\u9875\u96C6\u4E2D\u63D0\u4F9B\u5168\u5C40\u914D\u7F6E\u3001\u6A21\u5F0F\u5207\u6362\u548C\u5206\u7C7B\u5165\u53E3\uFF0C\u5404\u5206\u7C7B\u5728\u72EC\u7ACB\u7684\u8BE6\u60C5\u9875\u4E2D\u4F7F\u7528\u539F\u751F\u63A7\u4EF6\u5C55\u793A\u3002\n- **\u517C\u5BB9\u6027\u6539\u8FDB\uFF1A** \u914D\u7F6E\u5BFC\u5165\u3001\u5BFC\u51FA\u91C7\u7528\u539F\u751F\u5143\u7D20\u521B\u5EFA\u65B9\u6CD5\uFF0C\u6539\u5584\u72EC\u7ACB\u7A97\u53E3\u4E2D\u7684 Mermaid \u56FE\u8868\u8BC6\u522B\u3002\n\n\u5DF2\u6709\u8BBE\u7F6E\u548C\u914D\u7F6E\u6587\u4EF6\u4FDD\u6301\u517C\u5BB9\uFF0C\u6700\u4F4E\u652F\u6301\u7684 Obsidian \u7248\u672C\u4E3A 1.12.7\u3002\n\n## 0.1.0\n\n\u9996\u6B21\u53D1\u5E03\u3002\n\n- **\u4E24\u79CD\u6A21\u5F0F\u72EC\u7ACB\u914D\u7F6E\uFF1A** \u5B9E\u65F6\u9884\u89C8\u4E0E\u9605\u8BFB\u6A21\u5F0F\u5206\u522B\u62E5\u6709\u6A21\u5757\u5F00\u5173\u548C\u6392\u7248\u53C2\u6570\uFF0C\u4FEE\u6539\u5373\u65F6\u751F\u6548\u5E76\u81EA\u52A8\u4FDD\u5B58\u3002\n- **\u6B63\u6587\u4E0E\u5185\u5BB9\u6392\u7248\uFF1A** \u8C03\u6574\u6B63\u6587\u3001\u5217\u8868\u3001\u6807\u9898\u3001Callout\uFF08\u63D0\u793A\u5757\uFF09\u3001\u5F15\u7528\u5757\u3001\u56FE\u7247\u3001\u8868\u683C\u548C\u4EE3\u7801\u5757\u7684\u884C\u9AD8\u3001\u95F4\u8DDD\u4E0E\u5916\u89C2\uFF0C\u5E76\u6309\u6807\u9898\u540E\u7D27\u63A5\u7684\u5185\u5BB9\u7C7B\u578B\u8BBE\u7F6E\u8854\u63A5\u95F4\u8DDD\u3002\n- **Mermaid \u56FE\u8868\u5E03\u5C40\uFF1A** \u63A7\u5236\u56FE\u8868\u5BBD\u5EA6\u4E0E\u5C45\u4E2D\uFF0C\u4E3A\u8F83\u5BBD\u7684\u56FE\u8868\u63D0\u4F9B\u6A2A\u5411\u6EDA\u52A8\u3002\n- **\u914D\u7F6E\u7BA1\u7406\uFF1A** \u652F\u6301\u6309\u533A\u57DF\u6216\u5168\u90E8\u6062\u590D\u9ED8\u8BA4\u6392\u7248\uFF0C\u4EE5\u53CA\u901A\u8FC7 JSON \u6587\u4EF6\u5BFC\u5165\u3001\u5BFC\u51FA\u5B8C\u6574\u914D\u7F6E\u3002\n- **\u591A\u8BED\u8A00\u8BBE\u7F6E\uFF1A** \u652F\u6301\u7B80\u4F53\u4E2D\u6587\u3001\u7E41\u4F53\u4E2D\u6587\u3001\u82F1\u6587\u3001\u65E5\u6587\uFF0C\u4E5F\u53EF\u8DDF\u968F Obsidian \u7684\u8BED\u8A00\u3002\n";
+
+// src/update-notes.ts
+function shouldShowUpdateNotes(lastSeen, currentId) {
   return lastSeen !== currentId;
 }
-function getUpdateNotes(preference, readLanguage = import_obsidian3.getLanguage) {
+function extractVersionNotes(markdown, version) {
+  const lines = markdown.split(/\r?\n/);
+  let collecting = false;
+  let fence;
+  const content = [];
+  for (const line of lines) {
+    const fenceMatch = /^ {0,3}(`{3,}|~{3,})/.exec(line);
+    if (fenceMatch) {
+      const marker = fenceMatch[1];
+      if (!fence) fence = marker;
+      else if (marker[0] === fence[0] && marker.length >= fence.length && line.trim() === marker) fence = void 0;
+    }
+    const heading = !fence && /^##\s+(.+?)\s*#*\s*$/.exec(line);
+    if (heading) {
+      if (collecting) break;
+      collecting = heading[1] === version;
+      continue;
+    }
+    if (collecting) content.push(line);
+  }
+  return content.join("\n").trim();
+}
+function getUpdateNotes(preference, version, readLanguage = import_obsidian3.getLanguage) {
   const locale = selectLocale(preference, readLanguage);
-  return locale === "zh-CN" || locale === "zh-TW" ? {
-    title: "Refined Layout \u66F4\u65B0\u8BF4\u660E",
-    heading: "\u5149\u6807\u5BFC\u822A\u5DF2\u6539\u8FDB\uFF1A",
-    body: "\u7F16\u8F91\u6A21\u5F0F\u4E2D\u7684\u4E0A\u3001\u4E0B\u65B9\u5411\u952E\u73B0\u5728\u53EF\u4EE5\u9010\u884C\u505C\u7559\u5728\u88AB\u63D2\u4EF6\u538B\u7F29\u7684\u7A7A\u884C\u4E0A\uFF0C\u4E5F\u652F\u6301\u4F7F\u7528 Shift + \u2191/\u2193 \u8DE8\u8D8A\u8FD9\u4E9B\u7A7A\u884C\u6269\u5C55\u9009\u533A\u3002",
-    close: "\u77E5\u9053\u4E86"
-  } : {
-    title: "Refined Layout Update Notes",
-    heading: "Improved cursor navigation:",
-    body: "In editing mode, Up/Down now stop at blank lines compressed by the plugin. Shift+Up/Down also extends selections across these lines.",
-    close: "Got it"
+  const chinese = locale === "zh-CN" || locale === "zh-TW";
+  const markdown = extractVersionNotes(chinese ? RELEASE_NOTES_zh_CN_default : RELEASE_NOTES_default, version);
+  if (!markdown) return null;
+  return {
+    id: version,
+    title: chinese ? `Refined Layout ${version} \u66F4\u65B0\u8BF4\u660E` : `Refined Layout ${version} Update Notes`,
+    markdown,
+    close: chinese ? "\u77E5\u9053\u4E86" : "Got it"
   };
 }
 var UpdateNotesModal = class extends import_obsidian3.Modal {
-  constructor(app, preference) {
+  constructor(app, notes, onShown) {
     super(app);
-    this.preference = preference;
+    this.notes = notes;
+    this.onShown = onShown;
+    this.renderComponent = new import_obsidian3.Component();
   }
-  onOpen() {
-    const notes = getUpdateNotes(this.preference);
-    this.setTitle(notes.title);
-    const paragraph = this.contentEl.createEl("p");
-    paragraph.createEl("strong", { text: notes.heading });
-    paragraph.appendText(` ${notes.body}`);
-    new import_obsidian3.Setting(this.contentEl).addButton((button) => button.setButtonText(notes.close).setCta().onClick(() => this.close()));
+  async onOpen() {
+    this.setTitle(this.notes.title);
+    this.renderComponent.load();
+    try {
+      await import_obsidian3.MarkdownRenderer.render(this.app, this.notes.markdown, this.contentEl, "", this.renderComponent);
+      if (!this.containerEl.isConnected) return;
+      new import_obsidian3.Setting(this.contentEl).addButton((button) => button.setButtonText(this.notes.close).setCta().onClick(() => this.close()));
+      this.onShown();
+    } catch (error) {
+      console.error("[Refined Layout] Failed to render update notes.", error);
+      this.close();
+    }
   }
   onClose() {
+    this.renderComponent.unload();
     this.contentEl.empty();
   }
 };
@@ -2317,11 +2352,15 @@ var RefinedLayoutPlugin = class extends import_obsidian4.Plugin {
     this.clearAppliedStyles();
   }
   showUpdateNotes() {
-    if (this.unloaded || !shouldShowUpdateNotes(this.lastSeenUpdateNotesId)) return;
-    this.updateNotesModal = new UpdateNotesModal(this.app, this.settings.language);
+    if (this.unloaded || this.updateNotesModal) return;
+    const notes = getUpdateNotes(this.settings.language, this.manifest.version);
+    if (!notes || !shouldShowUpdateNotes(this.lastSeenUpdateNotesId, notes.id)) return;
+    this.updateNotesModal = new UpdateNotesModal(this.app, notes, () => {
+      if (this.unloaded) return;
+      this.lastSeenUpdateNotesId = notes.id;
+      void this.savePluginData();
+    });
     this.updateNotesModal.open();
-    this.lastSeenUpdateNotesId = UPDATE_NOTES_ID;
-    void this.savePluginData();
   }
   savePluginData() {
     const data = structuredClone({

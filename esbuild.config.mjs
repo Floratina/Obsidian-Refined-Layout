@@ -34,6 +34,7 @@ const context = await esbuild.context({
     js: "/* Refined Layout - generated file */",
   },
   entryPoints: ["src/main.ts"],
+  loader: { ".md": "text" },
   bundle: true,
   external: [
     "obsidian",

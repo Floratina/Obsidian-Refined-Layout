@@ -17,16 +17,18 @@ const result = await build({
       builder.onResolve({ filter: /^obsidian$/ }, () => ({ path: "obsidian", namespace: "host" }));
       builder.onLoad({ filter: /.*/, namespace: "host" }, () => ({ contents: `
         export class Plugin {
-          constructor(app) { this.app = app; }
+          constructor(app) { this.app = app; this.manifest = { version: "1.0.0" }; }
           registerEditorExtension() {}
           addSettingTab() {}
         }
         export class PluginSettingTab {}
         export class Notice {}
         export class Setting {}
+        export class Component {}
+        export class MarkdownRenderer {}
         export class Modal {
           static opened = 0;
-          open() { Modal.opened++; }
+          open() { Modal.opened++; this.onShown(); }
           close() { this.closed = true; }
         }
         export function getLanguage() { return "en"; }
@@ -35,12 +37,14 @@ const result = await build({
     },
   }],
   bundle: true,
+  loader: { ".md": "text" },
   platform: "node",
   format: "esm",
   write: false,
 });
-const { LayoutPlugin, Modal, UPDATE_NOTES_ID, shouldShowUpdateNotes, getUpdateNotes } =
+const { LayoutPlugin, Modal, extractVersionNotes, shouldShowUpdateNotes, getUpdateNotes } =
   await import(`data:text/javascript;base64,${Buffer.from(result.outputFiles[0].text).toString("base64")}`);
+const UPDATE_NOTES_ID = "1.0.0";
 
 // Keep startup, setting mutators and persistence real; isolate the host and CSS effects.
 async function fixture(data) {
@@ -71,27 +75,51 @@ test("first load displays after layout is ready; saved notes do not repeat; new 
   assert.equal(Modal.opened, opened + 1);
   assert.equal(reloaded.writes.length, 0);
   assert.equal(shouldShowUpdateNotes(UPDATE_NOTES_ID, "next-announcement"), true);
-  assert.equal(shouldShowUpdateNotes(null), true);
+  assert.equal(shouldShowUpdateNotes(null, UPDATE_NOTES_ID), true);
 });
 
 test("Chinese locales use the supplied Chinese text and every other locale uses English", () => {
-  const chinese = getUpdateNotes("zh-CN");
-  const english = getUpdateNotes("en");
-  assert.equal(chinese.title, "Refined Layout 更新说明");
+  const notesFor = (language, readLanguage) => getUpdateNotes(language, UPDATE_NOTES_ID, readLanguage);
+  const chinese = notesFor("zh-CN");
+  const english = notesFor("en");
+  assert.equal(chinese.title, "Refined Layout 1.0.0 更新说明");
   assert.equal(chinese.close, "知道了");
-  assert.match(chinese.body, /Shift \+ ↑\/↓/);
-  assert.equal(english.title, "Refined Layout Update Notes");
+  assert.match(chinese.markdown, /Shift \+ ↑\/↓/);
+  assert.equal(english.title, "Refined Layout 1.0.0 Update Notes");
   assert.equal(english.close, "Got it");
-  assert.deepEqual(getUpdateNotes("zh-TW"), chinese);
-  assert.deepEqual(getUpdateNotes("ja"), english);
+  assert.deepEqual(notesFor("zh-TW"), chinese);
+  assert.deepEqual(notesFor("ja"), english);
   for (const locale of ["zh", "zh-TW", "zh-Hant", "zh-CN"]) {
-    assert.deepEqual(getUpdateNotes("auto", () => locale), chinese);
+    assert.deepEqual(notesFor("auto", () => locale), chinese);
   }
   for (const locale of ["ja", "en", "fr"]) {
-    assert.deepEqual(getUpdateNotes("auto", () => locale), english);
+    assert.deepEqual(notesFor("auto", () => locale), english);
   }
-  assert.deepEqual(getUpdateNotes("auto", () => { throw new Error("Unavailable"); }), english);
-  assert.deepEqual(getUpdateNotes("en", () => "zh"), english);
+  assert.deepEqual(notesFor("auto", () => { throw new Error("Unavailable"); }), english);
+  assert.deepEqual(notesFor("en", () => "zh"), english);
+});
+
+test("version extraction keeps Markdown within the exact section and excludes other releases", () => {
+  const source = "# Notes\r\n## 1.1.0\r\nFuture\r\n## 1.0.0\r\n### Fix\r\n- **Fixed** navigation\r\n```md\r\n## Example\r\n```\r\n## 0.2.0\r\nOlder";
+  assert.equal(extractVersionNotes(source, "1.0.0"), "### Fix\n- **Fixed** navigation\n```md\n## Example\n```");
+  assert.equal(extractVersionNotes(source, "0.2.0"), "Older");
+  assert.equal(extractVersionNotes(source, "1.0"), "");
+  for (const locale of ["en", "zh-CN"]) {
+    const notes = getUpdateNotes(locale, "1.0.0");
+    assert.match(notes.markdown, /^### /);
+    assert.doesNotMatch(notes.markdown, /0\.2\.0|0\.1\.0|Native settings search|原生设置搜索/);
+  }
+});
+
+test("missing or empty version notes never open a modal or record an announcement", async () => {
+  assert.equal(extractVersionNotes("## 1.0.0\n\n## 0.2.0\nOlder", "1.0.0"), "");
+  assert.equal(getUpdateNotes("en", "9.0.0"), null);
+  const { plugin, ready, writes } = await fixture();
+  plugin.manifest.version = "9.0.0";
+  const opened = Modal.opened;
+  ready();
+  assert.equal(Modal.opened, opened);
+  assert.equal(writes.length, 0);
 });
 
 test("import, reset and queued setting saves retain the marker; exports exclude it", async (t) => {
