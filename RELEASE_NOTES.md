@@ -1,21 +1,27 @@
-# Refined Layout
+# Refined Layout — Release Notes
 
-## Improvements
+**English** | [简体中文](RELEASE_NOTES_zh-CN.md)
 
-- Added native settings search on app version 1.13 and later. Search follows the selected editing or reading view and provides direct access to every heading level.
-- Organized settings into two levels: global controls, mode tabs, and category links on the home page, with controls on category detail pages.
-- Updated configuration import and export to use native element helpers.
-- Improved cross-window element checks for Mermaid diagrams.
-- Updated the plugin description and removed the old category tabs and their styles.
+## 1.0.0
 
-Existing settings and configuration files remain compatible. The minimum supported app version remains 1.12.7.
+### Fixed an issue where the cursor skipped some blank lines when moving up or down with the arrow keys.
 
-## 改进
+- **Improved cursor navigation:** In editing mode, Up/Down now stop at blank lines compressed by the plugin. Shift+Up/Down also extends selections across these lines.
 
-- 支持应用 1.13 及以上版本的原生设置搜索，搜索跟随当前编辑或阅读模式，并可直接定位各级标题设置。
-- 设置页采用原生组件与两级导航：首页提供全局配置、模式切换和分类入口，详细设置在第二级页面修改。
-- 配置导入、导出改用原生元素创建方法。
-- 改善 Mermaid 图表的跨窗口元素判断。
-- 更新插件描述，移除旧分类标签界面及其样式。
+## 0.2.0
 
-已有设置和配置文件保持兼容，最低支持的应用版本仍为 1.12.7。
+- **Native settings search:** On Obsidian 1.13 and later, search follows the selected editing or reading view and provides direct access to every heading level.
+- **Simpler settings navigation:** The home page brings together global controls, the view switcher, and category links. Each category opens its own detail page with native controls.
+- **Compatibility improvements:** Configuration import and export use native element helpers, and Mermaid diagram detection works more reliably across separate windows.
+
+Existing settings and configuration files remain compatible. The minimum supported Obsidian version is 1.12.7.
+
+## 0.1.0
+
+Initial release.
+
+- **Independent view settings:** Customize Live Preview and Reading view separately, with module switches and layout values for each view. Changes apply immediately and save automatically.
+- **Typography and layout controls:** Adjust line height, spacing, and appearance for body text, lists, headings, callouts, blockquotes, images, tables, and code blocks. Set the gap after headings according to the content that follows.
+- **Mermaid diagram layout:** Control diagram width and centering, with horizontal scrolling for wide diagrams.
+- **Configuration management:** Reset individual sections or all layout settings, and import or export complete configurations as JSON files.
+- **Multilingual settings:** Choose English, Simplified Chinese, Traditional Chinese, or Japanese, or follow Obsidian’s language.

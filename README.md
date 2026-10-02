@@ -1,7 +1,7 @@
 # Refined Layout
 
-> [!NOTE]
-> **Improved cursor navigation:** In editing mode, Up/Down now stop at blank lines compressed by the plugin. Shift+Up/Down also extends selections across these lines.
+> [!NOTE] Fixed an issue where the cursor skipped some blank lines when moving up or down with the arrow keys.
+> In editing mode, Up/Down now stop at blank lines compressed by the plugin. Shift+Up/Down also extends selections across these lines.
 
 **English** | [简体中文](README_zh-CN.md)
 
