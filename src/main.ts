@@ -1,4 +1,5 @@
 import { Notice, Plugin } from "obsidian";
+import { createBlankLineNavigation } from "./blank-line-navigation";
 import { getTranslator } from "./i18n";
 import { normalizeLanguagePreference } from "./i18n/language";
 import { formatImportError } from "./i18n/import-error";
@@ -102,9 +103,11 @@ export default class RefinedLayoutPlugin extends Plugin {
   private saveTimer: number | null = null;
   private mermaidObserver: MutationObserver | null = null;
   private invalidMermaidSvgs = new WeakSet<SVGSVGElement>();
+  private blankLineNavigation = createBlankLineNavigation();
 
   async onload(): Promise<void> {
     this.settings = mergeSettings(await this.loadData());
+    this.registerEditorExtension(this.blankLineNavigation.extension);
     this.applySettings();
     this.startMermaidObserver();
     this.addSettingTab(new RefinedLayoutSettingTab(this.app, this));
@@ -257,6 +260,7 @@ export default class RefinedLayoutPlugin extends Plugin {
     }
     this.appliedProperties = new Set(variables.keys());
     this.refreshMermaidClassifications();
+    this.blankLineNavigation.requestMeasure();
   }
 
   private startMermaidObserver(): void {
@@ -368,5 +372,6 @@ export default class RefinedLayoutPlugin extends Plugin {
     for (const container of document.querySelectorAll(`.mermaid.${MERMAID_PORTRAIT_CLASS}`)) {
       container.classList.remove(MERMAID_PORTRAIT_CLASS);
     }
+    this.blankLineNavigation.requestMeasure();
   }
 }

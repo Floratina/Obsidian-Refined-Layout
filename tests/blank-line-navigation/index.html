@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>Blank-line navigation regression</title>
+<link rel="stylesheet" href="/styles.css">
+<style>
+  body { font: 15px system-ui; margin: 20px; --rl-edit-body-line-height: 1.7; --rl-edit-body-empty-line-height-em: 0.12em; --rl-edit-heading-gap-body-empty-line-em: 0em; --rl-edit-code-block-line-height: 1.7; --rl-edit-code-block-inner-spacing-em: 0.12em; }
+  #editor { max-width: 560px; border: 1px solid #aaa; }
+  .cm-editor { font: 16px monospace; }
+  .cm-scroller { max-height: 260px; overflow: auto; }
+  #results { white-space: pre-wrap; }
+  button { padding: 6px 12px; margin-bottom: 12px; }
+</style>
+<h1>Blank-line navigation regression</h1>
+<p>Real CodeMirror 6 + Refined Layout CSS. This is a regression fixture, not Obsidian.</p>
+<button id="run">Run regression checks</button>
+<button id="example">Open interactive example</button>
+<div id="editor" class="markdown-source-view mod-cm6"></div>
+<pre id="results">Loading…</pre>
+<script type="module" src="/browser.js"></script>
+</html>

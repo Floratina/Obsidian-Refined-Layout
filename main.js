@@ -26,6 +26,123 @@ __export(main_exports, {
 module.exports = __toCommonJS(main_exports);
 var import_obsidian3 = require("obsidian");
 
+// src/blank-line-navigation.ts
+var import_state = require("@codemirror/state");
+var import_view = require("@codemirror/view");
+var EXCLUDED = ".canvas-wrapper, .canvas-node, .mermaid, .block-language-dataviewjs, .markdown-embed, .callout, .cm-callout, .cm-table-widget";
+function textLineElement(view, line) {
+  if (!view.visibleRanges.some(({ from, to }) => from <= line.from && to >= line.to)) return null;
+  const block = view.lineBlockAt(line.from);
+  if (block.type !== import_view.BlockType.Text || block.from !== line.from || block.to !== line.to) return null;
+  const { node } = view.domAtPos(line.from);
+  const element = node.nodeType === 1 ? node : node.parentElement;
+  const dom = element?.closest(".cm-line");
+  if (!dom || dom.parentElement !== view.contentDOM || view.posAtDOM(dom, 0) !== line.from) return null;
+  if (dom.closest(EXCLUDED) || dom.querySelector('[contenteditable="false"], .cm-widgetBuffer')) return null;
+  if (dom.getClientRects().length === 0) return null;
+  return dom;
+}
+function compressedBlank(view, line, dom) {
+  if (line.length !== 0 || !dom.matches(":has(> br:only-child)")) return false;
+  const classes = dom.ownerDocument.body.classList;
+  const bodyRule = classes.contains("rl-edit-body");
+  const codeRule = classes.contains("rl-edit-code-blocks") && dom.matches(".HyperMD-codeblock.HyperMD-codeblock-bg");
+  const headingRule = classes.contains("rl-edit-heading-gaps") && dom.previousElementSibling?.matches('[class*="HyperMD-header"]') && dom.nextElementSibling?.matches('.cm-line:not([class*="HyperMD-header"]), .cm-callout, .cm-table-widget, .image-embed');
+  if (!bodyRule && !codeRule && !headingRule) return false;
+  const style = dom.ownerDocument.defaultView.getComputedStyle(dom);
+  return style.visibility !== "hidden" && Number.parseFloat(style.lineHeight) < Math.max(view.defaultLineHeight, Number.parseFloat(style.fontSize)) - 0.5;
+}
+function insideAtomicRange(view, pos) {
+  let inside = false;
+  for (const ranges of view.state.facet(import_view.EditorView.atomicRanges)) {
+    ranges(view).between(pos, pos, (from, to) => {
+      if (from < pos && to > pos) inside = true;
+    });
+  }
+  return inside;
+}
+function cursorAt(head, original, goalColumn) {
+  return import_state.EditorSelection.cursor(head, original.assoc, original.bidiLevel ?? void 0, goalColumn);
+}
+function moveAcrossBlankLines(view, forward, extend = false) {
+  const selection = view.state.selection;
+  if (!view.hasFocus || view.composing || view.compositionStarted || view.state.readOnly || selection.ranges.length !== 1 || !extend && !selection.main.empty) return false;
+  if (!view.dom.closest(".markdown-source-view.mod-cm6") || view.dom.closest(EXCLUDED) || view.dom.classList.contains("cm-vimMode")) return false;
+  const body = view.dom.ownerDocument.body;
+  if (!body.classList.contains("refined-layout-enabled")) return false;
+  const start = selection.main;
+  const doc = view.state.doc;
+  const current = doc.lineAt(start.head);
+  const nextNumber = current.number + (forward ? 1 : -1);
+  if (nextNumber < 1 || nextNumber > doc.lines) return false;
+  const next = doc.line(nextNumber);
+  if (current.length !== 0 && next.length !== 0) return false;
+  const currentDOM = textLineElement(view, current);
+  const nextDOM = textLineElement(view, next);
+  if (!currentDOM || !nextDOM) return false;
+  const currentBlank = compressedBlank(view, current, currentDOM);
+  const nextBlank = compressedBlank(view, next, nextDOM);
+  if (!currentBlank && !nextBlank) return false;
+  if (Array.from(body.querySelectorAll(".suggestion-container")).some((element) => element.getClientRects().length > 0 && element.ownerDocument.defaultView.getComputedStyle(element).visibility !== "hidden")) return false;
+  const cursor = cursorAt(start.head, start, start.goalColumn);
+  if (!currentBlank) {
+    const boundary = view.moveToLineBoundary(cursor, forward, true);
+    if (boundary.head !== (forward ? current.to : current.from)) return false;
+  }
+  const native = view.moveVertically(cursor, forward);
+  let target;
+  if (nextBlank) {
+    if (native.head === next.from) return false;
+    target = cursorAt(next.from, native, native.goalColumn);
+  } else {
+    if (!currentBlank || next.length === 0) return false;
+    const edge = forward ? next.from : next.to;
+    const coords = view.coordsAtPos(edge, forward ? 1 : -1);
+    if (!coords || native.goalColumn === void 0) return false;
+    const y = (coords.top + coords.bottom) / 2;
+    const pos = view.posAtCoords({
+      x: view.contentDOM.getBoundingClientRect().left + native.goalColumn,
+      y
+    });
+    if (pos === null || pos < next.from || pos > next.to) return false;
+    const after = view.coordsAtPos(pos, 1);
+    const assoc = after && y < after.top ? -1 : 1;
+    if (pos === native.head && assoc === native.assoc) return false;
+    target = import_state.EditorSelection.cursor(pos, assoc, void 0, native.goalColumn);
+  }
+  if (target.head === start.head || insideAtomicRange(view, target.head)) return false;
+  view.dispatch({
+    selection: import_state.EditorSelection.create([extend ? import_state.EditorSelection.range(start.anchor, target.head, target.goalColumn, target.bidiLevel ?? void 0) : target]),
+    scrollIntoView: true,
+    userEvent: extend ? "select.extend" : "select"
+  });
+  return true;
+}
+function createBlankLineNavigation() {
+  const views = /* @__PURE__ */ new Set();
+  const lifecycle = import_view.ViewPlugin.define((view) => {
+    views.add(view);
+    view.requestMeasure();
+    return { destroy: () => {
+      views.delete(view);
+    } };
+  });
+  return {
+    extension: [
+      lifecycle,
+      // Host/plugin arrow keymaps can already occupy the high-precedence group.
+      // Run before those handlers; unaffected keys still fall through to them.
+      import_state.Prec.highest(import_view.keymap.of([
+        { key: "ArrowUp", run: (view) => moveAcrossBlankLines(view, false), shift: (view) => moveAcrossBlankLines(view, false, true) },
+        { key: "ArrowDown", run: (view) => moveAcrossBlankLines(view, true), shift: (view) => moveAcrossBlankLines(view, true, true) }
+      ]))
+    ],
+    requestMeasure() {
+      for (const view of views) view.requestMeasure();
+    }
+  };
+}
+
 // src/i18n/index.ts
 var import_obsidian = require("obsidian");
 
@@ -2126,9 +2243,11 @@ var RefinedLayoutPlugin = class extends import_obsidian3.Plugin {
     this.saveTimer = null;
     this.mermaidObserver = null;
     this.invalidMermaidSvgs = /* @__PURE__ */ new WeakSet();
+    this.blankLineNavigation = createBlankLineNavigation();
   }
   async onload() {
     this.settings = mergeSettings(await this.loadData());
+    this.registerEditorExtension(this.blankLineNavigation.extension);
     this.applySettings();
     this.startMermaidObserver();
     this.addSettingTab(new RefinedLayoutSettingTab(this.app, this));
@@ -2263,6 +2382,7 @@ var RefinedLayoutPlugin = class extends import_obsidian3.Plugin {
     }
     this.appliedProperties = new Set(variables.keys());
     this.refreshMermaidClassifications();
+    this.blankLineNavigation.requestMeasure();
   }
   startMermaidObserver() {
     this.mermaidObserver = new MutationObserver((records) => {
@@ -2354,5 +2474,6 @@ var RefinedLayoutPlugin = class extends import_obsidian3.Plugin {
     for (const container of document.querySelectorAll(`.mermaid.${MERMAID_PORTRAIT_CLASS}`)) {
       container.classList.remove(MERMAID_PORTRAIT_CLASS);
     }
+    this.blankLineNavigation.requestMeasure();
   }
 };

@@ -32,6 +32,7 @@ Obsidian 1.13 及以上版本通过 `getSettingDefinitions()` 接入原生设置
 | 文件或目录 | 作用 |
 | --- | --- |
 | `src/main.ts` | 插件入口，负责加载与保存设置、应用样式参数、配置导入导出，以及监听和处理 Mermaid 图表。 |
+| `src/blank-line-navigation.ts` | CodeMirror 6 空行导航扩展；仅纠正受插件压缩的真实空行附近的上下键落点，并在排版设置变化后请求重新测量。 |
 | `src/settings.ts` | 定义设置结构、默认值，以及旧版配置的转换和导入数据的解析。 |
 | `src/settings-tab.ts` | 多语言设置界面，包括模式切换、功能分区、数值输入、模块开关和重置操作。 |
 | `src/settings-catalog.ts` | 设置页面共用的字段、分组、数值范围和单位。 |
