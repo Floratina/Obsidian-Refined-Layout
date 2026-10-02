@@ -20,6 +20,8 @@ Uses `playwright-core` and an existing Microsoft Edge installation by default. I
 
 The driver bundles the real CM6 editor and serves the fixture responses entirely through Playwright request interception. Tests use the unchanged project stylesheet and CM6's default keyboard map, recording the unpatched baseline before enabling the extension. Additional cases register a host arrow keymap at `Prec.high` **before** the navigation extension: without these cases, a passing standalone editor can conceal the host consuming the arrows first. A screenshot is written to the ignored `node_modules/.cache/refined-layout/navigation-regression.png`.
 
+The browser fixture also places real CM6 inline widgets on ordinary text: fold indicators, CM caret buffers, and zero-width empty markers. Test both sides of one or several blanks from text starts, middles, and ends, including Shift selection. These auxiliary decorations must not exclude an entire source line. Widgets containing content or occupying space, replaced blocks, and atomic ranges remain protected. Wrap-boundary cases cover unspecified and explicit caret associations: boundary probes and vertical movement must agree on which screen row owns the cursor.
+
 These browser checks are separate from `npm run check`, so ordinary static/Node checks do not require a locally installed browser.
 
 For interactive inspection, the `blank-line-navigation` entry in `.claude/launch.json` opens the same fixture in the Browser pane. Restart that preview after editing the fixture or extension, as its bundle is built once at startup.

@@ -30,6 +30,12 @@ var import_obsidian3 = require("obsidian");
 var import_state = require("@codemirror/state");
 var import_view = require("@codemirror/view");
 var EXCLUDED = ".canvas-wrapper, .canvas-node, .mermaid, .block-language-dataviewjs, .markdown-embed, .callout, .cm-callout, .cm-table-widget";
+function hasBlockingWidget(dom) {
+  return Array.from(dom.querySelectorAll('[contenteditable="false"], .cm-widgetBuffer')).some((widget) => {
+    if (widget.closest(".cm-fold-indicator") || widget.matches('img.cm-widgetBuffer[aria-hidden="true"]')) return false;
+    return !(widget.tagName === "SPAN" && widget.childNodes.length === 0 && widget.getBoundingClientRect().width === 0);
+  });
+}
 function textLineElement(view, line) {
   if (!view.visibleRanges.some(({ from, to }) => from <= line.from && to >= line.to)) return null;
   const block = view.lineBlockAt(line.from);
@@ -38,7 +44,7 @@ function textLineElement(view, line) {
   const element = node.nodeType === 1 ? node : node.parentElement;
   const dom = element?.closest(".cm-line");
   if (!dom || dom.parentElement !== view.contentDOM || view.posAtDOM(dom, 0) !== line.from) return null;
-  if (dom.closest(EXCLUDED) || dom.querySelector('[contenteditable="false"], .cm-widgetBuffer')) return null;
+  if (dom.closest(EXCLUDED) || hasBlockingWidget(dom)) return null;
   if (dom.getClientRects().length === 0) return null;
   return dom;
 }
@@ -62,7 +68,7 @@ function insideAtomicRange(view, pos) {
   return inside;
 }
 function cursorAt(head, original, goalColumn) {
-  return import_state.EditorSelection.cursor(head, original.assoc, original.bidiLevel ?? void 0, goalColumn);
+  return import_state.EditorSelection.cursor(head, original.assoc || -1, original.bidiLevel ?? void 0, goalColumn);
 }
 function moveAcrossBlankLines(view, forward, extend = false) {
   const selection = view.state.selection;

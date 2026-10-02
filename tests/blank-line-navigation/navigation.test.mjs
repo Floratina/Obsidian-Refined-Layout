@@ -33,7 +33,7 @@ function fixture({ doc = "abc\n\n\n\nxyz", line = 1, nativeLine = 5, goal = 24, 
       nodeType: 1, parentElement: contentDOM, ownerDocument, line: docLine,
       closest: (selector) => selector === ".cm-line" ? dom : null,
       matches: (selector) => selector === ":has(> br:only-child)" && docLine.length === 0,
-      querySelector: () => null, getClientRects: () => [{}],
+      querySelectorAll: () => [], getClientRects: () => [{}],
     };
     return [docLine.from, dom];
   }));
@@ -94,6 +94,24 @@ test("do not leave a wrapped paragraph before its last screen row", () => {
   view.moveToLineBoundary = () => EditorSelection.cursor(1);
   assert.equal(moveAcrossBlankLines(view, true), false);
 });
+
+for (const assoc of [0, -1, 1]) {
+  test(`boundary and vertical movement use the same caret side for association ${assoc}`, () => {
+    const { view } = fixture({ line: 5, nativeLine: 1 });
+    const head = view.state.doc.line(5).to;
+    view.state = view.state.update({ selection: EditorSelection.create([EditorSelection.cursor(head, assoc)]) }).state;
+    view.moveToLineBoundary = (cursor) => {
+      assert.equal(cursor.assoc, assoc || -1);
+      return EditorSelection.cursor(view.state.doc.line(5).from);
+    };
+    view.moveVertically = (cursor) => {
+      assert.equal(cursor.assoc, assoc || -1);
+      return EditorSelection.cursor(0, -1, undefined, 24);
+    };
+    assert.equal(moveAcrossBlankLines(view, false), true);
+    assert.equal(view.state.doc.lineAt(view.state.selection.main.head).number, 4);
+  });
+}
 
 test("leaving a blank retains the horizontal goal in the adjoining text", () => {
   const { view } = fixture({ line: 4, nativeLine: 5 });
@@ -184,12 +202,34 @@ test("normal-height and hidden empty lines are not corrected", () => {
   assert.equal(moveAcrossBlankLines(view, true), false);
 });
 
-test("inline widgets and unknown DOM mapping yield to the host", () => {
+test("inline content widgets and unknown DOM mapping yield to the host", () => {
   const { view, elements } = fixture();
-  elements.get(0).querySelector = () => ({});
+  elements.get(0).querySelectorAll = () => [{ closest: () => null, matches: () => false, tagName: "BUTTON" }];
   assert.equal(moveAcrossBlankLines(view, true), false);
-  elements.get(0).querySelector = () => null;
+  elements.get(0).querySelectorAll = () => [];
   view.posAtDOM = () => -1;
+  assert.equal(moveAcrossBlankLines(view, true), false);
+});
+
+for (const kind of ["fold", "buffer", "empty-marker"]) {
+  test(`${kind} decorations do not exclude ordinary source lines`, () => {
+    const { view, elements } = fixture({ line: 5, nativeLine: 1 });
+    elements.get(view.state.doc.line(5).from).querySelectorAll = () => [{
+      closest: () => kind === "fold" ? {} : null,
+      matches: () => kind === "buffer",
+      tagName: "SPAN", childNodes: [], getBoundingClientRect: () => ({ width: 0 }),
+    }];
+    assert.equal(moveAcrossBlankLines(view, false), true);
+    assert.equal(view.state.doc.lineAt(view.state.selection.main.head).number, 4);
+  });
+}
+
+test("a real inline widget remains excluded alongside harmless decorations", () => {
+  const { view, elements } = fixture();
+  elements.get(0).querySelectorAll = () => [
+    { closest: () => ({}), matches: () => false },
+    { closest: () => null, matches: () => false, tagName: "SPAN", childNodes: [], getBoundingClientRect: () => ({ width: 20 }) },
+  ];
   assert.equal(moveAcrossBlankLines(view, true), false);
 });
 

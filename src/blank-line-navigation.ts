@@ -3,6 +3,17 @@ import { BlockType, EditorView, keymap, ViewPlugin } from "@codemirror/view";
 
 const EXCLUDED = ".canvas-wrapper, .canvas-node, .mermaid, .block-language-dataviewjs, .markdown-embed, .callout, .cm-callout, .cm-table-widget";
 
+function hasBlockingWidget(dom: HTMLElement): boolean {
+  return Array.from(dom.querySelectorAll('[contenteditable="false"], .cm-widgetBuffer')).some((widget) => {
+    // Fold handles, CM caret buffers, and zero-width empty markers accompany
+    // ordinary Obsidian source text; they do not make the whole line a widget.
+    if (widget.closest(".cm-fold-indicator")
+      || widget.matches('img.cm-widgetBuffer[aria-hidden="true"]')) return false;
+    return !(widget.tagName === "SPAN" && widget.childNodes.length === 0
+      && widget.getBoundingClientRect().width === 0);
+  });
+}
+
 function textLineElement(view: EditorView, line: Line): HTMLElement | null {
   if (!view.visibleRanges.some(({ from, to }) => from <= line.from && to >= line.to)) return null;
   const block = view.lineBlockAt(line.from);
@@ -12,7 +23,7 @@ function textLineElement(view: EditorView, line: Line): HTMLElement | null {
   const element = node.nodeType === 1 ? node as HTMLElement : node.parentElement;
   const dom = element?.closest<HTMLElement>(".cm-line");
   if (!dom || dom.parentElement !== view.contentDOM || view.posAtDOM(dom, 0) !== line.from) return null;
-  if (dom.closest(EXCLUDED) || dom.querySelector('[contenteditable="false"], .cm-widgetBuffer')) return null;
+  if (dom.closest(EXCLUDED) || hasBlockingWidget(dom)) return null;
   if (dom.getClientRects().length === 0) return null;
   return dom;
 }
@@ -44,7 +55,9 @@ function insideAtomicRange(view: EditorView, pos: number): boolean {
 }
 
 function cursorAt(head: number, original: SelectionRange, goalColumn: number | undefined): SelectionRange {
-  return EditorSelection.cursor(head, original.assoc, original.bidiLevel ?? undefined, goalColumn);
+  // moveVertically treats an unspecified association as the preceding side.
+  // Use the same side for wrap-boundary probes, which otherwise choose the next row.
+  return EditorSelection.cursor(head, original.assoc || -1, original.bidiLevel ?? undefined, goalColumn);
 }
 
 /** Only correct a boundary involving a rendered, genuinely empty source line. */

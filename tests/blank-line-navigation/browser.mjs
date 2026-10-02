@@ -1,6 +1,6 @@
 /* global document, window, KeyboardEvent, requestAnimationFrame */
 import { EditorState, EditorSelection, Prec } from "@codemirror/state";
-import { EditorView, keymap, drawSelection, Decoration } from "@codemirror/view";
+import { EditorView, keymap, drawSelection, Decoration, WidgetType } from "@codemirror/view";
 import { defaultKeymap } from "@codemirror/commands";
 import { createBlankLineNavigation, moveAcrossBlankLines } from "../../src/blank-line-navigation.ts";
 
@@ -48,6 +48,33 @@ function lineClasses(doc, predicate, classes) {
     if (predicate(n)) ranges.push(Decoration.line({ class: classes }).range(state.doc.line(n).from));
   }
   return EditorView.decorations.of(Decoration.set(ranges));
+}
+
+class InlineControl extends WidgetType {
+  constructor(kind) { super(); this.kind = kind; }
+  toDOM() {
+    const element = document.createElement(this.kind === "fold" ? "div" : "span");
+    element.contentEditable = "false";
+    if (this.kind === "fold") {
+      element.className = "cm-fold-indicator";
+      element.style.position = "absolute";
+      element.textContent = "▸";
+    } else if (this.kind === "content") {
+      element.textContent = "embedded content";
+    } else if (this.kind === "sized-empty") {
+      element.style.display = "inline-block";
+      element.style.width = "20px";
+    }
+    return element;
+  }
+}
+
+function inlineControls(doc, kind) {
+  const state = EditorState.create({ doc });
+  return EditorView.decorations.of(Decoration.set([
+    Decoration.widget({ widget: new InlineControl(kind), side: -1 }).range(0),
+    Decoration.widget({ widget: new InlineControl(kind), side: 1 }).range(state.doc.length),
+  ]));
 }
 
 async function run() {
@@ -105,6 +132,67 @@ async function run() {
       equal(lineNumber(), 1, "editor cursor unchanged");
     } finally { menu.remove(); }
   });
+  for (const assoc of [0, -1, 1]) {
+    await check(`upward wrap-boundary navigation respects caret association ${assoc}`, async () => {
+      const doc = `alpha\n\n${"abcdefghij".repeat(20)}\n\nomega`;
+      await open({ doc, width: 220 });
+      const text = view.state.doc.line(3);
+      const wrap = view.moveToLineBoundary(EditorSelection.cursor(text.from, 1), true, true).head;
+      if (wrap === text.to) throw new Error("fixture did not wrap");
+      view.dispatch({ selection: EditorSelection.create([EditorSelection.cursor(wrap, assoc)]) });
+      await press("ArrowUp");
+      equal(lineNumber(), assoc === 1 ? 3 : 2, "first screen row versus second screen row");
+    });
+  }
+  await check("unspecified association does not skip the last wrapped text row downward", async () => {
+    const doc = `alpha\n\n${"abcdefghij".repeat(20)}\n\nomega`;
+    await open({ doc, width: 220 });
+    const text = view.state.doc.line(3);
+    let lastWrap = text.from;
+    for (let i = 0; i < 50; i++) {
+      const boundary = view.moveToLineBoundary(EditorSelection.cursor(lastWrap, 1), true, true).head;
+      if (boundary === text.to) break;
+      if (boundary <= lastWrap) throw new Error("cannot locate last wrap boundary");
+      lastWrap = boundary;
+    }
+    view.dispatch({ selection: EditorSelection.create([EditorSelection.cursor(lastWrap, 0)]) });
+    await press("ArrowDown");
+    equal(lineNumber(), 3, "last text screen row must precede the blank");
+  });
+  for (const kind of ["fold", "empty-marker"]) {
+    for (const blankCount of [1, 3]) {
+      for (const forward of [true, false]) {
+        await check(`${kind} controls preserve ${blankCount} blanks (${forward ? "down" : "up"}), at start/middle/end`, async () => {
+          const doc = `alpha alpha${"\n".repeat(blankCount + 1)}omega omega`;
+          for (const offset of [0, 3, 11]) {
+            await open({ doc, extensions: [inlineControls(doc, kind)], beforeNavigation: [Prec.high(keymap.of(defaultKeymap))] });
+            const n = forward ? 1 : view.state.doc.lines;
+            view.dispatch({ selection: EditorSelection.create([EditorSelection.cursor(view.state.doc.line(n).from + offset, -1)]) });
+            const expected = Array.from({ length: blankCount + 2 }, (_, i) => forward ? i + 1 : blankCount + 2 - i);
+            equal(await trace(forward ? "ArrowDown" : "ArrowUp", blankCount + 1), expected, `offset ${offset}`);
+          }
+        });
+      }
+    }
+  }
+  await check("decorated text still preserves Shift selection anchors", async () => {
+    const doc = "alpha alpha\n\n\nomega omega";
+    await open({ doc, extensions: [inlineControls(doc, "empty-marker")] });
+    const anchor = view.state.doc.length;
+    view.dispatch({ selection: { anchor } });
+    for (const n of [3, 2, 1]) {
+      await press("ArrowUp", true);
+      equal(lineNumber(), n, "upward selection head");
+      equal(view.state.selection.main.anchor, anchor, "original anchor");
+    }
+  });
+  for (const kind of ["content", "sized-empty"]) {
+    await check(`actual ${kind} widgets still defer to the host`, async () => {
+      const doc = "alpha alpha\n\nomega omega";
+      await open({ doc, extensions: [inlineControls(doc, kind)] });
+      equal(moveAcrossBlankLines(view, true), false, "unsafe inline widget stays excluded");
+    });
+  }
   await check("single blank between text lines", async () => {
     await open({ doc: "alpha\n\nomega" });
     equal(await trace("ArrowDown", 2), [1, 2, 3], "line sequence");
