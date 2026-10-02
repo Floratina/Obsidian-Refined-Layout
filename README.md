@@ -1,13 +1,15 @@
 # Refined Layout
 
-> [!NOTE] Fixed an issue where the cursor skipped some blank lines when moving up or down with the arrow keys.
-> In editing mode, Up/Down now stop at blank lines compressed by the plugin. Shift+Up/Down also extends selections across these lines.
+> [!NOTE]
+> **Fixed an issue where the cursor skipped some blank lines when moving up or down with the arrow keys.**
+>
+> In Live Preview Mode, Up/Down now stop at blank lines compressed by the plugin. Shift+Up/Down also extends selections across these lines.
 
 **English** | [简体中文](README_zh-CN.md)
 
 Refined Layout is an Obsidian plugin for adjusting the layout and typography of your notes. Without writing CSS (styling code), you can change the line height, spacing, and appearance of body text, lists, headings, images, tables, callouts, blockquotes, code blocks, and Mermaid diagrams from the settings page.
 
-The plugin provides separate configurations for **Live Preview (editing mode)** and **reading mode**. You can choose which layout modules to enable and set different values for each mode. Changes take effect immediately and are saved automatically.
+The plugin provides separate configurations for **Live Preview Mode** and **reading mode**. You can choose which layout modules to enable and set different values for each mode. Changes take effect immediately and are saved automatically.
 
 ## Before and After
 
@@ -44,7 +46,7 @@ Set independent spacing for headings, paragraphs, lists, and tables inside a cal
 ### Body Text and Lists
 
 - **Body line height**: Adjust the vertical distance between lines of ordinary body text.
-- **Blank lines and paragraphs**: Set the height of actual blank lines in editing mode and paragraph spacing in reading mode.
+- **Blank lines and paragraphs**: Set the height of actual blank lines in Live Preview Mode and paragraph spacing in reading mode.
 - **List item spacing**: Adjust the top and bottom spacing between list items separately.
 - **Overall list spacing**: Adjust the space above the first item and below the last item to control the distance from surrounding content. At these two boundaries, overall list spacing applies without adding item spacing on top of it.
 
@@ -73,7 +75,7 @@ Independently adjust body line height, paragraph spacing, list item spacing, and
 
 Set the maximum width of ordinary body images relative to the content area, along with corner radius, border width, and spacing above and below.
 
-In editing mode, image spacing and actual blank lines in the Markdown are controlled separately: adjust the space around images in the Images section, and the height of actual blank lines in the Body Text and Lists section. Images inside callouts use their dedicated settings.
+In Live Preview Mode, image spacing and actual blank lines in the Markdown are controlled separately: adjust the space around images in the Images section, and the height of actual blank lines in the Body Text and Lists section. Images inside callouts use their dedicated settings.
 
 ### Tables
 
@@ -81,11 +83,11 @@ For tables in the main body, adjust cell padding, inner border width, outer bord
 
 ### Code Blocks
 
-Both modes support code line height adjustments. Editing mode also lets you adjust blank line spacing inside code blocks, while reading mode provides separate controls for the space above and below the entire block.
+Both modes support code line height adjustments. Live Preview Mode also lets you adjust blank line spacing inside code blocks, while reading mode provides separate controls for the space above and below the entire block.
 
 ### Spacing After Headings
 
-When a heading is immediately followed by a paragraph, list, blockquote, code block, table, image, or callout, you can adjust the gap according to the content type. Separate settings are available for headings in the main body, callouts, and blockquotes. Editing mode also lets you adjust the height of blank lines after headings.
+When a heading is immediately followed by a paragraph, list, blockquote, code block, table, image, or callout, you can adjust the gap according to the content type. Separate settings are available for headings in the main body, callouts, and blockquotes. Live Preview Mode also lets you adjust the height of blank lines after headings.
 
 ### Mermaid Diagrams
 
@@ -99,16 +101,16 @@ Mermaid generates flowcharts and other diagrams from text syntax. The plugin use
 
 Once the plugin is enabled, open **Refined Layout** in Obsidian’s settings.
 
-1. Select the editing or reading mode you want to configure.
+1. Select Live Preview Mode or reading mode you want to configure.
 2. Open the relevant section, enable modules as needed, and adjust the values.
 3. Return to your note to see the result. Changes apply immediately and are saved automatically.
 
-Module toggles and layout values are independent for the two modes. Some settings also differ between modes because the editing and reading views have different structures.
+Module toggles and layout values are independent for the two modes. Some settings also differ between modes because Live Preview Mode and reading mode have different structures.
 
 ### Restoring Defaults and Moving Settings
 
 - **Reset section**: Restore only the settings for the current section.
-- **Reset all**: Restore both editing and reading configurations, including all module toggles, while keeping your interface language choice.
+- **Reset all**: Restore both Live Preview Mode and reading mode configurations, including all module toggles, while keeping your interface language choice.
 - **Export settings**: Save the complete configuration for both modes as a JSON file for backup or transfer.
 - **Import settings**: Read settings from a JSON file and replace the current configuration immediately after a successful import. Export a backup first if you want to keep your existing settings.
 
@@ -118,13 +120,13 @@ The settings page supports following Obsidian’s language, Simplified Chinese, 
 
 ### Settings Search
 
-Language, import/export, and reset controls are on the settings home page. Switch between **Editing view** and **Reading view**, then open a category to edit its settings. Navigation has only two levels, and each view keeps its own values and module switches.
+Language, import/export, and reset controls are on the settings home page. Switch between **Live Preview Mode** (labelled **Editing view** in settings) and **Reading view**, then open a category to edit its settings. Navigation has only two levels, and each view keeps its own values and module switches.
 
 On Obsidian 1.13 or later, native settings search covers the currently selected view, including all H1–H6 levels. Switching the view on the home page updates both category contents and search results. Earlier supported versions use the same two-level layout without native settings search.
 
 ## Scope and Compatibility
 
-The plugin primarily adjusts ordinary notes in Live Preview and reading mode, with style isolation for Canvas, DataviewJS (views generated by scripts), and elements inside Mermaid diagrams. Mermaid settings control the size and layout of the diagram as a whole, rather than the styling of node text or connecting lines.
+The plugin primarily adjusts ordinary notes in Live Preview Mode and reading mode, with style isolation for Canvas, DataviewJS (views generated by scripts), and elements inside Mermaid diagrams. Mermaid settings control the size and layout of the diagram as a whole, rather than the styling of node text or connecting lines.
 
 The final appearance also depends on your theme, CSS snippets, and other layout plugins. If part of a note looks different from what you expect, try disabling the corresponding module and checking for overlapping layout settings.
 
