@@ -12,15 +12,21 @@
     "check:css": "node scripts/check-css.mjs",
     "test:i18n": "node --test tests/i18n/*.test.mjs",
     "test:settings-search": "node --test tests/settings-search/*.test.mjs",
-    "check": "npm run lint && npm run check:css && npm run test:i18n && npm run test:settings-search && npm run build -- --no-sync"
+    "test:navigation": "node --test tests/blank-line-navigation/*.test.mjs",
+    "test:navigation:browser": "node scripts/test-navigation-browser.mjs",
+    "check": "npm run lint && npm run check:css && npm run test:i18n && npm run test:settings-search && npm run test:navigation && npm run build -- --no-sync"
   },
   "devDependencies": {
+    "@codemirror/commands": "6.8.1",
+    "@codemirror/state": "6.5.0",
+    "@codemirror/view": "6.38.6",
     "@eslint/js": "^10.0.1",
     "@types/node": "^26.2.0",
     "esbuild": "^0.28.2",
     "eslint": "^10.8.1",
     "globals": "^17.11.0",
     "obsidian": "^1.13.1",
+    "playwright-core": "1.63.0",
     "stylelint": "^17.14.1",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.67.0"
