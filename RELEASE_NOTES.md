@@ -2,11 +2,22 @@
 
 **English** | [简体中文](RELEASE_NOTES_zh-CN.md)
 
+## 1.0.1
+
+#### Fixed an issue where the cursor skipped some blank lines when moving up or down with the arrow keys.
+
+In Live Preview Mode, Up/Down now stop at blank lines compressed by the plugin. Shift+Up/Down also extends selections across these lines.
+
+#### Other fixes
+
+- Fixed an issue that prevented settings from being imported.
+- Fixed missing confirmation and completion messages when resetting all settings.
+
 ## 1.0.0
 
-### Fixed an issue where the cursor skipped some blank lines when moving up or down with the arrow keys.
+#### Fixed an issue where the cursor skipped some blank lines when moving up or down with the arrow keys.
 
-- **Improved cursor navigation:** In Live Preview Mode, Up/Down now stop at blank lines compressed by the plugin. Shift+Up/Down also extends selections across these lines.
+In Live Preview Mode, Up/Down now stop at blank lines compressed by the plugin. Shift+Up/Down also extends selections across these lines.
 
 ## 0.2.0
 

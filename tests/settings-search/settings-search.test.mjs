@@ -12,7 +12,7 @@ const result = await build({
       export * from "./src/settings-tab";
       export * from "./src/i18n/core";
       export { default as LayoutPlugin } from "./src/main";
-      export { PluginSettingTab, Setting } from "obsidian";`,
+      export { PluginSettingTab, Setting, Notice, Modal } from "obsidian";`,
     resolveDir: fileURLToPath(new URL("../../", import.meta.url)),
     loader: "ts",
   },
@@ -23,10 +23,19 @@ const result = await build({
       builder.onLoad({ filter: /.*/, namespace: "host" }, () => ({ contents: `
         export class Plugin { constructor(app, manifest) { this.app = app; this.manifest = manifest; } }
         export class App {}
-        export class Modal {}
+        export class Modal {
+          contentEl = { settings: [], empty() { this.settings = []; } };
+          setTitle(value) { this.title = value; return this; }
+          setContent(value) { this.description = value; return this; }
+          open() { Modal.current = this; this.onOpen(); }
+          close() { this.closed = true; this.onClose(); }
+        }
         export class Component {}
         export class MarkdownRenderer {}
-        export class Notice {}
+        export class Notice {
+          static messages = [];
+          constructor(message) { Notice.messages.push(message); }
+        }
         export function getLanguage() { return "en"; }
         export function requireApiVersion(version) {
           if (version !== "1.13.0") throw new Error("Unexpected API boundary");
@@ -36,6 +45,7 @@ const result = await build({
           update() { this.updates = (this.updates ?? 0) + 1; this.settingItems = this.getSettingDefinitions(); }
         }
         export class Setting {
+          constructor(container) { container?.settings.push(this); this.buttons = []; }
           controlEl = { createSpan: (value) => { this.unit = value.text; } };
           setName(value) { this.name = value; return this; }
           setDesc(value) { this.desc = value; return this; }
@@ -49,6 +59,10 @@ const result = await build({
             this.toggle = toggle; callback(toggle); return this;
           }
           addExtraButton() { return this; }
+          addButton(callback) {
+            const button = { setButtonText(value) { this.label = value; return this; }, setWarning() { this.warning = true; return this; }, onClick(fn) { this.click = fn; return this; } };
+            this.button = button; this.buttons.push(button); callback(button); return this;
+          }
         }
       ` }));
     },
@@ -61,7 +75,7 @@ const result = await build({
 });
 const {
   SettingsCatalog, getSettingsTabs, cloneDefaultSettings, HEADING_LEVELS,
-  translatorForLocale, RefinedLayoutSettingTab, LayoutPlugin, PluginSettingTab, Setting,
+  translatorForLocale, RefinedLayoutSettingTab, LayoutPlugin, PluginSettingTab, Setting, Notice, Modal,
 } = await import(`data:text/javascript;base64,${Buffer.from(result.outputFiles[0].text).toString("base64")}`);
 
 function numericPaths(value, prefix = []) {
@@ -92,6 +106,84 @@ function fixture() {
   const tab = new RefinedLayoutSettingTab({}, plugin);
   return { plugin, tab };
 }
+
+test("global actions import through the clicked window and reset both views with feedback", async () => {
+  const { plugin, tab } = fixture();
+  const definitions = nativeFields(tab.getSettingDefinitions());
+  const setting = new Setting();
+  const settingsDocument = {};
+  let input;
+  let pickerOpened = 0;
+  // A connected control in a secondary document. No main-window createEl is
+  // available: the import action must create its input through this control.
+  setting.controlEl.createEl = (tag) => {
+    assert.equal(tag, "input");
+    input = Object.assign(new EventTarget(), {
+      ownerDocument: settingsDocument,
+      isConnected: true,
+      remove() { this.isConnected = false; },
+      click() {
+        assert.equal(this.ownerDocument, settingsDocument);
+        assert.equal(this.isConnected, true);
+        assert.equal(this.type, "file");
+        assert.equal(this.accept, ".json,application/json");
+        pickerOpened++;
+      },
+    });
+    return input;
+  };
+  definitions.find(({ item }) => item.name === "Import settings").item.render(setting);
+  const before = structuredClone(plugin.settings);
+  setting.button.click();
+  input.dispatchEvent(new Event("cancel"));
+  assert.equal(input.isConnected, false);
+  assert.deepEqual(plugin.settings, before, "Cancel must preserve the current settings");
+  assert.equal(plugin.saved, undefined);
+
+  setting.button.click();
+  const imported = cloneDefaultSettings();
+  imported.language = "zh-CN";
+  imported.edit.body.lineHeight = 2.3;
+  imported.read.body.lineHeight = 2.7;
+  imported.edit.modules.body = false;
+  imported.read.modules.body = false;
+  input.files = [{ text: async () => JSON.stringify(imported) }];
+  input.dispatchEvent(new Event("change"));
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(pickerOpened, 2, "The picker can reopen after cancellation");
+  assert.equal(input.isConnected, false);
+  assert.deepEqual(plugin.settings, imported);
+  assert.deepEqual(plugin.saved, imported);
+  assert.equal(tab.updates, 1, "Successful import refreshes the settings page");
+
+  const reset = new Setting();
+  definitions.find(({ item }) => item.name === "Reset all").item.render(reset);
+  reset.button.click();
+  const t = translatorForLocale(imported.language);
+  assert.equal(Modal.current.title, t("resetAll.title"));
+  assert.equal(Modal.current.description, t("resetAll.description"));
+  assert.deepEqual(plugin.saved, imported, "Opening the confirmation must not reset settings");
+  Modal.current.close();
+  assert.deepEqual(plugin.settings, imported, "Closing the dialog must keep settings");
+  reset.button.click();
+  const cancel = Modal.current.contentEl.settings[0].buttons[0];
+  assert.equal(cancel.label, t("actions.cancel"));
+  cancel.click();
+  assert.deepEqual(plugin.saved, imported, "Cancel must not persist a reset");
+  assert.equal(tab.updates, 1);
+  reset.button.click();
+  const confirm = Modal.current.contentEl.settings[0].buttons[1];
+  assert.equal(confirm.label, t("actions.resetAll"));
+  assert.equal(confirm.warning, true);
+  confirm.click();
+  assert.equal(Modal.current.closed, true);
+  const defaults = cloneDefaultSettings();
+  defaults.language = imported.language;
+  assert.deepEqual(plugin.settings, defaults, "Reset restores both views and retains the language");
+  assert.deepEqual(plugin.saved, defaults);
+  assert.equal(tab.updates, 2);
+  assert.equal(Notice.messages.at(-1), translatorForLocale(imported.language)("notice.resetAll"));
+});
 
 test("catalog covers every applicable numeric setting, including all heading levels", () => {
   const defaults = cloneDefaultSettings();

@@ -212,6 +212,7 @@ export default class RefinedLayoutPlugin extends Plugin {
     this.settings = cloneDefaultSettings();
     this.settings.language = language;
     this.applyAndScheduleSave();
+    new Notice(getTranslator(language)("notice.resetAll"));
   }
 
   exportSettings(): void {

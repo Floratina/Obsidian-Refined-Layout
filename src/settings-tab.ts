@@ -1,6 +1,7 @@
 import { getTranslator } from "./i18n";
 import {
   App,
+  Modal,
   PluginSettingTab,
   Setting,
   requireApiVersion,
@@ -150,13 +151,13 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
           { name: t("language.name"), desc: t("language.description"), render: (setting) => { this.renderLanguage(setting); } },
           ...([
             ["actions.export", "actions.exportDesc", () => this.plugin.exportSettings()],
-            ["actions.import", "actions.importDesc", () => this.pickSettingsFile()],
-            ["actions.resetAll", "actions.resetAllDesc", () => { this.plugin.resetAll(); this.refresh(); }],
+            ["actions.import", "actions.importDesc", (setting: Setting) => this.pickSettingsFile(setting.controlEl)],
+            ["actions.resetAll", "actions.resetAllDesc", () => this.confirmResetAll()],
           ] as const).map(([name, desc, onClick]) => ({
             name: t(name),
             desc: t(desc),
             render: (setting: Setting) => {
-              setting.addButton((button) => button.setButtonText(t(name)).onClick(onClick));
+              setting.addButton((button) => button.setButtonText(t(name)).onClick(() => onClick(setting)));
             },
           })),
         ],
@@ -223,12 +224,24 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
 
   }
 
-  private pickSettingsFile(): void {
-    const input = createEl("input");
+  private confirmResetAll(): void {
+    new ResetAllModal(this.app, getTranslator(this.plugin.settings.language), () => {
+      this.plugin.resetAll();
+      this.refresh();
+    }).open();
+  }
+
+  private pickSettingsFile(container: HTMLElement): void {
+    // File pickers need the click's window and a connected element, including
+    // when Obsidian opens settings in a separate window.
+    const input = container.createEl("input");
     input.type = "file";
     input.accept = ".json,application/json";
+    input.hidden = true;
+    input.addEventListener("cancel", () => input.remove(), { once: true });
     input.addEventListener("change", () => {
       const file = input.files?.[0];
+      input.remove();
       if (file === undefined) {
         return;
       }
@@ -237,7 +250,7 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
           this.refresh();
         }
       });
-    });
+    }, { once: true });
     input.click();
   }
 
@@ -286,5 +299,32 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
     if (config.unit !== "") {
       setting.controlEl.createSpan({ cls: "rl-settings-unit", text: config.unit === "ratio" ? this.t("unit.ratio") : config.unit });
     }
+  }
+}
+
+class ResetAllModal extends Modal {
+  constructor(app: App, private readonly t: ReturnType<typeof getTranslator>,
+    private readonly onConfirm: () => void) {
+    super(app);
+  }
+
+  onOpen(): void {
+    this.setTitle(this.t("resetAll.title"));
+    this.setContent(this.t("resetAll.description"));
+    new Setting(this.contentEl)
+      .addButton((button) => button
+        .setButtonText(this.t("actions.cancel"))
+        .onClick(() => this.close()))
+      .addButton((button) => button
+        .setButtonText(this.t("actions.resetAll"))
+        .setWarning()
+        .onClick(() => {
+          this.close();
+          this.onConfirm();
+        }));
+  }
+
+  onClose(): void {
+    this.contentEl.empty();
   }
 }

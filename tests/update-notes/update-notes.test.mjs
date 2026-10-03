@@ -106,7 +106,7 @@ test("version extraction keeps Markdown within the exact section and excludes ot
   assert.equal(extractVersionNotes(source, "1.0"), "");
   for (const locale of ["en", "zh-CN"]) {
     const notes = getUpdateNotes(locale, "1.0.0");
-    assert.match(notes.markdown, /^### /);
+    assert.match(notes.markdown, /^#{3,6} /);
     assert.doesNotMatch(notes.markdown, /0\.2\.0|0\.1\.0|Native settings search|原生设置搜索/);
   }
 });

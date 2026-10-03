@@ -185,6 +185,9 @@ var en = {
   "actions.importDesc": "Import settings from a JSON file, replacing the current settings on success.",
   "actions.resetAll": "Reset all",
   "actions.resetAllDesc": "Restore defaults for both views and all module switches.",
+  "actions.cancel": "Cancel",
+  "resetAll.title": "Reset all settings?",
+  "resetAll.description": "This will restore defaults for both views and all module switches, replacing your current layout adjustments.",
   "aria.mode": "Settings view",
   "aria.sections": "Settings sections",
   "actions.resetSection": "Reset this section",
@@ -384,6 +387,7 @@ var en = {
   "unit.ratio": "\xD7",
   "notice.exported": "Refined Layout: Settings exported.",
   "notice.imported": "Refined Layout: Settings imported.",
+  "notice.resetAll": "Refined Layout: Settings for both views have been reset.",
   "notice.readFailed": "Refined Layout: Could not read the settings file.",
   "notice.importFailed": "Refined Layout: Import failed. {detail}.",
   "error.invalidJson": "The file is not valid JSON",
@@ -425,6 +429,9 @@ var translations = {
   "actions.importDesc": "\u4ECE JSON \u6587\u4EF6\u5BFC\u5165\u8BBE\u7F6E\uFF0C\u5BFC\u5165\u6210\u529F\u540E\u7ACB\u5373\u66FF\u6362\u5F53\u524D\u914D\u7F6E\u3002",
   "actions.resetAll": "\u5168\u90E8\u91CD\u7F6E",
   "actions.resetAllDesc": "\u6062\u590D\u7F16\u8F91\u548C\u9605\u8BFB\u4E24\u5957\u8BBE\u7F6E\u4EE5\u53CA\u5168\u90E8\u6A21\u5757\u5F00\u5173\u3002",
+  "actions.cancel": "\u53D6\u6D88",
+  "resetAll.title": "\u91CD\u7F6E\u5168\u90E8\u914D\u7F6E\uFF1F",
+  "resetAll.description": "\u8FD9\u4F1A\u5C06\u7F16\u8F91\u548C\u9605\u8BFB\u4E24\u5957\u914D\u7F6E\u53CA\u5168\u90E8\u6A21\u5757\u5F00\u5173\u6062\u590D\u4E3A\u9ED8\u8BA4\u503C\uFF0C\u66FF\u6362\u4F60\u5F53\u524D\u7684\u6392\u7248\u8C03\u6574\u3002",
   "aria.mode": "\u8BBE\u7F6E\u6A21\u5F0F",
   "aria.sections": "\u8BBE\u7F6E\u5206\u533A",
   "actions.resetSection": "\u6062\u590D\u672C\u533A\u9ED8\u8BA4\u503C",
@@ -624,6 +631,7 @@ var translations = {
   "unit.ratio": "\u500D",
   "notice.exported": "Refined Layout\uFF1A\u914D\u7F6E\u5DF2\u5BFC\u51FA\u3002",
   "notice.imported": "Refined Layout\uFF1A\u914D\u7F6E\u5DF2\u5BFC\u5165\u3002",
+  "notice.resetAll": "Refined Layout\uFF1A\u7F16\u8F91\u548C\u9605\u8BFB\u4E24\u5957\u914D\u7F6E\u5DF2\u6062\u590D\u9ED8\u8BA4\u503C\u3002",
   "notice.readFailed": "Refined Layout\uFF1A\u65E0\u6CD5\u8BFB\u53D6\u914D\u7F6E\u6587\u4EF6\u3002",
   "notice.importFailed": "Refined Layout\uFF1A\u5BFC\u5165\u5931\u8D25\uFF0C{detail}\u3002",
   "error.invalidJson": "\u6587\u4EF6\u4E0D\u662F\u6709\u6548\u7684 JSON",
@@ -665,6 +673,9 @@ var translations2 = {
   "actions.importDesc": "\u5F9E JSON \u6A94\u6848\u532F\u5165\u8A2D\u5B9A\uFF0C\u6210\u529F\u5F8C\u7ACB\u5373\u53D6\u4EE3\u76EE\u524D\u8A2D\u5B9A\u3002",
   "actions.resetAll": "\u5168\u90E8\u91CD\u8A2D",
   "actions.resetAllDesc": "\u9084\u539F\u7DE8\u8F2F\u8207\u95B1\u8B80\u5169\u5957\u8A2D\u5B9A\u53CA\u6240\u6709\u6A21\u7D44\u958B\u95DC\u7684\u9810\u8A2D\u503C\u3002",
+  "actions.cancel": "\u53D6\u6D88",
+  "resetAll.title": "\u91CD\u8A2D\u6240\u6709\u8A2D\u5B9A\uFF1F",
+  "resetAll.description": "\u9019\u6703\u5C07\u7DE8\u8F2F\u8207\u95B1\u8B80\u5169\u5957\u8A2D\u5B9A\u53CA\u6240\u6709\u6A21\u7D44\u958B\u95DC\u9084\u539F\u70BA\u9810\u8A2D\u503C\uFF0C\u53D6\u4EE3\u4F60\u76EE\u524D\u7684\u6392\u7248\u8ABF\u6574\u3002",
   "aria.mode": "\u8A2D\u5B9A\u6A21\u5F0F",
   "aria.sections": "\u8A2D\u5B9A\u5206\u5340",
   "actions.resetSection": "\u9084\u539F\u6B64\u5340\u9810\u8A2D\u503C",
@@ -864,6 +875,7 @@ var translations2 = {
   "unit.ratio": "\u500D",
   "notice.exported": "Refined Layout\uFF1A\u8A2D\u5B9A\u5DF2\u532F\u51FA\u3002",
   "notice.imported": "Refined Layout\uFF1A\u8A2D\u5B9A\u5DF2\u532F\u5165\u3002",
+  "notice.resetAll": "Refined Layout\uFF1A\u7DE8\u8F2F\u8207\u95B1\u8B80\u5169\u5957\u8A2D\u5B9A\u5DF2\u9084\u539F\u70BA\u9810\u8A2D\u503C\u3002",
   "notice.readFailed": "Refined Layout\uFF1A\u7121\u6CD5\u8B80\u53D6\u8A2D\u5B9A\u6A94\u3002",
   "notice.importFailed": "Refined Layout\uFF1A\u532F\u5165\u5931\u6557\uFF0C{detail}\u3002",
   "error.invalidJson": "\u6A94\u6848\u4E0D\u662F\u6709\u6548\u7684 JSON",
@@ -905,6 +917,9 @@ var translations3 = {
   "actions.importDesc": "JSON \u30D5\u30A1\u30A4\u30EB\u304B\u3089\u8A2D\u5B9A\u3092\u8AAD\u307F\u8FBC\u307F\u3001\u6210\u529F\u3059\u308B\u3068\u73FE\u5728\u306E\u8A2D\u5B9A\u3092\u7F6E\u304D\u63DB\u3048\u307E\u3059\u3002",
   "actions.resetAll": "\u3059\u3079\u3066\u30EA\u30BB\u30C3\u30C8",
   "actions.resetAllDesc": "\u4E21\u30D3\u30E5\u30FC\u306E\u8A2D\u5B9A\u3068\u3059\u3079\u3066\u306E\u30E2\u30B8\u30E5\u30FC\u30EB\u5207\u308A\u66FF\u3048\u3092\u521D\u671F\u5024\u306B\u623B\u3057\u307E\u3059\u3002",
+  "actions.cancel": "\u30AD\u30E3\u30F3\u30BB\u30EB",
+  "resetAll.title": "\u3059\u3079\u3066\u306E\u8A2D\u5B9A\u3092\u30EA\u30BB\u30C3\u30C8\u3057\u307E\u3059\u304B\uFF1F",
+  "resetAll.description": "\u4E21\u30D3\u30E5\u30FC\u306E\u8A2D\u5B9A\u3068\u3059\u3079\u3066\u306E\u30E2\u30B8\u30E5\u30FC\u30EB\u5207\u308A\u66FF\u3048\u3092\u521D\u671F\u5024\u306B\u623B\u3057\u3001\u73FE\u5728\u306E\u30EC\u30A4\u30A2\u30A6\u30C8\u8ABF\u6574\u3092\u7F6E\u304D\u63DB\u3048\u307E\u3059\u3002",
   "aria.mode": "\u8A2D\u5B9A\u5BFE\u8C61\u306E\u30D3\u30E5\u30FC",
   "aria.sections": "\u8A2D\u5B9A\u30AB\u30C6\u30B4\u30EA\u30FC",
   "actions.resetSection": "\u3053\u306E\u30AB\u30C6\u30B4\u30EA\u30FC\u3092\u30EA\u30BB\u30C3\u30C8",
@@ -1104,6 +1119,7 @@ var translations3 = {
   "unit.ratio": "\u500D",
   "notice.exported": "Refined Layout\uFF1A\u8A2D\u5B9A\u3092\u30A8\u30AF\u30B9\u30DD\u30FC\u30C8\u3057\u307E\u3057\u305F\u3002",
   "notice.imported": "Refined Layout\uFF1A\u8A2D\u5B9A\u3092\u30A4\u30F3\u30DD\u30FC\u30C8\u3057\u307E\u3057\u305F\u3002",
+  "notice.resetAll": "Refined Layout\uFF1A\u4E21\u30D3\u30E5\u30FC\u306E\u8A2D\u5B9A\u3092\u521D\u671F\u5024\u306B\u623B\u3057\u307E\u3057\u305F\u3002",
   "notice.readFailed": "Refined Layout\uFF1A\u8A2D\u5B9A\u30D5\u30A1\u30A4\u30EB\u3092\u8AAD\u307F\u53D6\u308C\u307E\u305B\u3093\u3067\u3057\u305F\u3002",
   "notice.importFailed": "Refined Layout\uFF1A\u30A4\u30F3\u30DD\u30FC\u30C8\u306B\u5931\u6557\u3057\u307E\u3057\u305F\u3002{detail}\u3002",
   "error.invalidJson": "\u30D5\u30A1\u30A4\u30EB\u304C\u6709\u52B9\u306A JSON \u3067\u306F\u3042\u308A\u307E\u305B\u3093",
@@ -2052,16 +2068,13 @@ var RefinedLayoutSettingTab = class extends import_obsidian2.PluginSettingTab {
           } },
           ...[
             ["actions.export", "actions.exportDesc", () => this.plugin.exportSettings()],
-            ["actions.import", "actions.importDesc", () => this.pickSettingsFile()],
-            ["actions.resetAll", "actions.resetAllDesc", () => {
-              this.plugin.resetAll();
-              this.refresh();
-            }]
+            ["actions.import", "actions.importDesc", (setting) => this.pickSettingsFile(setting.controlEl)],
+            ["actions.resetAll", "actions.resetAllDesc", () => this.confirmResetAll()]
           ].map(([name, desc, onClick]) => ({
             name: t(name),
             desc: t(desc),
             render: (setting) => {
-              setting.addButton((button) => button.setButtonText(t(name)).onClick(onClick));
+              setting.addButton((button) => button.setButtonText(t(name)).onClick(() => onClick(setting)));
             }
           }))
         ]
@@ -2118,12 +2131,21 @@ var RefinedLayoutSettingTab = class extends import_obsidian2.PluginSettingTab {
       dropdown.selectEl.setAttribute("aria-label", this.t("language.name"));
     });
   }
-  pickSettingsFile() {
-    const input = createEl("input");
+  confirmResetAll() {
+    new ResetAllModal(this.app, getTranslator(this.plugin.settings.language), () => {
+      this.plugin.resetAll();
+      this.refresh();
+    }).open();
+  }
+  pickSettingsFile(container) {
+    const input = container.createEl("input");
     input.type = "file";
     input.accept = ".json,application/json";
+    input.hidden = true;
+    input.addEventListener("cancel", () => input.remove(), { once: true });
     input.addEventListener("change", () => {
       const file = input.files?.[0];
+      input.remove();
       if (file === void 0) {
         return;
       }
@@ -2132,7 +2154,7 @@ var RefinedLayoutSettingTab = class extends import_obsidian2.PluginSettingTab {
           this.refresh();
         }
       });
-    });
+    }, { once: true });
     input.click();
   }
   renderModule(setting, mode, tab, onToggle) {
@@ -2173,15 +2195,33 @@ var RefinedLayoutSettingTab = class extends import_obsidian2.PluginSettingTab {
     }
   }
 };
+var ResetAllModal = class extends import_obsidian2.Modal {
+  constructor(app, t, onConfirm) {
+    super(app);
+    this.t = t;
+    this.onConfirm = onConfirm;
+  }
+  onOpen() {
+    this.setTitle(this.t("resetAll.title"));
+    this.setContent(this.t("resetAll.description"));
+    new import_obsidian2.Setting(this.contentEl).addButton((button) => button.setButtonText(this.t("actions.cancel")).onClick(() => this.close())).addButton((button) => button.setButtonText(this.t("actions.resetAll")).setWarning().onClick(() => {
+      this.close();
+      this.onConfirm();
+    }));
+  }
+  onClose() {
+    this.contentEl.empty();
+  }
+};
 
 // src/update-notes.ts
 var import_obsidian3 = require("obsidian");
 
 // RELEASE_NOTES.md
-var RELEASE_NOTES_default = "# Refined Layout \u2014 Release Notes\n\n**English** | [\u7B80\u4F53\u4E2D\u6587](RELEASE_NOTES_zh-CN.md)\n\n## 1.0.0\n\n### Fixed an issue where the cursor skipped some blank lines when moving up or down with the arrow keys.\n\n- **Improved cursor navigation:** In Live Preview Mode, Up/Down now stop at blank lines compressed by the plugin. Shift+Up/Down also extends selections across these lines.\n\n## 0.2.0\n\n- **Native settings search:** On Obsidian 1.13 and later, search follows your selection of Live Preview Mode or reading view and provides direct access to every heading level.\n- **Simpler settings navigation:** The home page brings together global controls, the view switcher, and category links. Each category opens its own detail page with native controls.\n- **Compatibility improvements:** Configuration import and export use native element helpers, and Mermaid diagram detection works more reliably across separate windows.\n\nExisting settings and configuration files remain compatible. The minimum supported Obsidian version is 1.12.7.\n\n## 0.1.0\n\nInitial release.\n\n- **Independent view settings:** Customize Live Preview Mode and Reading view separately, with module switches and layout values for each view. Changes apply immediately and save automatically.\n- **Typography and layout controls:** Adjust line height, spacing, and appearance for body text, lists, headings, callouts, blockquotes, images, tables, and code blocks. Set the gap after headings according to the content that follows.\n- **Mermaid diagram layout:** Control diagram width and centering, with horizontal scrolling for wide diagrams.\n- **Configuration management:** Reset individual sections or all layout settings, and import or export complete configurations as JSON files.\n- **Multilingual settings:** Choose English, Simplified Chinese, Traditional Chinese, or Japanese, or follow Obsidian\u2019s language.\n";
+var RELEASE_NOTES_default = "# Refined Layout \u2014 Release Notes\n\n**English** | [\u7B80\u4F53\u4E2D\u6587](RELEASE_NOTES_zh-CN.md)\n\n## 1.0.1\n\n#### Fixed an issue where the cursor skipped some blank lines when moving up or down with the arrow keys.\n\nIn Live Preview Mode, Up/Down now stop at blank lines compressed by the plugin. Shift+Up/Down also extends selections across these lines.\n\n#### Other fixes\n\n- Fixed an issue that prevented settings from being imported.\n- Fixed missing confirmation and completion messages when resetting all settings.\n\n## 1.0.0\n\n#### Fixed an issue where the cursor skipped some blank lines when moving up or down with the arrow keys.\n\nIn Live Preview Mode, Up/Down now stop at blank lines compressed by the plugin. Shift+Up/Down also extends selections across these lines.\n\n## 0.2.0\n\n- **Native settings search:** On Obsidian 1.13 and later, search follows your selection of Live Preview Mode or reading view and provides direct access to every heading level.\n- **Simpler settings navigation:** The home page brings together global controls, the view switcher, and category links. Each category opens its own detail page with native controls.\n- **Compatibility improvements:** Configuration import and export use native element helpers, and Mermaid diagram detection works more reliably across separate windows.\n\nExisting settings and configuration files remain compatible. The minimum supported Obsidian version is 1.12.7.\n\n## 0.1.0\n\nInitial release.\n\n- **Independent view settings:** Customize Live Preview Mode and Reading view separately, with module switches and layout values for each view. Changes apply immediately and save automatically.\n- **Typography and layout controls:** Adjust line height, spacing, and appearance for body text, lists, headings, callouts, blockquotes, images, tables, and code blocks. Set the gap after headings according to the content that follows.\n- **Mermaid diagram layout:** Control diagram width and centering, with horizontal scrolling for wide diagrams.\n- **Configuration management:** Reset individual sections or all layout settings, and import or export complete configurations as JSON files.\n- **Multilingual settings:** Choose English, Simplified Chinese, Traditional Chinese, or Japanese, or follow Obsidian\u2019s language.\n";
 
 // RELEASE_NOTES_zh-CN.md
-var RELEASE_NOTES_zh_CN_default = "# Refined Layout \u66F4\u65B0\u65E5\u5FD7\n\n[English](RELEASE_NOTES.md) | **\u7B80\u4F53\u4E2D\u6587**\n\n## 1.0.0\n### \u4FEE\u590D\u4E86\u4F7F\u7528\u65B9\u5411\u952E\u4E0A\u4E0B\u5BFC\u822A\u8F93\u5165\u5149\u6807\u65F6\uFF0C\u5149\u6807\u4F1A\u8DF3\u8FC7\u90E8\u5206\u7A7A\u884C\u7684\u95EE\u9898\u3002\n\n- **\u5149\u6807\u5BFC\u822A\u5DF2\u6539\u8FDB\uFF1A** \u7F16\u8F91\u6A21\u5F0F\u4E2D\u7684\u4E0A\u3001\u4E0B\u65B9\u5411\u952E\u73B0\u5728\u53EF\u4EE5\u9010\u884C\u505C\u7559\u5728\u88AB\u63D2\u4EF6\u538B\u7F29\u7684\u7A7A\u884C\u4E0A\uFF0C\u4E5F\u652F\u6301\u4F7F\u7528 Shift + \u2191/\u2193 \u8DE8\u8D8A\u8FD9\u4E9B\u7A7A\u884C\u6269\u5C55\u9009\u533A\u3002\n\n## 0.2.0\n\n- **\u539F\u751F\u8BBE\u7F6E\u641C\u7D22\uFF1A** Obsidian 1.13 \u53CA\u4EE5\u4E0A\u7248\u672C\u652F\u6301\u641C\u7D22\u5F53\u524D\u7F16\u8F91\u6216\u9605\u8BFB\u6A21\u5F0F\u7684\u8BBE\u7F6E\uFF0C\u5E76\u53EF\u76F4\u63A5\u5B9A\u4F4D\u5404\u7EA7\u6807\u9898\u9009\u9879\u3002\n- **\u66F4\u7B80\u6D01\u7684\u8BBE\u7F6E\u5BFC\u822A\uFF1A** \u9996\u9875\u96C6\u4E2D\u63D0\u4F9B\u5168\u5C40\u914D\u7F6E\u3001\u6A21\u5F0F\u5207\u6362\u548C\u5206\u7C7B\u5165\u53E3\uFF0C\u5404\u5206\u7C7B\u5728\u72EC\u7ACB\u7684\u8BE6\u60C5\u9875\u4E2D\u4F7F\u7528\u539F\u751F\u63A7\u4EF6\u5C55\u793A\u3002\n- **\u517C\u5BB9\u6027\u6539\u8FDB\uFF1A** \u914D\u7F6E\u5BFC\u5165\u3001\u5BFC\u51FA\u91C7\u7528\u539F\u751F\u5143\u7D20\u521B\u5EFA\u65B9\u6CD5\uFF0C\u6539\u5584\u72EC\u7ACB\u7A97\u53E3\u4E2D\u7684 Mermaid \u56FE\u8868\u8BC6\u522B\u3002\n\n\u5DF2\u6709\u8BBE\u7F6E\u548C\u914D\u7F6E\u6587\u4EF6\u4FDD\u6301\u517C\u5BB9\uFF0C\u6700\u4F4E\u652F\u6301\u7684 Obsidian \u7248\u672C\u4E3A 1.12.7\u3002\n\n## 0.1.0\n\n\u9996\u6B21\u53D1\u5E03\u3002\n\n- **\u4E24\u79CD\u6A21\u5F0F\u72EC\u7ACB\u914D\u7F6E\uFF1A** \u5B9E\u65F6\u9884\u89C8\u4E0E\u9605\u8BFB\u6A21\u5F0F\u5206\u522B\u62E5\u6709\u6A21\u5757\u5F00\u5173\u548C\u6392\u7248\u53C2\u6570\uFF0C\u4FEE\u6539\u5373\u65F6\u751F\u6548\u5E76\u81EA\u52A8\u4FDD\u5B58\u3002\n- **\u6B63\u6587\u4E0E\u5185\u5BB9\u6392\u7248\uFF1A** \u8C03\u6574\u6B63\u6587\u3001\u5217\u8868\u3001\u6807\u9898\u3001Callout\uFF08\u63D0\u793A\u5757\uFF09\u3001\u5F15\u7528\u5757\u3001\u56FE\u7247\u3001\u8868\u683C\u548C\u4EE3\u7801\u5757\u7684\u884C\u9AD8\u3001\u95F4\u8DDD\u4E0E\u5916\u89C2\uFF0C\u5E76\u6309\u6807\u9898\u540E\u7D27\u63A5\u7684\u5185\u5BB9\u7C7B\u578B\u8BBE\u7F6E\u8854\u63A5\u95F4\u8DDD\u3002\n- **Mermaid \u56FE\u8868\u5E03\u5C40\uFF1A** \u63A7\u5236\u56FE\u8868\u5BBD\u5EA6\u4E0E\u5C45\u4E2D\uFF0C\u4E3A\u8F83\u5BBD\u7684\u56FE\u8868\u63D0\u4F9B\u6A2A\u5411\u6EDA\u52A8\u3002\n- **\u914D\u7F6E\u7BA1\u7406\uFF1A** \u652F\u6301\u6309\u533A\u57DF\u6216\u5168\u90E8\u6062\u590D\u9ED8\u8BA4\u6392\u7248\uFF0C\u4EE5\u53CA\u901A\u8FC7 JSON \u6587\u4EF6\u5BFC\u5165\u3001\u5BFC\u51FA\u5B8C\u6574\u914D\u7F6E\u3002\n- **\u591A\u8BED\u8A00\u8BBE\u7F6E\uFF1A** \u652F\u6301\u7B80\u4F53\u4E2D\u6587\u3001\u7E41\u4F53\u4E2D\u6587\u3001\u82F1\u6587\u3001\u65E5\u6587\uFF0C\u4E5F\u53EF\u8DDF\u968F Obsidian \u7684\u8BED\u8A00\u3002\n";
+var RELEASE_NOTES_zh_CN_default = "# Refined Layout \u66F4\u65B0\u65E5\u5FD7\n\n[English](RELEASE_NOTES.md) | **\u7B80\u4F53\u4E2D\u6587**\n\n## 1.0.1\n\n#### \u4FEE\u590D\u4E86\u4F7F\u7528\u65B9\u5411\u952E\u4E0A\u4E0B\u5BFC\u822A\u8F93\u5165\u5149\u6807\u65F6\uFF0C\u5149\u6807\u4F1A\u8DF3\u8FC7\u90E8\u5206\u7A7A\u884C\u7684\u95EE\u9898\u3002\n\n\u7F16\u8F91\u6A21\u5F0F\u4E2D\u7684\u4E0A\u3001\u4E0B\u65B9\u5411\u952E\u73B0\u5728\u53EF\u4EE5\u9010\u884C\u505C\u7559\u5728\u88AB\u63D2\u4EF6\u538B\u7F29\u7684\u7A7A\u884C\u4E0A\uFF0C\u4E5F\u652F\u6301\u4F7F\u7528 Shift + \u2191/\u2193 \u8DE8\u8D8A\u8FD9\u4E9B\u7A7A\u884C\u6269\u5C55\u9009\u533A\u3002\n\n#### \u5176\u4ED6\u4FEE\u590D\n\n- \u4FEE\u590D\u4E86\u5BFC\u5165\u914D\u7F6E\u65E0\u6CD5\u4F7F\u7528\u7684\u95EE\u9898\u3002\n- \u4FEE\u590D\u4E86\u91CD\u7F6E\u914D\u7F6E\u6CA1\u6709\u4EFB\u4F55\u63D0\u793A\u7684\u95EE\u9898\u3002\n\n## 1.0.0\n\n#### \u4FEE\u590D\u4E86\u4F7F\u7528\u65B9\u5411\u952E\u4E0A\u4E0B\u5BFC\u822A\u8F93\u5165\u5149\u6807\u65F6\uFF0C\u5149\u6807\u4F1A\u8DF3\u8FC7\u90E8\u5206\u7A7A\u884C\u7684\u95EE\u9898\u3002\n\u7F16\u8F91\u6A21\u5F0F\u4E2D\u7684\u4E0A\u3001\u4E0B\u65B9\u5411\u952E\u73B0\u5728\u53EF\u4EE5\u9010\u884C\u505C\u7559\u5728\u88AB\u63D2\u4EF6\u538B\u7F29\u7684\u7A7A\u884C\u4E0A\uFF0C\u4E5F\u652F\u6301\u4F7F\u7528 Shift + \u2191/\u2193 \u8DE8\u8D8A\u8FD9\u4E9B\u7A7A\u884C\u6269\u5C55\u9009\u533A\u3002\n\n## 0.2.0\n\n- **\u539F\u751F\u8BBE\u7F6E\u641C\u7D22\uFF1A** Obsidian 1.13 \u53CA\u4EE5\u4E0A\u7248\u672C\u652F\u6301\u641C\u7D22\u5F53\u524D\u7F16\u8F91\u6216\u9605\u8BFB\u6A21\u5F0F\u7684\u8BBE\u7F6E\uFF0C\u5E76\u53EF\u76F4\u63A5\u5B9A\u4F4D\u5404\u7EA7\u6807\u9898\u9009\u9879\u3002\n- **\u66F4\u7B80\u6D01\u7684\u8BBE\u7F6E\u5BFC\u822A\uFF1A** \u9996\u9875\u96C6\u4E2D\u63D0\u4F9B\u5168\u5C40\u914D\u7F6E\u3001\u6A21\u5F0F\u5207\u6362\u548C\u5206\u7C7B\u5165\u53E3\uFF0C\u5404\u5206\u7C7B\u5728\u72EC\u7ACB\u7684\u8BE6\u60C5\u9875\u4E2D\u4F7F\u7528\u539F\u751F\u63A7\u4EF6\u5C55\u793A\u3002\n- **\u517C\u5BB9\u6027\u6539\u8FDB\uFF1A** \u914D\u7F6E\u5BFC\u5165\u3001\u5BFC\u51FA\u91C7\u7528\u539F\u751F\u5143\u7D20\u521B\u5EFA\u65B9\u6CD5\uFF0C\u6539\u5584\u72EC\u7ACB\u7A97\u53E3\u4E2D\u7684 Mermaid \u56FE\u8868\u8BC6\u522B\u3002\n\n\u5DF2\u6709\u8BBE\u7F6E\u548C\u914D\u7F6E\u6587\u4EF6\u4FDD\u6301\u517C\u5BB9\uFF0C\u6700\u4F4E\u652F\u6301\u7684 Obsidian \u7248\u672C\u4E3A 1.12.7\u3002\n\n## 0.1.0\n\n\u9996\u6B21\u53D1\u5E03\u3002\n\n- **\u4E24\u79CD\u6A21\u5F0F\u72EC\u7ACB\u914D\u7F6E\uFF1A** \u5B9E\u65F6\u9884\u89C8\u4E0E\u9605\u8BFB\u6A21\u5F0F\u5206\u522B\u62E5\u6709\u6A21\u5757\u5F00\u5173\u548C\u6392\u7248\u53C2\u6570\uFF0C\u4FEE\u6539\u5373\u65F6\u751F\u6548\u5E76\u81EA\u52A8\u4FDD\u5B58\u3002\n- **\u6B63\u6587\u4E0E\u5185\u5BB9\u6392\u7248\uFF1A** \u8C03\u6574\u6B63\u6587\u3001\u5217\u8868\u3001\u6807\u9898\u3001Callout\uFF08\u63D0\u793A\u5757\uFF09\u3001\u5F15\u7528\u5757\u3001\u56FE\u7247\u3001\u8868\u683C\u548C\u4EE3\u7801\u5757\u7684\u884C\u9AD8\u3001\u95F4\u8DDD\u4E0E\u5916\u89C2\uFF0C\u5E76\u6309\u6807\u9898\u540E\u7D27\u63A5\u7684\u5185\u5BB9\u7C7B\u578B\u8BBE\u7F6E\u8854\u63A5\u95F4\u8DDD\u3002\n- **Mermaid \u56FE\u8868\u5E03\u5C40\uFF1A** \u63A7\u5236\u56FE\u8868\u5BBD\u5EA6\u4E0E\u5C45\u4E2D\uFF0C\u4E3A\u8F83\u5BBD\u7684\u56FE\u8868\u63D0\u4F9B\u6A2A\u5411\u6EDA\u52A8\u3002\n- **\u914D\u7F6E\u7BA1\u7406\uFF1A** \u652F\u6301\u6309\u533A\u57DF\u6216\u5168\u90E8\u6062\u590D\u9ED8\u8BA4\u6392\u7248\uFF0C\u4EE5\u53CA\u901A\u8FC7 JSON \u6587\u4EF6\u5BFC\u5165\u3001\u5BFC\u51FA\u5B8C\u6574\u914D\u7F6E\u3002\n- **\u591A\u8BED\u8A00\u8BBE\u7F6E\uFF1A** \u652F\u6301\u7B80\u4F53\u4E2D\u6587\u3001\u7E41\u4F53\u4E2D\u6587\u3001\u82F1\u6587\u3001\u65E5\u6587\uFF0C\u4E5F\u53EF\u8DDF\u968F Obsidian \u7684\u8BED\u8A00\u3002\n";
 
 // src/update-notes.ts
 function shouldShowUpdateNotes(lastSeen, currentId) {
@@ -2416,6 +2456,7 @@ var RefinedLayoutPlugin = class extends import_obsidian4.Plugin {
     this.settings = cloneDefaultSettings();
     this.settings.language = language;
     this.applyAndScheduleSave();
+    new import_obsidian4.Notice(getTranslator(language)("notice.resetAll"));
   }
   exportSettings() {
     const blob = new Blob([JSON.stringify(this.settings, null, 2)], { type: "application/json" });
