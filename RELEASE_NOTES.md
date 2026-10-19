@@ -1,6 +1,6 @@
 # Refined Layout — Release Notes
 
-**English** | [简体中文](RELEASE_NOTES_zh-CN.md)
+**English** | [简体中文](RELEASE_NOTES_zh-CN.md) | [繁體中文](RELEASE_NOTES_zh-TW.md) | [日本語](RELEASE_NOTES_ja.md)
 
 ## 1.0.2
 
@@ -31,7 +31,7 @@ In Live Preview Mode, Up/Down now stop at blank lines compressed by the plugin. 
 
 ## 0.2.0
 
-- **Native settings search:** On Obsidian 1.13 and later, search follows your selection of Live Preview Mode or reading view and provides direct access to every heading level.
+- **Native settings search:** On Obsidian 1.13 and later, search follows your selection of Live Preview Mode or Reading view and provides direct access to every heading level.
 - **Simpler settings navigation:** The home page brings together global controls, the view switcher, and category links. Each category opens its own detail page with native controls.
 - **Compatibility improvements:** Configuration import and export use native element helpers, and Mermaid diagram detection works more reliably across separate windows.
 

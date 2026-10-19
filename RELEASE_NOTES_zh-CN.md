@@ -1,12 +1,12 @@
 # Refined Layout 更新日志
 
-[English](RELEASE_NOTES.md) | **简体中文**
+[English](RELEASE_NOTES.md) | **简体中文** | [繁體中文](RELEASE_NOTES_zh-TW.md) | [日本語](RELEASE_NOTES_ja.md)
 
 ## 1.0.2
 
 #### 修复阅读模式下的列表行高
 
-普通列表、嵌套列表和任务列表现在会跟随正文行高设置。Callout（提示块）和引用块内的列表则跟随各自的内部正文行高设置。
+普通列表、嵌套列表和任务列表现在会跟随正文行高设置。Callout 和引用块内的列表则跟随各自的内部正文行高设置。
 
 #### 优化更新说明弹窗
 

@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { readFile } from "node:fs/promises";
 import { build } from "esbuild";
 import { fileURLToPath } from "node:url";
 
@@ -78,25 +79,29 @@ test("first load displays after layout is ready; saved notes do not repeat; new 
   assert.equal(shouldShowUpdateNotes(null, UPDATE_NOTES_ID), true);
 });
 
-test("Chinese locales use the supplied Chinese text and every other locale uses English", () => {
-  const notesFor = (language, readLanguage) => getUpdateNotes(language, UPDATE_NOTES_ID, readLanguage);
-  const chinese = notesFor("zh-CN");
+test("update notes follow all four selected languages, host language aliases and English fallback", async () => {
+  const version = "1.0.2";
+  const notesFor = (language, readLanguage) => getUpdateNotes(language, version, readLanguage);
+  const cases = [
+    { locale: "en", file: "RELEASE_NOTES.md", title: "Update Notes", heading: "What's new", close: "Got it", aliases: ["en", "en-US", "fr"] },
+    { locale: "zh-CN", file: "RELEASE_NOTES_zh-CN.md", title: "更新说明", heading: "更新说明", close: "知道了", aliases: ["zh", "zh-CN", "zh-Hans"] },
+    { locale: "zh-TW", file: "RELEASE_NOTES_zh-TW.md", title: "更新說明", heading: "更新說明", close: "知道了", aliases: ["zh-TW", "zh-Hant", "zh_HK"] },
+    { locale: "ja", file: "RELEASE_NOTES_ja.md", title: "更新内容", heading: "更新内容", close: "閉じる", aliases: ["ja", "ja-JP"] },
+  ];
+  await Promise.all(cases.map(async ({ locale, file, title, heading, close, aliases }) => {
+    const source = await readFile(new URL(`../../${file}`, import.meta.url), "utf8");
+    const markdown = source.split(`## ${version}\n`)[1]?.split(/\n## /)[0]?.trim();
+    assert.ok(markdown, `${file} must contain the current release`);
+    const notes = notesFor(locale);
+    assert.deepEqual(notes, { id: version, title: `Refined Layout ${version} ${title}`, heading, close, markdown });
+    // An explicit plugin preference takes priority over the host language.
+    assert.deepEqual(notesFor(locale, () => locale === "en" ? "zh" : "en"), notes);
+    for (const alias of aliases) {
+      assert.deepEqual(notesFor("auto", () => alias), notes);
+    }
+  }));
   const english = notesFor("en");
-  assert.equal(chinese.title, "Refined Layout 1.0.0 更新说明");
-  assert.equal(chinese.close, "知道了");
-  assert.match(chinese.markdown, /Shift \+ ↑\/↓/);
-  assert.equal(english.title, "Refined Layout 1.0.0 Update Notes");
-  assert.equal(english.close, "Got it");
-  assert.deepEqual(notesFor("zh-TW"), chinese);
-  assert.deepEqual(notesFor("ja"), english);
-  for (const locale of ["zh", "zh-TW", "zh-Hant", "zh-CN"]) {
-    assert.deepEqual(notesFor("auto", () => locale), chinese);
-  }
-  for (const locale of ["ja", "en", "fr"]) {
-    assert.deepEqual(notesFor("auto", () => locale), english);
-  }
   assert.deepEqual(notesFor("auto", () => { throw new Error("Unavailable"); }), english);
-  assert.deepEqual(notesFor("en", () => "zh"), english);
 });
 
 test("version extraction keeps Markdown within the exact section and excludes other releases", () => {

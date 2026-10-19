@@ -137,16 +137,12 @@ export default class RefinedLayoutPlugin extends Plugin {
     this.clearAppliedStyles();
   }
 
-  previewUpdateNotes(): void {
-    this.showUpdateNotes(true);
-  }
-
-  private showUpdateNotes(preview = false): void {
+  private showUpdateNotes(): void {
     if (this.unloaded || this.updateNotesModal) return;
     const notes = getUpdateNotes(this.settings.language, this.manifest.version);
-    if (!notes || (!preview && !shouldShowUpdateNotes(this.lastSeenUpdateNotesId, notes.id))) return;
+    if (!notes || !shouldShowUpdateNotes(this.lastSeenUpdateNotesId, notes.id)) return;
     this.updateNotesModal = new UpdateNotesModal(this.app, notes, () => {
-      if (this.unloaded || preview) return;
+      if (this.unloaded) return;
       this.lastSeenUpdateNotesId = notes.id;
       void this.savePluginData();
     }, () => {

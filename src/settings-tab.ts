@@ -22,9 +22,6 @@ import {
 } from "./settings-catalog";
 export type { ResettableSection } from "./settings-catalog";
 
-// Temporary UI preview: disable after the update-notes design is approved.
-const PREVIEW_UPDATE_NOTES_ON_SETTINGS_OPEN = true;
-
 // Plugin-owned data consumed by the older-host renderer. These objects do not
 // require the host's declarative settings implementation to exist at runtime.
 interface LegacyPage {
@@ -48,7 +45,6 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
   private t = getTranslator();
   private mode: ModeKey = "edit";
   private legacyPage: string | null = null;
-  private updateNotesPreviewShown = false;
 
   constructor(app: App, private readonly plugin: RefinedLayoutPlugin) {
     super(app, plugin);
@@ -57,23 +53,6 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
   display(): void {
     // Fallback for hosts older than 1.13; newer hosts render the definitions.
     this.renderHome(this.containerEl);
-    this.previewUpdateNotesOnOpen();
-  }
-
-  hide(): void {
-    this.updateNotesPreviewShown = false;
-  }
-
-  private previewUpdateNotesOnOpen(): void {
-    if (!PREVIEW_UPDATE_NOTES_ON_SETTINGS_OPEN || this.updateNotesPreviewShown
-      || !this.containerEl?.isConnected) return;
-    this.updateNotesPreviewShown = true;
-    // Open after the host finishes rendering and moving focus into settings.
-    queueMicrotask(() => {
-      if (this.updateNotesPreviewShown && this.containerEl.isConnected) {
-        this.plugin.previewUpdateNotes();
-      }
-    });
   }
 
   private refresh(): void {
@@ -221,9 +200,6 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
   }
 
   private renderLanguage(setting: Setting): void {
-    // A render callback runs when settings are visible; definition collection
-    // also runs during search indexing and must never open a modal.
-    this.previewUpdateNotesOnOpen();
     setting
       .setName(this.t("language.name"))
       .setDesc(this.t("language.description"))

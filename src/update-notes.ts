@@ -1,8 +1,17 @@
 import { Component, getLanguage, MarkdownRenderer, Modal, Setting, type App } from "obsidian";
 import englishNotes from "../RELEASE_NOTES.md";
 import chineseNotes from "../RELEASE_NOTES_zh-CN.md";
+import traditionalChineseNotes from "../RELEASE_NOTES_zh-TW.md";
+import japaneseNotes from "../RELEASE_NOTES_ja.md";
 import { selectLocale } from "./i18n/core";
-import type { LanguagePreference } from "./i18n/language";
+import type { LanguagePreference, Locale } from "./i18n/language";
+
+const localizedNotes: Record<Locale, { markdown: string; title: string; heading: string; close: string }> = {
+  en: { markdown: englishNotes, title: "Update Notes", heading: "What's new", close: "Got it" },
+  "zh-CN": { markdown: chineseNotes, title: "更新说明", heading: "更新说明", close: "知道了" },
+  "zh-TW": { markdown: traditionalChineseNotes, title: "更新說明", heading: "更新說明", close: "知道了" },
+  ja: { markdown: japaneseNotes, title: "更新内容", heading: "更新内容", close: "閉じる" },
+};
 
 export function shouldShowUpdateNotes(lastSeen: unknown, currentId: string): boolean {
   return lastSeen !== currentId;
@@ -34,15 +43,15 @@ export function extractVersionNotes(markdown: string, version: string): string {
 
 export function getUpdateNotes(preference: LanguagePreference, version: string, readLanguage = getLanguage) {
   const locale = selectLocale(preference, readLanguage);
-  const chinese = locale === "zh-CN" || locale === "zh-TW";
-  const markdown = extractVersionNotes(chinese ? chineseNotes : englishNotes, version);
+  const notes = localizedNotes[locale];
+  const markdown = extractVersionNotes(notes.markdown, version);
   if (!markdown) return null;
   return {
     id: version,
-    title: chinese ? `Refined Layout ${version} 更新说明` : `Refined Layout ${version} Update Notes`,
-    heading: chinese ? "更新说明" : "What's new",
+    title: `Refined Layout ${version} ${notes.title}`,
+    heading: notes.heading,
     markdown,
-    close: chinese ? "知道了" : "Got it",
+    close: notes.close,
   };
 }
 
