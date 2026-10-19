@@ -40,6 +40,7 @@ export function getUpdateNotes(preference: LanguagePreference, version: string, 
   return {
     id: version,
     title: chinese ? `Refined Layout ${version} 更新说明` : `Refined Layout ${version} Update Notes`,
+    heading: chinese ? "更新说明" : "What's new",
     markdown,
     close: chinese ? "知道了" : "Got it",
   };
@@ -49,20 +50,28 @@ export class UpdateNotesModal extends Modal {
   private readonly renderComponent = new Component();
 
   constructor(app: App, private readonly notes: NonNullable<ReturnType<typeof getUpdateNotes>>,
-    private readonly onShown: () => void) {
+    private readonly onShown: () => void, private readonly onClosed: () => void) {
     super(app);
   }
 
   async onOpen(): Promise<void> {
-    this.setTitle(this.notes.title);
+    this.modalEl.addClass("rl-update-notes-modal");
+    this.modalEl.setAttribute("aria-label", this.notes.title);
+    this.setTitle(this.notes.heading);
+    const scroll = this.contentEl.createDiv({ cls: "rl-update-notes-scroll" });
+    const version = scroll.createDiv({ cls: "rl-update-notes-version" });
+    version.createSpan({ text: "Refined Layout" });
+    version.createSpan({ cls: "rl-update-notes-version-number", text: `v${this.notes.id}` });
+    const markdown = scroll.createDiv({ cls: "rl-update-notes-markdown" });
+    const footer = this.contentEl.createDiv({ cls: "rl-update-notes-footer" });
+    new Setting(footer).addButton((button) => button
+      .setButtonText(this.notes.close)
+      .setCta()
+      .onClick(() => this.close()));
     this.renderComponent.load();
     try {
-      await MarkdownRenderer.render(this.app, this.notes.markdown, this.contentEl, "", this.renderComponent);
+      await MarkdownRenderer.render(this.app, this.notes.markdown, markdown, "", this.renderComponent);
       if (!this.containerEl.isConnected) return;
-      new Setting(this.contentEl).addButton((button) => button
-        .setButtonText(this.notes.close)
-        .setCta()
-        .onClick(() => this.close()));
       this.onShown();
     } catch (error) {
       console.error("[Refined Layout] Failed to render update notes.", error);
@@ -73,5 +82,6 @@ export class UpdateNotesModal extends Modal {
   onClose(): void {
     this.renderComponent.unload();
     this.contentEl.empty();
+    this.onClosed();
   }
 }

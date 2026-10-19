@@ -1,5 +1,5 @@
 /*
- * Refined Layout 0.1.0
+ * Refined Layout 1.0.2
  * Production styles are intentionally free of arithmetic expressions.
  * Runtime values are supplied by the plugin through --rl-* properties.
  */
@@ -1263,6 +1263,170 @@ body.refined-layout-enabled.rl-read-code-blocks .markdown-rendered pre[class*="l
 
 body.refined-layout-enabled.rl-read-code-blocks .markdown-rendered code[class*="language-"]:not(:where(.block-language-dataviewjs *)):not(:where(.canvas-wrapper, .canvas-wrapper *, .canvas-node, .canvas-node *, .mermaid, .mermaid *)) {
   line-height: var(--rl-read-code-block-line-height) !important;
+}
+
+/* --------------------------------------------------------------------------
+   Update notes
+   -------------------------------------------------------------------------- */
+
+.modal.rl-update-notes-modal {
+  display: flex;
+  flex-direction: column;
+  width: 600px;
+  max-width: 92vw;
+  max-height: 85vh;
+  padding: 24px;
+  overflow: hidden;
+  font-family: var(--font-interface);
+}
+
+.modal.rl-update-notes-modal .modal-header {
+  flex-shrink: 0;
+  height: auto;
+  margin-bottom: 18px;
+}
+
+.modal.rl-update-notes-modal .modal-title {
+  margin: 0 28px 0 0;
+  color: var(--text-normal);
+  font-size: var(--font-ui-large, 20px);
+  font-weight: var(--font-semibold, 600);
+  line-height: 1.4;
+}
+
+.modal.rl-update-notes-modal .modal-content {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.rl-update-notes-scroll {
+  min-height: 0;
+  max-height: 60vh;
+  padding: 0 4px 20px 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.rl-update-notes-version {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin-bottom: 16px;
+  padding: 8px 12px;
+  border-radius: var(--radius-s, 4px);
+  color: var(--text-normal);
+  background: var(--background-secondary);
+  font-size: var(--font-ui-small, 14px);
+  font-weight: var(--font-semibold, 600);
+}
+
+.rl-update-notes-version-number {
+  color: var(--text-muted);
+  font-weight: var(--font-normal, 400);
+  font-variant-numeric: tabular-nums;
+}
+
+.modal.rl-update-notes-modal .rl-update-notes-markdown {
+  color: var(--text-normal);
+  font-family: var(--font-interface);
+  font-size: 14px;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+
+/* Release notes have their own UI typography, independent of note settings. */
+.modal.rl-update-notes-modal .modal-content .rl-update-notes-scroll .rl-update-notes-markdown :is(h1, h2, h3, h4, h5, h6) {
+  margin: 20px 0 8px !important;
+  padding: 0;
+  border: none;
+  color: var(--text-normal);
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: var(--font-semibold, 600);
+  line-height: 1.55 !important;
+  letter-spacing: normal;
+  text-indent: 0;
+  text-transform: none;
+}
+
+.modal.rl-update-notes-modal .modal-content .rl-update-notes-scroll .rl-update-notes-markdown :is(h1, h2, h3, h4, h5, h6)::before,
+.modal.rl-update-notes-modal .modal-content .rl-update-notes-scroll .rl-update-notes-markdown :is(h1, h2, h3, h4, h5, h6)::after {
+  display: none;
+}
+
+.modal.rl-update-notes-modal .modal-content .rl-update-notes-markdown p {
+  margin: 0 0 12px !important;
+  line-height: inherit !important;
+}
+
+.modal.rl-update-notes-modal .modal-content .rl-update-notes-markdown :is(ul, ol) {
+  margin: 0 0 12px !important;
+  padding-inline-start: 1.5em;
+}
+
+.modal.rl-update-notes-modal .modal-content .rl-update-notes-markdown li {
+  margin: 0 !important;
+  line-height: inherit !important;
+}
+
+.modal.rl-update-notes-modal .modal-content .rl-update-notes-markdown li + li {
+  margin-top: 6px !important;
+}
+
+.modal.rl-update-notes-modal .modal-content .rl-update-notes-scroll .rl-update-notes-markdown > :first-child {
+  margin-top: 0 !important;
+}
+
+.modal.rl-update-notes-modal .modal-content .rl-update-notes-scroll .rl-update-notes-markdown > :last-child {
+  margin-bottom: 0 !important;
+}
+
+.rl-update-notes-markdown code {
+  padding: 0.1em 0.35em;
+  border-radius: var(--radius-s, 4px);
+  color: var(--code-normal);
+  background: var(--code-background);
+  font-size: 0.9em;
+}
+
+.rl-update-notes-footer {
+  flex-shrink: 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--background-modifier-border);
+}
+
+.rl-update-notes-footer .setting-item {
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.rl-update-notes-footer .setting-item-info {
+  display: none;
+}
+
+.rl-update-notes-footer .setting-item-control {
+  justify-content: flex-end;
+}
+
+.rl-update-notes-footer button {
+  min-width: 88px;
+}
+
+@media (max-width: 480px) {
+  .modal.rl-update-notes-modal {
+    padding: 20px;
+  }
+
+  .modal.rl-update-notes-modal .rl-update-notes-markdown {
+    font-size: 15px;
+  }
 }
 
 /* --------------------------------------------------------------------------

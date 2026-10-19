@@ -2,6 +2,16 @@
 
 **English** | [简体中文](RELEASE_NOTES_zh-CN.md)
 
+## 1.0.2
+
+#### Fixed list line height in Reading view
+
+Regular lists, nested lists, and task lists now follow the body line height setting. Lists inside callouts and blockquotes follow their respective inner body line height settings.
+
+#### Improved the update notes dialog
+
+Redesigned the update notes dialog and improved its text layout.
+
 ## 1.0.1
 
 #### Fixed an issue where the cursor skipped some blank lines when moving up or down with the arrow keys.
