@@ -58,8 +58,13 @@ body.refined-layout-enabled.rl-edit-body .markdown-source-view.mod-cm6 .cm-conte
 
 /* DataviewJS blocks own their descendants' layout. The :where() wrapper keeps
    this boundary from changing selector specificity outside those blocks. */
-body.refined-layout-enabled.rl-read-body .markdown-rendered p:not(:where(.block-language-dataviewjs *)):not(:where(.canvas-wrapper, .canvas-wrapper *, .canvas-node, .canvas-node *, .mermaid, .mermaid *)) {
+/* Tight lists put text directly in li; loose lists wrap it in p.
+   Share line height across both without applying paragraph margins to li. */
+body.refined-layout-enabled.rl-read-body .markdown-rendered :is(p, li):not(:where(.block-language-dataviewjs *)):not(:where(.canvas-wrapper, .canvas-wrapper *, .canvas-node, .canvas-node *, .mermaid, .mermaid *)) {
   line-height: var(--rl-read-body-line-height) !important;
+}
+
+body.refined-layout-enabled.rl-read-body .markdown-rendered p:not(:where(.block-language-dataviewjs *)):not(:where(.canvas-wrapper, .canvas-wrapper *, .canvas-node, .canvas-node *, .mermaid, .mermaid *)) {
   margin-block-start: 0 !important;
   margin-block-end: var(--rl-read-body-paragraph-spacing-em) !important;
 }
@@ -321,8 +326,11 @@ body.refined-layout-enabled.rl-edit-callouts .markdown-source-view.mod-cm6 .call
   padding-bottom: 0 !important;
 }
 
-body.refined-layout-enabled.rl-edit-callouts .markdown-source-view.mod-cm6 :is(.callout.drop-shadow, .cm-callout) .callout-content p:not(:where(.canvas-wrapper, .canvas-wrapper *, .canvas-node, .canvas-node *, .mermaid, .mermaid *)) {
+body.refined-layout-enabled.rl-edit-callouts .markdown-source-view.mod-cm6 :is(.callout.drop-shadow, .cm-callout) .callout-content :is(p, li):not(:where(.canvas-wrapper, .canvas-wrapper *, .canvas-node, .canvas-node *, .mermaid, .mermaid *)) {
   line-height: var(--rl-edit-callout-paragraph-line-height) !important;
+}
+
+body.refined-layout-enabled.rl-edit-callouts .markdown-source-view.mod-cm6 :is(.callout.drop-shadow, .cm-callout) .callout-content p:not(:where(.canvas-wrapper, .canvas-wrapper *, .canvas-node, .canvas-node *, .mermaid, .mermaid *)) {
   margin-block-start: 0 !important;
   margin-block-end: var(--rl-edit-callout-paragraph-spacing-em) !important;
 }
@@ -376,8 +384,11 @@ body.refined-layout-enabled.rl-read-callouts .markdown-rendered .callout.is-coll
   padding-bottom: 0 !important;
 }
 
-body.refined-layout-enabled.rl-read-callouts .markdown-rendered .callout-content p:not(:where(.block-language-dataviewjs *)):not(:where(.canvas-wrapper, .canvas-wrapper *, .canvas-node, .canvas-node *, .mermaid, .mermaid *)) {
+body.refined-layout-enabled.rl-read-callouts .markdown-rendered .callout-content :is(p, li):not(:where(.block-language-dataviewjs *)):not(:where(.canvas-wrapper, .canvas-wrapper *, .canvas-node, .canvas-node *, .mermaid, .mermaid *)) {
   line-height: var(--rl-read-callout-paragraph-line-height) !important;
+}
+
+body.refined-layout-enabled.rl-read-callouts .markdown-rendered .callout-content p:not(:where(.block-language-dataviewjs *)):not(:where(.canvas-wrapper, .canvas-wrapper *, .canvas-node, .canvas-node *, .mermaid, .mermaid *)) {
   margin-block-start: 0 !important;
   margin-block-end: var(--rl-read-callout-paragraph-spacing-em) !important;
 }
@@ -517,8 +528,11 @@ body.refined-layout-enabled.rl-edit-blockquotes .markdown-source-view.mod-cm6 .c
   padding-block-end: var(--rl-edit-blockquote-list-block-end-em) !important;
 }
 
-body.refined-layout-enabled.rl-read-blockquotes .markdown-rendered .el-blockquote p:not(:where(.block-language-dataviewjs *)):not(:where(.canvas-wrapper, .canvas-wrapper *, .canvas-node, .canvas-node *, .mermaid, .mermaid *)) {
+body.refined-layout-enabled.rl-read-blockquotes .markdown-rendered .el-blockquote :is(p, li):not(:where(.block-language-dataviewjs *)):not(:where(.canvas-wrapper, .canvas-wrapper *, .canvas-node, .canvas-node *, .mermaid, .mermaid *)) {
   line-height: var(--rl-read-blockquote-paragraph-line-height) !important;
+}
+
+body.refined-layout-enabled.rl-read-blockquotes .markdown-rendered .el-blockquote p:not(:where(.block-language-dataviewjs *)):not(:where(.canvas-wrapper, .canvas-wrapper *, .canvas-node, .canvas-node *, .mermaid, .mermaid *)) {
   margin-block-start: 0 !important;
   margin-block-end: var(--rl-read-blockquote-paragraph-spacing-em) !important;
 }
