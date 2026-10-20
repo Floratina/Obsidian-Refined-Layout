@@ -332,8 +332,14 @@ var en = {
   "mermaid.portraitRatioDesc": "Original SVG width divided by height. Ratios at or below this value are treated as portrait.",
   "mermaid.landscapeWidth": "Landscape minimum width",
   "mermaid.landscapeWidthDesc": "Minimum width for regular or landscape Mermaid diagrams. Allow horizontal scrolling when space is insufficient.",
-  "table.group": "Body table appearance & spacing",
-  "table.groupDesc": "Cell padding, inner and outer borders, corner radius, and vertical spacing of body tables.",
+  "table.group": "Body table typography & appearance",
+  "table.groupDesc": "Font size, text line height, blank line height, cell padding, borders, corner radius, and vertical spacing of body tables.",
+  "table.fontSize": "Font size",
+  "table.fontSizeDesc": "Size of text in table headers and cells.",
+  "table.lineHeight": "Text line height",
+  "table.lineHeightDesc": "Line height of header and cell text, as a multiple of the font size.",
+  "table.emptyLine": "Blank line height",
+  "table.emptyLineDesc": "Height of each blank line inside a cell, controlling the space between paragraphs.",
   "table.cellPadding": "Cell padding",
   "table.cellPaddingDesc": "Padding inside table cells.",
   "table.innerBorder": "Inner border width",
@@ -576,8 +582,14 @@ var translations = {
   "mermaid.portraitRatioDesc": "SVG \u539F\u59CB\u5BBD\u5EA6\u9664\u4EE5\u9AD8\u5EA6\uFF1B\u5C0F\u4E8E\u6216\u7B49\u4E8E\u8BE5\u503C\u65F6\u89C6\u4E3A\u7EB5\u5411\u56FE\u3002",
   "mermaid.landscapeWidth": "\u6A2A\u5411\u56FE\u6700\u5C0F\u5BBD\u5EA6",
   "mermaid.landscapeWidthDesc": "\u666E\u901A\u6216\u6A2A\u5411 Mermaid \u7684\u6700\u5C0F\u5BBD\u5EA6\uFF1B\u7A7A\u95F4\u4E0D\u8DB3\u65F6\u5141\u8BB8\u6A2A\u5411\u6EDA\u52A8\u3002",
-  "table.group": "\u6B63\u6587\u8868\u683C\u5916\u89C2\u4E0E\u95F4\u8DDD",
-  "table.groupDesc": "\u6B63\u6587\u8868\u683C\u7684\u5355\u5143\u683C\u5185\u8FB9\u8DDD\u3001\u5185\u5916\u90E8\u8FB9\u6846\u3001\u5706\u89D2\u548C\u4E0A\u4E0B\u95F4\u8DDD\u3002",
+  "table.group": "\u6B63\u6587\u8868\u683C\u6392\u7248\u4E0E\u5916\u89C2",
+  "table.groupDesc": "\u6B63\u6587\u8868\u683C\u7684\u5B57\u53F7\u3001\u6587\u5B57\u884C\u9AD8\u3001\u7A7A\u884C\u9AD8\u5EA6\u3001\u5355\u5143\u683C\u5185\u8FB9\u8DDD\u3001\u8FB9\u6846\u3001\u5706\u89D2\u548C\u4E0A\u4E0B\u95F4\u8DDD\u3002",
+  "table.fontSize": "\u6587\u5B57\u5B57\u53F7",
+  "table.fontSizeDesc": "\u8868\u5934\u548C\u5355\u5143\u683C\u4E2D\u6587\u5B57\u7684\u5927\u5C0F\u3002",
+  "table.lineHeight": "\u6587\u5B57\u884C\u9AD8",
+  "table.lineHeightDesc": "\u8868\u5934\u548C\u5355\u5143\u683C\u4E2D\u6587\u5B57\u7684\u884C\u9AD8\uFF0C\u4EE5\u5B57\u53F7\u7684\u500D\u6570\u8BA1\u7B97\u3002",
+  "table.emptyLine": "\u7A7A\u884C\u9AD8\u5EA6",
+  "table.emptyLineDesc": "\u5355\u5143\u683C\u5185\u6BCF\u4E2A\u7A7A\u884C\u5360\u636E\u7684\u9AD8\u5EA6\uFF0C\u7528\u4E8E\u8C03\u6574\u6BB5\u843D\u4E4B\u95F4\u7684\u7559\u767D\u3002",
   "table.cellPadding": "\u5355\u5143\u683C\u5185\u8FB9\u8DDD",
   "table.cellPaddingDesc": "\u8868\u683C\u5355\u5143\u683C\u5185\u8FB9\u8DDD\u3002",
   "table.innerBorder": "\u5185\u6846\u7EBF\u5BBD\u5EA6",
@@ -820,8 +832,14 @@ var translations2 = {
   "mermaid.portraitRatioDesc": "SVG \u539F\u59CB\u5BEC\u5EA6\u9664\u4EE5\u9AD8\u5EA6\uFF1B\u5C0F\u65BC\u6216\u7B49\u65BC\u6B64\u503C\u6642\u8996\u70BA\u76F4\u5411\u5716\u3002",
   "mermaid.landscapeWidth": "\u6A6B\u5411\u5716\u6700\u5C0F\u5BEC\u5EA6",
   "mermaid.landscapeWidthDesc": "\u4E00\u822C\u6216\u6A6B\u5411 Mermaid \u5716\u8868\u7684\u6700\u5C0F\u5BEC\u5EA6\uFF1B\u7A7A\u9593\u4E0D\u8DB3\u6642\u5141\u8A31\u6C34\u5E73\u6372\u52D5\u3002",
-  "table.group": "\u5167\u6587\u8868\u683C\u5916\u89C0\u8207\u9593\u8DDD",
-  "table.groupDesc": "\u5167\u6587\u8868\u683C\u7684\u5132\u5B58\u683C\u5167\u8DDD\u3001\u5167\u5916\u6846\u7DDA\u3001\u5713\u89D2\u8207\u4E0A\u4E0B\u9593\u8DDD\u3002",
+  "table.group": "\u5167\u6587\u8868\u683C\u6392\u7248\u8207\u5916\u89C0",
+  "table.groupDesc": "\u5167\u6587\u8868\u683C\u7684\u5B57\u578B\u5927\u5C0F\u3001\u6587\u5B57\u884C\u9AD8\u3001\u7A7A\u767D\u884C\u9AD8\u5EA6\u3001\u5132\u5B58\u683C\u5167\u8DDD\u3001\u6846\u7DDA\u3001\u5713\u89D2\u8207\u4E0A\u4E0B\u9593\u8DDD\u3002",
+  "table.fontSize": "\u5B57\u578B\u5927\u5C0F",
+  "table.fontSizeDesc": "\u8868\u982D\u8207\u5132\u5B58\u683C\u5167\u6587\u5B57\u7684\u5927\u5C0F\u3002",
+  "table.lineHeight": "\u6587\u5B57\u884C\u9AD8",
+  "table.lineHeightDesc": "\u8868\u982D\u8207\u5132\u5B58\u683C\u5167\u6587\u5B57\u7684\u884C\u9AD8\uFF0C\u4EE5\u5B57\u578B\u5927\u5C0F\u7684\u500D\u6578\u8A08\u7B97\u3002",
+  "table.emptyLine": "\u7A7A\u767D\u884C\u9AD8\u5EA6",
+  "table.emptyLineDesc": "\u5132\u5B58\u683C\u5167\u6BCF\u500B\u7A7A\u767D\u884C\u7684\u9AD8\u5EA6\uFF0C\u7528\u65BC\u8ABF\u6574\u6BB5\u843D\u4E4B\u9593\u7684\u7559\u767D\u3002",
   "table.cellPadding": "\u5132\u5B58\u683C\u5167\u8DDD",
   "table.cellPaddingDesc": "\u8868\u683C\u5132\u5B58\u683C\u5167\u8DDD\u3002",
   "table.innerBorder": "\u5167\u6846\u7DDA\u5BEC\u5EA6",
@@ -1064,8 +1082,14 @@ var translations3 = {
   "mermaid.portraitRatioDesc": "SVG \u306E\u5143\u306E\u5E45\u3092\u9AD8\u3055\u3067\u5272\u3063\u305F\u5024\u304C\u3001\u3053\u306E\u5024\u4EE5\u4E0B\u306E\u5834\u5408\u306B\u7E26\u9577\u3068\u5224\u5B9A\u3057\u307E\u3059\u3002",
   "mermaid.landscapeWidth": "\u6A2A\u9577\u306E\u56F3\u306E\u6700\u5C0F\u5E45",
   "mermaid.landscapeWidthDesc": "\u901A\u5E38\u30FB\u6A2A\u9577\u306E Mermaid \u56F3\u306E\u6700\u5C0F\u5E45\u3002\u8868\u793A\u9818\u57DF\u304C\u8DB3\u308A\u306A\u3044\u5834\u5408\u306F\u6A2A\u30B9\u30AF\u30ED\u30FC\u30EB\u3067\u304D\u307E\u3059\u3002",
-  "table.group": "\u672C\u6587\u306E\u8868\u306E\u5916\u89B3\u3068\u9593\u9694",
-  "table.groupDesc": "\u672C\u6587\u306E\u8868\u306E\u30BB\u30EB\u5185\u4F59\u767D\u3001\u5185\u5074\u30FB\u5916\u5074\u306E\u67A0\u7DDA\u3001\u89D2\u306E\u4E38\u307F\u3001\u4E0A\u4E0B\u306E\u9593\u9694\u3002",
+  "table.group": "\u672C\u6587\u306E\u8868\u306E\u66F8\u5F0F\u3068\u5916\u89B3",
+  "table.groupDesc": "\u672C\u6587\u306E\u8868\u306E\u6587\u5B57\u30B5\u30A4\u30BA\u3001\u6587\u5B57\u306E\u884C\u306E\u9AD8\u3055\u3001\u7A7A\u884C\u306E\u9AD8\u3055\u3001\u30BB\u30EB\u5185\u4F59\u767D\u3001\u67A0\u7DDA\u3001\u89D2\u306E\u4E38\u307F\u3001\u4E0A\u4E0B\u306E\u9593\u9694\u3002",
+  "table.fontSize": "\u6587\u5B57\u30B5\u30A4\u30BA",
+  "table.fontSizeDesc": "\u898B\u51FA\u3057\u30BB\u30EB\u3068\u672C\u6587\u30BB\u30EB\u5185\u306E\u6587\u5B57\u306E\u5927\u304D\u3055\u3002",
+  "table.lineHeight": "\u6587\u5B57\u306E\u884C\u306E\u9AD8\u3055",
+  "table.lineHeightDesc": "\u898B\u51FA\u3057\u30BB\u30EB\u3068\u672C\u6587\u30BB\u30EB\u5185\u306E\u884C\u306E\u9AD8\u3055\u3002\u30D5\u30A9\u30F3\u30C8\u30B5\u30A4\u30BA\u306B\u5BFE\u3059\u308B\u500D\u7387\u3067\u6307\u5B9A\u3057\u307E\u3059\u3002",
+  "table.emptyLine": "\u7A7A\u884C\u306E\u9AD8\u3055",
+  "table.emptyLineDesc": "\u30BB\u30EB\u5185\u306E\u5404\u7A7A\u884C\u306E\u9AD8\u3055\u3002\u6BB5\u843D\u9593\u306E\u4F59\u767D\u3092\u8ABF\u6574\u3057\u307E\u3059\u3002",
   "table.cellPadding": "\u30BB\u30EB\u5185\u306E\u4F59\u767D",
   "table.cellPaddingDesc": "\u8868\u306E\u30BB\u30EB\u5185\u306E\u4F59\u767D\u3002",
   "table.innerBorder": "\u5185\u5074\u306E\u67A0\u7DDA\u306E\u5E45",
@@ -1199,6 +1223,9 @@ var MODULE_KEYS = [
 ];
 var HEADING_LEVELS = ["h1", "h2", "h3", "h4", "h5", "h6"];
 var EDIT_TABLE = {
+  fontSizePx: 16,
+  lineHeight: 1.3,
+  emptyLineHeightEm: 0.45,
   cellPaddingPx: 0.6,
   innerBorderPx: 1,
   outerBorderPx: 2,
@@ -1207,6 +1234,9 @@ var EDIT_TABLE = {
   spacingBottomPx: 6
 };
 var READ_TABLE = {
+  fontSizePx: 16,
+  lineHeight: 1.3,
+  emptyLineHeightEm: 0.45,
   cellPaddingPx: 6,
   innerBorderPx: 1,
   outerBorderPx: 2,
@@ -1908,6 +1938,9 @@ var SettingsCatalog = class {
   }
   renderTableFields(container, prefix, label, description) {
     const card = this.addGroup(container, label, description);
+    this.addNumber(card, [...prefix, "fontSizePx"], this.t("table.fontSize"), this.t("table.fontSizeDesc"), { min: 1, max: 128, step: 0.5 });
+    this.addNumber(card, [...prefix, "lineHeight"], this.t("table.lineHeight"), this.t("table.lineHeightDesc"));
+    this.addNumber(card, [...prefix, "emptyLineHeightEm"], this.t("table.emptyLine"), this.t("table.emptyLineDesc"));
     this.addNumber(card, [...prefix, "cellPaddingPx"], this.t("table.cellPadding"), this.t("table.cellPaddingDesc"));
     this.addNumber(card, [...prefix, "innerBorderPx"], this.t("table.innerBorder"), this.t("table.innerBorderDesc"));
     this.addNumber(card, [...prefix, "outerBorderPx"], this.t("table.outerBorder"), this.t("table.outerBorderDesc"));
@@ -2310,6 +2343,93 @@ var UpdateNotesModal = class extends import_obsidian3.Modal {
   }
 };
 
+// src/table-typography.ts
+var TABLE_ATTRIBUTE = "data-rl-table-typography";
+var BLANK_CLASS = "rl-table-blank-line";
+var EXCLUDED2 = ".canvas-wrapper, .canvas-node, .mermaid, .block-language-dataviewjs";
+var BREAK_EXCLUDED = "pre, code, svg, math, .math, .MathJax, .markdown-embed";
+function previousContent(node) {
+  let previous = node.previousSibling;
+  while (previous && (previous.nodeType === Node.COMMENT_NODE || previous.nodeType === Node.TEXT_NODE && /^[\t\r\n ]*$/.test(previous.textContent ?? ""))) {
+    previous = previous.previousSibling;
+  }
+  return previous;
+}
+function followsBreak(node) {
+  const previous = previousContent(node);
+  return previous?.nodeType === Node.ELEMENT_NODE && previous.matches(`br, span.${BLANK_CLASS}`);
+}
+function unwrap(element) {
+  element.replaceWith(...Array.from(element.childNodes));
+}
+var TableTypography = class {
+  constructor(getSettings) {
+    this.getSettings = getSettings;
+    this.observer = null;
+  }
+  start() {
+    this.observer = new MutationObserver((records) => {
+      const tables = /* @__PURE__ */ new Set();
+      const collect = (node) => {
+        const element = node.nodeType === Node.ELEMENT_NODE ? node : node.parentElement;
+        if (!element) return;
+        const table = element.closest("table");
+        if (table) tables.add(table);
+        for (const nested of element.querySelectorAll("table")) tables.add(nested);
+      };
+      for (const record of records) {
+        collect(record.target);
+        for (const node of record.addedNodes) collect(node);
+      }
+      for (const table of tables) {
+        if (table.isConnected) this.updateTable(table);
+      }
+    });
+    this.observer.observe(document.body, { childList: true, subtree: true, characterData: true });
+    this.refresh();
+  }
+  refresh() {
+    if (!this.observer) return;
+    for (const table of document.querySelectorAll("table")) this.updateTable(table);
+  }
+  stop() {
+    this.observer?.disconnect();
+    this.observer = null;
+    for (const table of document.querySelectorAll(`table[${TABLE_ATTRIBUTE}]`)) {
+      table.removeAttribute(TABLE_ATTRIBUTE);
+    }
+    for (const blank of document.querySelectorAll(`span.${BLANK_CLASS}`)) unwrap(blank);
+  }
+  updateTable(table) {
+    const mode = table.closest(".markdown-source-view.mod-cm6") ? "edit" : table.closest(".markdown-preview-view.markdown-rendered") ? "read" : null;
+    const context = table.closest(".callout, .cm-callout") ? "callout" : table.closest("blockquote, .el-blockquote") ? "blockquote" : null;
+    const module2 = context === "callout" ? "callouts" : context === "blockquote" ? "blockquotes" : "tables";
+    const enabled = mode !== null && !table.closest(EXCLUDED2) && this.getSettings()[mode].modules[module2];
+    const blanks = Array.from(table.querySelectorAll(`span.${BLANK_CLASS}`)).filter((blank) => blank.closest("table") === table);
+    if (!enabled) {
+      table.removeAttribute(TABLE_ATTRIBUTE);
+      for (const blank of blanks) unwrap(blank);
+      return;
+    }
+    table.setAttribute(TABLE_ATTRIBUTE, `${mode}-${context ? `${context}-table` : "table"}`);
+    for (const blank of blanks) {
+      if (!followsBreak(blank) || !this.isRenderedContent(table, blank)) unwrap(blank);
+    }
+    for (const br of table.querySelectorAll("br")) {
+      if (br.parentElement?.classList.contains(BLANK_CLASS) || !this.isRenderedContent(table, br) || !followsBreak(br)) continue;
+      const blank = br.ownerDocument.createElement("span");
+      blank.className = BLANK_CLASS;
+      br.replaceWith(blank);
+      blank.appendChild(br);
+    }
+  }
+  isRenderedContent(table, element) {
+    if (element.closest("table") !== table || !element.closest("th, td") || element.closest(BREAK_EXCLUDED)) return false;
+    const editor = element.closest(".cm-editor");
+    return !editor || !table.contains(editor);
+  }
+};
+
 // src/main.ts
 var ROOT_CLASS = "refined-layout-enabled";
 var MERMAID_PORTRAIT_CLASS = "rl-mermaid-portrait";
@@ -2386,6 +2506,7 @@ var RefinedLayoutPlugin = class extends import_obsidian4.Plugin {
     this.mermaidObserver = null;
     this.invalidMermaidSvgs = /* @__PURE__ */ new WeakSet();
     this.blankLineNavigation = createBlankLineNavigation();
+    this.tableTypography = new TableTypography(() => this.settings);
     this.saveQueue = Promise.resolve();
     this.unloaded = false;
     this.updateNotesModal = null;
@@ -2399,6 +2520,7 @@ var RefinedLayoutPlugin = class extends import_obsidian4.Plugin {
     this.registerEditorExtension(this.blankLineNavigation.extension);
     this.applySettings();
     this.startMermaidObserver();
+    this.tableTypography.start();
     this.addSettingTab(new RefinedLayoutSettingTab(this.app, this));
     this.app.workspace.onLayoutReady(() => this.showUpdateNotes());
   }
@@ -2407,6 +2529,7 @@ var RefinedLayoutPlugin = class extends import_obsidian4.Plugin {
     this.updateNotesModal?.close();
     this.updateNotesModal = null;
     this.stopMermaidObserver();
+    this.tableTypography.stop();
     if (this.saveTimer !== null) {
       window.clearTimeout(this.saveTimer);
       this.saveTimer = null;
@@ -2557,6 +2680,7 @@ var RefinedLayoutPlugin = class extends import_obsidian4.Plugin {
     }
     this.appliedProperties = new Set(variables.keys());
     this.refreshMermaidClassifications();
+    this.tableTypography.refresh();
     this.blankLineNavigation.requestMeasure();
   }
   startMermaidObserver() {

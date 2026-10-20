@@ -66,6 +66,9 @@ export interface HeadingDecorationSettings {
 }
 
 export interface TableSettings {
+  fontSizePx: number;
+  lineHeight: number;
+  emptyLineHeightEm: number;
   cellPaddingPx: number;
   innerBorderPx: number;
   outerBorderPx: number;
@@ -188,6 +191,9 @@ export interface RefinedLayoutSettings {
 }
 
 const EDIT_TABLE: TableSettings = {
+  fontSizePx: 16,
+  lineHeight: 1.3,
+  emptyLineHeightEm: 0.45,
   cellPaddingPx: 0.6,
   innerBorderPx: 1,
   outerBorderPx: 2,
@@ -197,6 +203,9 @@ const EDIT_TABLE: TableSettings = {
 };
 
 const READ_TABLE: TableSettings = {
+  fontSizePx: 16,
+  lineHeight: 1.3,
+  emptyLineHeightEm: 0.45,
   cellPaddingPx: 6,
   innerBorderPx: 1,
   outerBorderPx: 2,

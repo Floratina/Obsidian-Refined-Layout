@@ -367,6 +367,9 @@ export class SettingsCatalog {
 
   private renderTableFields(container: SettingsFieldGroup[], prefix: string[], label: string, description?: string): void {
     const card = this.addGroup(container, label, description);
+    this.addNumber(card, [...prefix, "fontSizePx"], this.t("table.fontSize"), this.t("table.fontSizeDesc"), { min: 1, max: 128, step: 0.5 });
+    this.addNumber(card, [...prefix, "lineHeight"], this.t("table.lineHeight"), this.t("table.lineHeightDesc"));
+    this.addNumber(card, [...prefix, "emptyLineHeightEm"], this.t("table.emptyLine"), this.t("table.emptyLineDesc"));
     this.addNumber(card, [...prefix, "cellPaddingPx"], this.t("table.cellPadding"), this.t("table.cellPaddingDesc"));
     this.addNumber(card, [...prefix, "innerBorderPx"], this.t("table.innerBorder"), this.t("table.innerBorderDesc"));
     this.addNumber(card, [...prefix, "outerBorderPx"], this.t("table.outerBorder"), this.t("table.outerBorderDesc"));
