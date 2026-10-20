@@ -49,6 +49,7 @@ const result = await build({
           controlEl = { createSpan: (value) => { this.unit = value.text; } };
           setName(value) { this.name = value; return this; }
           setDesc(value) { this.desc = value; return this; }
+          setClass() { return this; }
           setDisabled(value) { this.disabled = value; return this; }
           addText(callback) {
             const text = { inputEl: { addClass() {} }, setValue(value) { this.value = value; return this; }, onChange(fn) { this.change = fn; return this; } };
@@ -60,7 +61,14 @@ const result = await build({
           }
           addExtraButton() { return this; }
           addButton(callback) {
-            const button = { setButtonText(value) { this.label = value; return this; }, setWarning() { this.warning = true; return this; }, onClick(fn) { this.click = fn; return this; } };
+            const button = {
+              setButtonText(value) { this.label = value; return this; },
+              setTooltip(value) { this.tooltip = value; return this; },
+              setWarning() { this.warning = true; return this; },
+              setDestructive() { this.destructive = true; return this; },
+              setCta() { this.cta = true; return this; },
+              onClick(fn) { this.click = fn; return this; },
+            };
             this.button = button; this.buttons.push(button); callback(button); return this;
           }
         }
@@ -132,15 +140,21 @@ test("global actions import through the clicked window and reset both views with
     });
     return input;
   };
-  definitions.find(({ item }) => item.name === "Import settings").item.render(setting);
+  const actions = definitions.find(({ item }) => item.name === "Manage settings").item;
+  actions.render(setting);
+  assert.deepEqual(actions.aliases, ["Import settings", "Export settings", "Reset settings"]);
+  const importButton = setting.buttons.find((button) => button.label === "Import settings");
+  const resetButton = setting.buttons.find((button) => button.label === "Reset settings");
+  assert.equal(resetButton.destructive, true);
+  assert.equal(resetButton.cta, true);
   const before = structuredClone(plugin.settings);
-  setting.button.click();
+  importButton.click();
   input.dispatchEvent(new Event("cancel"));
   assert.equal(input.isConnected, false);
   assert.deepEqual(plugin.settings, before, "Cancel must preserve the current settings");
   assert.equal(plugin.saved, undefined);
 
-  setting.button.click();
+  importButton.click();
   const imported = cloneDefaultSettings();
   imported.language = "zh-CN";
   imported.edit.body.lineHeight = 2.3;
@@ -156,25 +170,24 @@ test("global actions import through the clicked window and reset both views with
   assert.deepEqual(plugin.saved, imported);
   assert.equal(tab.updates, 1, "Successful import refreshes the settings page");
 
-  const reset = new Setting();
-  definitions.find(({ item }) => item.name === "Reset all").item.render(reset);
-  reset.button.click();
+  resetButton.click();
   const t = translatorForLocale(imported.language);
   assert.equal(Modal.current.title, t("resetAll.title"));
   assert.equal(Modal.current.description, t("resetAll.description"));
   assert.deepEqual(plugin.saved, imported, "Opening the confirmation must not reset settings");
   Modal.current.close();
   assert.deepEqual(plugin.settings, imported, "Closing the dialog must keep settings");
-  reset.button.click();
+  resetButton.click();
   const cancel = Modal.current.contentEl.settings[0].buttons[0];
   assert.equal(cancel.label, t("actions.cancel"));
   cancel.click();
   assert.deepEqual(plugin.saved, imported, "Cancel must not persist a reset");
   assert.equal(tab.updates, 1);
-  reset.button.click();
+  resetButton.click();
   const confirm = Modal.current.contentEl.settings[0].buttons[1];
   assert.equal(confirm.label, t("actions.resetAll"));
-  assert.equal(confirm.warning, true);
+  assert.equal(confirm.destructive, true);
+  assert.equal(confirm.cta, true);
   confirm.click();
   assert.equal(Modal.current.closed, true);
   const defaults = cloneDefaultSettings();
@@ -210,11 +223,11 @@ test("two-level navigation indexes every field in the selected mode, including i
     tab.mode = mode;
     const all = nativeFields(tab.getSettingDefinitions());
     assert.ok(all.every(({ pages }) => pages.length <= 1), "Only home and detail pages");
-    for (const name of ["Language", "Export settings", "Import settings", "Reset all"]) {
+    for (const name of ["Language", "Manage settings"]) {
       assert.deepEqual(all.find(({ item }) => item.name === name).pages, [], "Global controls stay on home");
     }
     assert.ok(all.every(({ pages }) => pages.length === 0 || pages[0].startsWith(`${label} · `)), "Category titles identify the selected mode");
-    const definitions = all.filter(({ item }) => item.aliases);
+    const definitions = all.filter(({ item, pages }) => pages.length > 0 && item.aliases);
     assert.ok(definitions.every(({ item }) => item.aliases[0] === label));
     assert.deepEqual(definitions.map(({ item }) => item.aliases.at(-1).replaceAll(" ", ".")).sort(), fieldsFor(mode).map((f) => f.path.join(".")).sort());
     for (const { item } of definitions) {

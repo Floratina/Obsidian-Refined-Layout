@@ -8,7 +8,7 @@ const result = await build({
   stdin: {
     contents: `export { default as LayoutPlugin } from "./src/main";
       export * from "./src/update-notes";
-      export { Modal } from "obsidian";`,
+      export { Modal, Setting } from "obsidian";`,
     resolveDir: fileURLToPath(new URL("../../", import.meta.url)),
     loader: "ts",
   },
@@ -20,17 +20,26 @@ const result = await build({
         export class Plugin {
           constructor(app) { this.app = app; this.manifest = { version: "1.0.0" }; }
           registerEditorExtension() {}
-          addSettingTab() {}
+          addSettingTab(tab) { this.settingTab = tab; }
         }
         export class PluginSettingTab {}
         export class Notice {}
-        export class Setting {}
+        export class Setting {
+          addButton(callback) {
+            this.button = {
+              setButtonText(value) { this.label = value; return this; },
+              onClick(fn) { this.click = fn; return this; },
+            };
+            callback(this.button);
+            return this;
+          }
+        }
         export class Component {}
         export class MarkdownRenderer {}
         export class Modal {
           static opened = 0;
           open() { Modal.opened++; this.onShown(); }
-          close() { this.closed = true; }
+          close() { this.closed = true; this.onClosed(); }
         }
         export function getLanguage() { return "en"; }
         export function requireApiVersion() { return true; }
@@ -43,7 +52,7 @@ const result = await build({
   format: "esm",
   write: false,
 });
-const { LayoutPlugin, Modal, extractVersionNotes, shouldShowUpdateNotes, getUpdateNotes } =
+const { LayoutPlugin, Modal, Setting, extractVersionNotes, shouldShowUpdateNotes, getUpdateNotes } =
   await import(`data:text/javascript;base64,${Buffer.from(result.outputFiles[0].text).toString("base64")}`);
 const UPDATE_NOTES_ID = "1.0.0";
 
@@ -56,6 +65,9 @@ async function fixture(data) {
   plugin.saveData = async (value) => { writes.push(structuredClone(value)); };
   for (const method of ["applySettings", "clearAppliedStyles", "startMermaidObserver", "stopMermaidObserver"]) {
     plugin[method] = () => {};
+  }
+  for (const method of ["start", "stop", "refresh"]) {
+    plugin.tableTypography[method] = () => {};
   }
   await plugin.onload();
   return { plugin, writes, ready: () => ready() };
@@ -79,21 +91,52 @@ test("first load displays after layout is ready; saved notes do not repeat; new 
   assert.equal(shouldShowUpdateNotes(null, UPDATE_NOTES_ID), true);
 });
 
-test("update notes follow all four selected languages, host language aliases and English fallback", async () => {
+test("settings can reopen read update notes using the currently selected language", async () => {
+  const { plugin, ready, writes } = await fixture({ lastSeenUpdateNotesId: UPDATE_NOTES_ID, language: "zh-CN" });
+  const opened = Modal.opened;
+  ready();
+  assert.equal(Modal.opened, opened, "Read notes do not reopen automatically");
+  const definition = plugin.settingTab.getSettingDefinitions()[0].items
+    .find((item) => item.name === "更新日志");
+  const setting = new Setting();
+  definition.render(setting);
+  assert.equal(setting.button.label, "查看日志");
+  setting.button.click();
+  assert.equal(Modal.opened, opened + 1);
+  assert.equal(plugin.updateNotesModal.notes.fullLogUrl,
+    "https://github.com/Floratina/Obsidian-Refined-Layout/blob/main/RELEASE_NOTES_zh-CN.md");
+  setting.button.click();
+  assert.equal(Modal.opened, opened + 1, "Only one update notes modal opens at a time");
+  plugin.updateNotesModal.close();
+  plugin.settings.language = "ja";
+  setting.button.click();
+  assert.equal(Modal.opened, opened + 2, "The setting remains usable after closing the modal");
+  assert.equal(plugin.updateNotesModal.notes.heading, "更新内容");
+  assert.equal(plugin.updateNotesModal.notes.fullLogUrl,
+    "https://github.com/Floratina/Obsidian-Refined-Layout/blob/main/RELEASE_NOTES_ja.md");
+  await plugin.saveQueue;
+  assert.equal(writes.length, 0, "Reopening read notes does not write settings again");
+  plugin.updateNotesModal.close();
+});
+
+test("update notes and full changelog links follow selected languages, host aliases and English fallback", async () => {
   const version = "1.0.2";
   const notesFor = (language, readLanguage) => getUpdateNotes(language, version, readLanguage);
   const cases = [
-    { locale: "en", file: "RELEASE_NOTES.md", title: "Update Notes", heading: "What's new", close: "Got it", aliases: ["en", "en-US", "fr"] },
-    { locale: "zh-CN", file: "RELEASE_NOTES_zh-CN.md", title: "更新说明", heading: "更新说明", close: "知道了", aliases: ["zh", "zh-CN", "zh-Hans"] },
-    { locale: "zh-TW", file: "RELEASE_NOTES_zh-TW.md", title: "更新說明", heading: "更新說明", close: "知道了", aliases: ["zh-TW", "zh-Hant", "zh_HK"] },
-    { locale: "ja", file: "RELEASE_NOTES_ja.md", title: "更新内容", heading: "更新内容", close: "閉じる", aliases: ["ja", "ja-JP"] },
+    { locale: "en", file: "RELEASE_NOTES.md", title: "Update Notes", heading: "What's new", close: "Got it", fullLogLabel: "View full changelog", aliases: ["en", "en-US", "fr"] },
+    { locale: "zh-CN", file: "RELEASE_NOTES_zh-CN.md", title: "更新说明", heading: "更新说明", close: "知道了", fullLogLabel: "查看完整日志", aliases: ["zh", "zh-CN", "zh-Hans"] },
+    { locale: "zh-TW", file: "RELEASE_NOTES_zh-TW.md", title: "更新說明", heading: "更新說明", close: "知道了", fullLogLabel: "檢視完整日誌", aliases: ["zh-TW", "zh-Hant", "zh_HK"] },
+    { locale: "ja", file: "RELEASE_NOTES_ja.md", title: "更新内容", heading: "更新内容", close: "閉じる", fullLogLabel: "すべての更新履歴を見る", aliases: ["ja", "ja-JP"] },
   ];
-  await Promise.all(cases.map(async ({ locale, file, title, heading, close, aliases }) => {
+  await Promise.all(cases.map(async ({ locale, file, title, heading, close, fullLogLabel, aliases }) => {
     const source = await readFile(new URL(`../../${file}`, import.meta.url), "utf8");
     const markdown = source.split(`## ${version}\n`)[1]?.split(/\n## /)[0]?.trim();
     assert.ok(markdown, `${file} must contain the current release`);
     const notes = notesFor(locale);
-    assert.deepEqual(notes, { id: version, title: `Refined Layout ${version} ${title}`, heading, close, markdown });
+    assert.deepEqual(notes, {
+      id: version, title: `Refined Layout ${version} ${title}`, heading, close, markdown, fullLogLabel,
+      fullLogUrl: `https://github.com/Floratina/Obsidian-Refined-Layout/blob/main/${file}`,
+    });
     // An explicit plugin preference takes priority over the host language.
     assert.deepEqual(notesFor(locale, () => locale === "en" ? "zh" : "en"), notes);
     for (const alias of aliases) {

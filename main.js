@@ -179,11 +179,16 @@ var en = {
   "tabs.codeBlockDesc": "Code block line height and vertical spacing for each view.",
   "tabs.headingGap": "After headings",
   "tabs.headingGapDesc": "Spacing adjustments for text, lists, code blocks, and other elements after headings.",
+  "actions.manage": "Manage settings",
+  "actions.manageDesc": "Import, export, or reset settings for both views.",
+  "updateNotes.name": "Changelog",
+  "updateNotes.description": "See improvements and fixes in the current version.",
+  "updateNotes.open": "View changelog",
   "actions.export": "Export settings",
   "actions.exportDesc": "Export the current settings for both views as a JSON file.",
   "actions.import": "Import settings",
   "actions.importDesc": "Import settings from a JSON file, replacing the current settings on success.",
-  "actions.resetAll": "Reset all",
+  "actions.resetAll": "Reset settings",
   "actions.resetAllDesc": "Restore defaults for both views and all module switches.",
   "actions.cancel": "Cancel",
   "resetAll.title": "Reset all settings?",
@@ -429,11 +434,16 @@ var translations = {
   "tabs.codeBlockDesc": "\u4EE3\u7801\u5757\u884C\u9AD8\u53CA\u6A21\u5F0F\u76F8\u5173\u7684\u4E0A\u4E0B\u8FB9\u8DDD\u8BBE\u7F6E\u3002",
   "tabs.headingGap": "\u6807\u9898\u540E\u9996\u5143\u7D20",
   "tabs.headingGapDesc": "\u6807\u9898\u540E\u63A5\u6B63\u6587\u3001\u5217\u8868\u3001\u4EE3\u7801\u5757\u7B49\u5143\u7D20\u65F6\u7684\u95F4\u8DDD\u8865\u507F\u3002",
+  "actions.manage": "\u914D\u7F6E\u7BA1\u7406",
+  "actions.manageDesc": "\u5BFC\u5165\u3001\u5BFC\u51FA\u6216\u91CD\u7F6E\u7F16\u8F91\u548C\u9605\u8BFB\u4E24\u5957\u914D\u7F6E\u3002",
+  "updateNotes.name": "\u66F4\u65B0\u65E5\u5FD7",
+  "updateNotes.description": "\u67E5\u770B\u5F53\u524D\u7248\u672C\u7684\u6539\u8FDB\u4E0E\u4FEE\u590D\u3002",
+  "updateNotes.open": "\u67E5\u770B\u65E5\u5FD7",
   "actions.export": "\u5BFC\u51FA\u914D\u7F6E",
   "actions.exportDesc": "\u628A\u5F53\u524D\u7F16\u8F91\u548C\u9605\u8BFB\u4E24\u5957\u8BBE\u7F6E\u5BFC\u51FA\u4E3A JSON \u6587\u4EF6\u3002",
   "actions.import": "\u5BFC\u5165\u914D\u7F6E",
   "actions.importDesc": "\u4ECE JSON \u6587\u4EF6\u5BFC\u5165\u8BBE\u7F6E\uFF0C\u5BFC\u5165\u6210\u529F\u540E\u7ACB\u5373\u66FF\u6362\u5F53\u524D\u914D\u7F6E\u3002",
-  "actions.resetAll": "\u5168\u90E8\u91CD\u7F6E",
+  "actions.resetAll": "\u91CD\u7F6E\u914D\u7F6E",
   "actions.resetAllDesc": "\u6062\u590D\u7F16\u8F91\u548C\u9605\u8BFB\u4E24\u5957\u8BBE\u7F6E\u4EE5\u53CA\u5168\u90E8\u6A21\u5757\u5F00\u5173\u3002",
   "actions.cancel": "\u53D6\u6D88",
   "resetAll.title": "\u91CD\u7F6E\u5168\u90E8\u914D\u7F6E\uFF1F",
@@ -679,11 +689,16 @@ var translations2 = {
   "tabs.codeBlockDesc": "\u7A0B\u5F0F\u78BC\u5340\u584A\u884C\u9AD8\u8207\u5404\u6A21\u5F0F\u7684\u4E0A\u4E0B\u908A\u8DDD\u8A2D\u5B9A\u3002",
   "tabs.headingGap": "\u6A19\u984C\u5F8C\u9996\u500B\u5143\u7D20",
   "tabs.headingGapDesc": "\u6A19\u984C\u5F8C\u63A5\u5167\u6587\u3001\u6E05\u55AE\u3001\u7A0B\u5F0F\u78BC\u5340\u584A\u7B49\u5143\u7D20\u6642\u7684\u9593\u8DDD\u88DC\u511F\u3002",
+  "actions.manage": "\u8A2D\u5B9A\u7BA1\u7406",
+  "actions.manageDesc": "\u532F\u5165\u3001\u532F\u51FA\u6216\u91CD\u8A2D\u7DE8\u8F2F\u8207\u95B1\u8B80\u5169\u5957\u8A2D\u5B9A\u3002",
+  "updateNotes.name": "\u66F4\u65B0\u65E5\u8A8C",
+  "updateNotes.description": "\u6AA2\u8996\u76EE\u524D\u7248\u672C\u7684\u6539\u5584\u8207\u4FEE\u6B63\u3002",
+  "updateNotes.open": "\u6AA2\u8996\u65E5\u8A8C",
   "actions.export": "\u532F\u51FA\u8A2D\u5B9A",
   "actions.exportDesc": "\u5C07\u76EE\u524D\u7DE8\u8F2F\u8207\u95B1\u8B80\u5169\u5957\u8A2D\u5B9A\u532F\u51FA\u70BA JSON \u6A94\u6848\u3002",
   "actions.import": "\u532F\u5165\u8A2D\u5B9A",
   "actions.importDesc": "\u5F9E JSON \u6A94\u6848\u532F\u5165\u8A2D\u5B9A\uFF0C\u6210\u529F\u5F8C\u7ACB\u5373\u53D6\u4EE3\u76EE\u524D\u8A2D\u5B9A\u3002",
-  "actions.resetAll": "\u5168\u90E8\u91CD\u8A2D",
+  "actions.resetAll": "\u91CD\u8A2D\u8A2D\u5B9A",
   "actions.resetAllDesc": "\u9084\u539F\u7DE8\u8F2F\u8207\u95B1\u8B80\u5169\u5957\u8A2D\u5B9A\u53CA\u6240\u6709\u6A21\u7D44\u958B\u95DC\u7684\u9810\u8A2D\u503C\u3002",
   "actions.cancel": "\u53D6\u6D88",
   "resetAll.title": "\u91CD\u8A2D\u6240\u6709\u8A2D\u5B9A\uFF1F",
@@ -929,11 +944,16 @@ var translations3 = {
   "tabs.codeBlockDesc": "\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u306E\u884C\u306E\u9AD8\u3055\u3068\u30D3\u30E5\u30FC\u3054\u3068\u306E\u4E0A\u4E0B\u306E\u4F59\u767D\u3092\u8A2D\u5B9A\u3057\u307E\u3059\u3002",
   "tabs.headingGap": "\u898B\u51FA\u3057\u76F4\u5F8C\u306E\u9593\u9694",
   "tabs.headingGapDesc": "\u898B\u51FA\u3057\u306E\u76F4\u5F8C\u306B\u7D9A\u304F\u672C\u6587\u3001\u30EA\u30B9\u30C8\u3001\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u306A\u3069\u306E\u9593\u9694\u3092\u8ABF\u6574\u3057\u307E\u3059\u3002",
+  "actions.manage": "\u8A2D\u5B9A\u306E\u7BA1\u7406",
+  "actions.manageDesc": "\u7DE8\u96C6\u30FB\u95B2\u89A7\u306E\u4E21\u30D3\u30E5\u30FC\u306E\u8A2D\u5B9A\u3092\u30A4\u30F3\u30DD\u30FC\u30C8\u3001\u30A8\u30AF\u30B9\u30DD\u30FC\u30C8\u3001\u30EA\u30BB\u30C3\u30C8\u3057\u307E\u3059\u3002",
+  "updateNotes.name": "\u66F4\u65B0\u5C65\u6B74",
+  "updateNotes.description": "\u73FE\u5728\u306E\u30D0\u30FC\u30B8\u30E7\u30F3\u306E\u6539\u5584\u70B9\u3068\u4FEE\u6B63\u5185\u5BB9\u3092\u78BA\u8A8D\u3057\u307E\u3059\u3002",
+  "updateNotes.open": "\u66F4\u65B0\u5C65\u6B74\u3092\u898B\u308B",
   "actions.export": "\u8A2D\u5B9A\u3092\u30A8\u30AF\u30B9\u30DD\u30FC\u30C8",
   "actions.exportDesc": "\u7DE8\u96C6\u30FB\u95B2\u89A7\u306E\u4E21\u30D3\u30E5\u30FC\u306E\u73FE\u5728\u306E\u8A2D\u5B9A\u3092 JSON \u30D5\u30A1\u30A4\u30EB\u306B\u30A8\u30AF\u30B9\u30DD\u30FC\u30C8\u3057\u307E\u3059\u3002",
   "actions.import": "\u8A2D\u5B9A\u3092\u30A4\u30F3\u30DD\u30FC\u30C8",
   "actions.importDesc": "JSON \u30D5\u30A1\u30A4\u30EB\u304B\u3089\u8A2D\u5B9A\u3092\u8AAD\u307F\u8FBC\u307F\u3001\u6210\u529F\u3059\u308B\u3068\u73FE\u5728\u306E\u8A2D\u5B9A\u3092\u7F6E\u304D\u63DB\u3048\u307E\u3059\u3002",
-  "actions.resetAll": "\u3059\u3079\u3066\u30EA\u30BB\u30C3\u30C8",
+  "actions.resetAll": "\u8A2D\u5B9A\u3092\u30EA\u30BB\u30C3\u30C8",
   "actions.resetAllDesc": "\u4E21\u30D3\u30E5\u30FC\u306E\u8A2D\u5B9A\u3068\u3059\u3079\u3066\u306E\u30E2\u30B8\u30E5\u30FC\u30EB\u5207\u308A\u66FF\u3048\u3092\u521D\u671F\u5024\u306B\u623B\u3057\u307E\u3059\u3002",
   "actions.cancel": "\u30AD\u30E3\u30F3\u30BB\u30EB",
   "resetAll.title": "\u3059\u3079\u3066\u306E\u8A2D\u5B9A\u3092\u30EA\u30BB\u30C3\u30C8\u3057\u307E\u3059\u304B\uFF1F",
@@ -2099,17 +2119,21 @@ var RefinedLayoutSettingTab = class extends import_obsidian2.PluginSettingTab {
           { name: t("language.name"), desc: t("language.description"), render: (setting) => {
             this.renderLanguage(setting);
           } },
-          ...[
-            ["actions.export", "actions.exportDesc", () => this.plugin.exportSettings()],
-            ["actions.import", "actions.importDesc", (setting) => this.pickSettingsFile(setting.controlEl)],
-            ["actions.resetAll", "actions.resetAllDesc", () => this.confirmResetAll()]
-          ].map(([name, desc, onClick]) => ({
-            name: t(name),
-            desc: t(desc),
+          {
+            name: t("actions.manage"),
+            desc: t("actions.manageDesc"),
+            aliases: [t("actions.import"), t("actions.export"), t("actions.resetAll")],
             render: (setting) => {
-              setting.addButton((button) => button.setButtonText(t(name)).onClick(() => onClick(setting)));
+              setting.setClass("rl-settings-config-actions").addButton((button) => button.setButtonText(t("actions.import")).setTooltip(t("actions.importDesc")).onClick(() => this.pickSettingsFile(setting.controlEl))).addButton((button) => button.setButtonText(t("actions.export")).setTooltip(t("actions.exportDesc")).onClick(() => this.plugin.exportSettings())).addButton((button) => setDestructiveButton(button).setButtonText(t("actions.resetAll")).setTooltip(t("actions.resetAllDesc")).onClick(() => this.confirmResetAll()));
             }
-          }))
+          },
+          {
+            name: t("updateNotes.name"),
+            desc: t("updateNotes.description"),
+            render: (setting) => {
+              setting.addButton((button) => button.setButtonText(t("updateNotes.open")).onClick(() => this.plugin.showUpdateNotes(true)));
+            }
+          }
         ]
       },
       {
@@ -2228,6 +2252,9 @@ var RefinedLayoutSettingTab = class extends import_obsidian2.PluginSettingTab {
     }
   }
 };
+function setDestructiveButton(button) {
+  return (0, import_obsidian2.requireApiVersion)("1.13.0") ? button.setDestructive().setCta() : button.setWarning();
+}
 var ResetAllModal = class extends import_obsidian2.Modal {
   constructor(app, t, onConfirm) {
     super(app);
@@ -2237,7 +2264,7 @@ var ResetAllModal = class extends import_obsidian2.Modal {
   onOpen() {
     this.setTitle(this.t("resetAll.title"));
     this.setContent(this.t("resetAll.description"));
-    new import_obsidian2.Setting(this.contentEl).addButton((button) => button.setButtonText(this.t("actions.cancel")).onClick(() => this.close())).addButton((button) => button.setButtonText(this.t("actions.resetAll")).setWarning().onClick(() => {
+    new import_obsidian2.Setting(this.contentEl).addButton((button) => button.setButtonText(this.t("actions.cancel")).onClick(() => this.close())).addButton((button) => setDestructiveButton(button).setButtonText(this.t("actions.resetAll")).onClick(() => {
       this.close();
       this.onConfirm();
     }));
@@ -2264,10 +2291,38 @@ var RELEASE_NOTES_ja_default = "# Refined Layout \u30EA\u30EA\u30FC\u30B9\u30CE\
 
 // src/update-notes.ts
 var localizedNotes = {
-  en: { markdown: RELEASE_NOTES_default, title: "Update Notes", heading: "What's new", close: "Got it" },
-  "zh-CN": { markdown: RELEASE_NOTES_zh_CN_default, title: "\u66F4\u65B0\u8BF4\u660E", heading: "\u66F4\u65B0\u8BF4\u660E", close: "\u77E5\u9053\u4E86" },
-  "zh-TW": { markdown: RELEASE_NOTES_zh_TW_default, title: "\u66F4\u65B0\u8AAA\u660E", heading: "\u66F4\u65B0\u8AAA\u660E", close: "\u77E5\u9053\u4E86" },
-  ja: { markdown: RELEASE_NOTES_ja_default, title: "\u66F4\u65B0\u5185\u5BB9", heading: "\u66F4\u65B0\u5185\u5BB9", close: "\u9589\u3058\u308B" }
+  en: {
+    markdown: RELEASE_NOTES_default,
+    title: "Update Notes",
+    heading: "What's new",
+    close: "Got it",
+    fullLogLabel: "View full changelog",
+    file: "RELEASE_NOTES.md"
+  },
+  "zh-CN": {
+    markdown: RELEASE_NOTES_zh_CN_default,
+    title: "\u66F4\u65B0\u8BF4\u660E",
+    heading: "\u66F4\u65B0\u8BF4\u660E",
+    close: "\u77E5\u9053\u4E86",
+    fullLogLabel: "\u67E5\u770B\u5B8C\u6574\u65E5\u5FD7",
+    file: "RELEASE_NOTES_zh-CN.md"
+  },
+  "zh-TW": {
+    markdown: RELEASE_NOTES_zh_TW_default,
+    title: "\u66F4\u65B0\u8AAA\u660E",
+    heading: "\u66F4\u65B0\u8AAA\u660E",
+    close: "\u77E5\u9053\u4E86",
+    fullLogLabel: "\u6AA2\u8996\u5B8C\u6574\u65E5\u8A8C",
+    file: "RELEASE_NOTES_zh-TW.md"
+  },
+  ja: {
+    markdown: RELEASE_NOTES_ja_default,
+    title: "\u66F4\u65B0\u5185\u5BB9",
+    heading: "\u66F4\u65B0\u5185\u5BB9",
+    close: "\u9589\u3058\u308B",
+    fullLogLabel: "\u3059\u3079\u3066\u306E\u66F4\u65B0\u5C65\u6B74\u3092\u898B\u308B",
+    file: "RELEASE_NOTES_ja.md"
+  }
 };
 function shouldShowUpdateNotes(lastSeen, currentId) {
   return lastSeen !== currentId;
@@ -2304,7 +2359,9 @@ function getUpdateNotes(preference, version, readLanguage = import_obsidian3.get
     title: `Refined Layout ${version} ${notes.title}`,
     heading: notes.heading,
     markdown,
-    close: notes.close
+    close: notes.close,
+    fullLogLabel: notes.fullLogLabel,
+    fullLogUrl: `https://github.com/Floratina/Obsidian-Refined-Layout/blob/main/${notes.file}`
   };
 }
 var UpdateNotesModal = class extends import_obsidian3.Modal {
@@ -2325,6 +2382,12 @@ var UpdateNotesModal = class extends import_obsidian3.Modal {
     version.createSpan({ cls: "rl-update-notes-version-number", text: `v${this.notes.id}` });
     const markdown = scroll.createDiv({ cls: "rl-update-notes-markdown" });
     const footer = this.contentEl.createDiv({ cls: "rl-update-notes-footer" });
+    footer.createEl("a", {
+      cls: "external-link rl-update-notes-link",
+      text: this.notes.fullLogLabel,
+      href: this.notes.fullLogUrl,
+      attr: { target: "_blank", rel: "noopener noreferrer" }
+    });
     new import_obsidian3.Setting(footer).addButton((button) => button.setButtonText(this.notes.close).setCta().onClick(() => this.close()));
     this.renderComponent.load();
     try {
@@ -2537,12 +2600,12 @@ var RefinedLayoutPlugin = class extends import_obsidian4.Plugin {
     }
     this.clearAppliedStyles();
   }
-  showUpdateNotes() {
+  showUpdateNotes(force = false) {
     if (this.unloaded || this.updateNotesModal) return;
     const notes = getUpdateNotes(this.settings.language, this.manifest.version);
-    if (!notes || !shouldShowUpdateNotes(this.lastSeenUpdateNotesId, notes.id)) return;
+    if (!notes || !force && !shouldShowUpdateNotes(this.lastSeenUpdateNotesId, notes.id)) return;
     this.updateNotesModal = new UpdateNotesModal(this.app, notes, () => {
-      if (this.unloaded) return;
+      if (this.unloaded || this.lastSeenUpdateNotesId === notes.id) return;
       this.lastSeenUpdateNotesId = notes.id;
       void this.savePluginData();
     }, () => {
