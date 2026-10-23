@@ -1,6 +1,6 @@
 {
   "name": "refined-layout",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Independent layout and typography controls for editing and reading views.",
   "main": "main.js",
   "type": "module",
