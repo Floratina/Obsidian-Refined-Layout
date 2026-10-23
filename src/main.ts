@@ -16,6 +16,7 @@ import {
 } from "./settings";
 import { RefinedLayoutSettingTab, type ResettableSection } from "./settings-tab";
 import { getUpdateNotes, shouldShowUpdateNotes, UpdateNotesModal } from "./update-notes";
+import { TableTypography } from "./table-typography";
 
 const ROOT_CLASS = "refined-layout-enabled";
 const MERMAID_PORTRAIT_CLASS = "rl-mermaid-portrait";
@@ -105,6 +106,7 @@ export default class RefinedLayoutPlugin extends Plugin {
   private mermaidObserver: MutationObserver | null = null;
   private invalidMermaidSvgs = new WeakSet<SVGSVGElement>();
   private blankLineNavigation = createBlankLineNavigation();
+  private tableTypography = new TableTypography(() => this.settings);
   private lastSeenUpdateNotesId: string | undefined;
   private saveQueue: Promise<void> = Promise.resolve();
   private unloaded = false;
@@ -120,6 +122,7 @@ export default class RefinedLayoutPlugin extends Plugin {
     this.registerEditorExtension(this.blankLineNavigation.extension);
     this.applySettings();
     this.startMermaidObserver();
+    this.tableTypography.start();
     this.addSettingTab(new RefinedLayoutSettingTab(this.app, this));
     this.app.workspace.onLayoutReady(() => this.showUpdateNotes());
   }
@@ -129,6 +132,7 @@ export default class RefinedLayoutPlugin extends Plugin {
     this.updateNotesModal?.close();
     this.updateNotesModal = null;
     this.stopMermaidObserver();
+    this.tableTypography.stop();
     if (this.saveTimer !== null) {
       window.clearTimeout(this.saveTimer);
       this.saveTimer = null;
@@ -137,12 +141,12 @@ export default class RefinedLayoutPlugin extends Plugin {
     this.clearAppliedStyles();
   }
 
-  private showUpdateNotes(): void {
+  showUpdateNotes(force = false): void {
     if (this.unloaded || this.updateNotesModal) return;
     const notes = getUpdateNotes(this.settings.language, this.manifest.version);
-    if (!notes || !shouldShowUpdateNotes(this.lastSeenUpdateNotesId, notes.id)) return;
+    if (!notes || (!force && !shouldShowUpdateNotes(this.lastSeenUpdateNotesId, notes.id))) return;
     this.updateNotesModal = new UpdateNotesModal(this.app, notes, () => {
-      if (this.unloaded) return;
+      if (this.unloaded || this.lastSeenUpdateNotesId === notes.id) return;
       this.lastSeenUpdateNotesId = notes.id;
       void this.savePluginData();
     }, () => {
@@ -300,6 +304,7 @@ export default class RefinedLayoutPlugin extends Plugin {
     }
     this.appliedProperties = new Set(variables.keys());
     this.refreshMermaidClassifications();
+    this.tableTypography.refresh();
     this.blankLineNavigation.requestMeasure();
   }
 

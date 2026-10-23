@@ -29,14 +29,19 @@ var import_obsidian4 = require("obsidian");
 // src/blank-line-navigation.ts
 var import_state = require("@codemirror/state");
 var import_view = require("@codemirror/view");
-var EXCLUDED = ".canvas-wrapper, .canvas-node, .mermaid, .block-language-dataviewjs, .markdown-embed, .callout, .cm-callout, .cm-table-widget";
+var TABLE_EXCLUDED = ".canvas-wrapper, .canvas-node, .mermaid, .block-language-dataviewjs, .markdown-embed";
+var EXCLUDED = `${TABLE_EXCLUDED}, .callout, .cm-callout, .cm-table-widget`;
+function isTableCellEditor(view) {
+  const table = view.dom.closest("table");
+  return !!table?.getAttribute("data-rl-table-typography")?.startsWith("edit-") && view.dom.closest("th, td")?.closest("table") === table;
+}
 function hasBlockingWidget(dom) {
   return Array.from(dom.querySelectorAll('[contenteditable="false"], .cm-widgetBuffer')).some((widget) => {
     if (widget.closest(".cm-fold-indicator") || widget.matches('img.cm-widgetBuffer[aria-hidden="true"]')) return false;
     return !(widget.tagName === "SPAN" && widget.childNodes.length === 0 && widget.getBoundingClientRect().width === 0);
   });
 }
-function textLineElement(view, line) {
+function textLineElement(view, line, excluded) {
   if (!view.visibleRanges.some(({ from, to }) => from <= line.from && to >= line.to)) return null;
   const block = view.lineBlockAt(line.from);
   if (block.type !== import_view.BlockType.Text || block.from !== line.from || block.to !== line.to) return null;
@@ -44,17 +49,17 @@ function textLineElement(view, line) {
   const element = node.nodeType === 1 ? node : node.parentElement;
   const dom = element?.closest(".cm-line");
   if (!dom || dom.parentElement !== view.contentDOM || view.posAtDOM(dom, 0) !== line.from) return null;
-  if (dom.closest(EXCLUDED) || hasBlockingWidget(dom)) return null;
+  if (dom.closest(excluded) || hasBlockingWidget(dom)) return null;
   if (dom.getClientRects().length === 0) return null;
   return dom;
 }
-function compressedBlank(view, line, dom) {
+function compressedBlank(view, line, dom, tableCell) {
   if (line.length !== 0 || !dom.matches(":has(> br:only-child)")) return false;
   const classes = dom.ownerDocument.body.classList;
   const bodyRule = classes.contains("rl-edit-body");
   const codeRule = classes.contains("rl-edit-code-blocks") && dom.matches(".HyperMD-codeblock.HyperMD-codeblock-bg");
   const headingRule = classes.contains("rl-edit-heading-gaps") && dom.previousElementSibling?.matches('[class*="HyperMD-header"]') && dom.nextElementSibling?.matches('.cm-line:not([class*="HyperMD-header"]), .cm-callout, .cm-table-widget, .image-embed');
-  if (!bodyRule && !codeRule && !headingRule) return false;
+  if (!tableCell && !bodyRule && !codeRule && !headingRule) return false;
   const style = dom.ownerDocument.defaultView.getComputedStyle(dom);
   return style.visibility !== "hidden" && Number.parseFloat(style.lineHeight) < Math.max(view.defaultLineHeight, Number.parseFloat(style.fontSize)) - 0.5;
 }
@@ -73,7 +78,9 @@ function cursorAt(head, original, goalColumn) {
 function moveAcrossBlankLines(view, forward, extend = false) {
   const selection = view.state.selection;
   if (!view.hasFocus || view.composing || view.compositionStarted || view.state.readOnly || selection.ranges.length !== 1 || !extend && !selection.main.empty) return false;
-  if (!view.dom.closest(".markdown-source-view.mod-cm6") || view.dom.closest(EXCLUDED) || view.dom.classList.contains("cm-vimMode")) return false;
+  const tableCell = isTableCellEditor(view);
+  const excluded = tableCell ? TABLE_EXCLUDED : EXCLUDED;
+  if (!view.dom.closest(".markdown-source-view.mod-cm6") || view.dom.closest(excluded) || view.dom.classList.contains("cm-vimMode")) return false;
   const body = view.dom.ownerDocument.body;
   if (!body.classList.contains("refined-layout-enabled")) return false;
   const start = selection.main;
@@ -83,11 +90,11 @@ function moveAcrossBlankLines(view, forward, extend = false) {
   if (nextNumber < 1 || nextNumber > doc.lines) return false;
   const next = doc.line(nextNumber);
   if (current.length !== 0 && next.length !== 0) return false;
-  const currentDOM = textLineElement(view, current);
-  const nextDOM = textLineElement(view, next);
+  const currentDOM = textLineElement(view, current, excluded);
+  const nextDOM = textLineElement(view, next, excluded);
   if (!currentDOM || !nextDOM) return false;
-  const currentBlank = compressedBlank(view, current, currentDOM);
-  const nextBlank = compressedBlank(view, next, nextDOM);
+  const currentBlank = compressedBlank(view, current, currentDOM, tableCell);
+  const nextBlank = compressedBlank(view, next, nextDOM, tableCell);
   if (!currentBlank && !nextBlank) return false;
   if (Array.from(body.querySelectorAll(".suggestion-container")).some((element) => element.getClientRects().length > 0 && element.ownerDocument.defaultView.getComputedStyle(element).visibility !== "hidden")) return false;
   const cursor = cursorAt(start.head, start, start.goalColumn);
@@ -124,6 +131,18 @@ function moveAcrossBlankLines(view, forward, extend = false) {
   });
   return true;
 }
+function handleTableArrow(event) {
+  if (event.defaultPrevented || event.isComposing || event.altKey || event.ctrlKey || event.metaKey || event.key !== "ArrowUp" && event.key !== "ArrowDown") return;
+  const target = event.target;
+  if (!target || target.nodeType !== 1) return;
+  const editor = target.closest(".cm-editor");
+  if (!editor) return;
+  const view = import_view.EditorView.findFromDOM(editor);
+  if (!view || view.dom !== editor || !isTableCellEditor(view)) return;
+  if (!moveAcrossBlankLines(view, event.key === "ArrowDown", event.shiftKey)) return;
+  event.preventDefault();
+  event.stopPropagation();
+}
 function createBlankLineNavigation() {
   const views = /* @__PURE__ */ new Set();
   const lifecycle = import_view.ViewPlugin.define((view) => {
@@ -136,6 +155,14 @@ function createBlankLineNavigation() {
   return {
     extension: [
       lifecycle,
+      // Nested cell editors need not inherit the note's extensions. Capture
+      // their arrows on the containing editor before the table handles them.
+      import_view.ViewPlugin.define((view) => {
+        view.dom.addEventListener("keydown", handleTableArrow, true);
+        return { destroy: () => {
+          view.dom.removeEventListener("keydown", handleTableArrow, true);
+        } };
+      }),
       // Host/plugin arrow keymaps can already occupy the high-precedence group.
       // Run before those handlers; unaffected keys still fall through to them.
       import_state.Prec.highest(import_view.keymap.of([
@@ -179,11 +206,16 @@ var en = {
   "tabs.codeBlockDesc": "Code block line height and vertical spacing for each view.",
   "tabs.headingGap": "After headings",
   "tabs.headingGapDesc": "Spacing adjustments for text, lists, code blocks, and other elements after headings.",
+  "actions.manage": "Manage settings",
+  "actions.manageDesc": "Import, export, or reset settings for both views.",
+  "updateNotes.name": "Changelog",
+  "updateNotes.description": "See improvements and fixes in the current version.",
+  "updateNotes.open": "View changelog",
   "actions.export": "Export settings",
   "actions.exportDesc": "Export the current settings for both views as a JSON file.",
   "actions.import": "Import settings",
   "actions.importDesc": "Import settings from a JSON file, replacing the current settings on success.",
-  "actions.resetAll": "Reset all",
+  "actions.resetAll": "Reset settings",
   "actions.resetAllDesc": "Restore defaults for both views and all module switches.",
   "actions.cancel": "Cancel",
   "resetAll.title": "Reset all settings?",
@@ -332,8 +364,14 @@ var en = {
   "mermaid.portraitRatioDesc": "Original SVG width divided by height. Ratios at or below this value are treated as portrait.",
   "mermaid.landscapeWidth": "Landscape minimum width",
   "mermaid.landscapeWidthDesc": "Minimum width for regular or landscape Mermaid diagrams. Allow horizontal scrolling when space is insufficient.",
-  "table.group": "Body table appearance & spacing",
-  "table.groupDesc": "Cell padding, inner and outer borders, corner radius, and vertical spacing of body tables.",
+  "table.group": "Body table typography & appearance",
+  "table.groupDesc": "Font size, text line height, blank line height, cell padding, borders, corner radius, and vertical spacing of body tables.",
+  "table.fontSize": "Font size",
+  "table.fontSizeDesc": "Size of text in table headers and cells.",
+  "table.lineHeight": "Text line height",
+  "table.lineHeightDesc": "Line height of header and cell text, as a multiple of the font size.",
+  "table.emptyLine": "Blank line height",
+  "table.emptyLineDesc": "Height of each blank line inside a cell, controlling the space between paragraphs.",
   "table.cellPadding": "Cell padding",
   "table.cellPaddingDesc": "Padding inside table cells.",
   "table.innerBorder": "Inner border width",
@@ -423,11 +461,16 @@ var translations = {
   "tabs.codeBlockDesc": "\u4EE3\u7801\u5757\u884C\u9AD8\u53CA\u6A21\u5F0F\u76F8\u5173\u7684\u4E0A\u4E0B\u8FB9\u8DDD\u8BBE\u7F6E\u3002",
   "tabs.headingGap": "\u6807\u9898\u540E\u9996\u5143\u7D20",
   "tabs.headingGapDesc": "\u6807\u9898\u540E\u63A5\u6B63\u6587\u3001\u5217\u8868\u3001\u4EE3\u7801\u5757\u7B49\u5143\u7D20\u65F6\u7684\u95F4\u8DDD\u8865\u507F\u3002",
+  "actions.manage": "\u914D\u7F6E\u7BA1\u7406",
+  "actions.manageDesc": "\u5BFC\u5165\u3001\u5BFC\u51FA\u6216\u91CD\u7F6E\u7F16\u8F91\u548C\u9605\u8BFB\u4E24\u5957\u914D\u7F6E\u3002",
+  "updateNotes.name": "\u66F4\u65B0\u65E5\u5FD7",
+  "updateNotes.description": "\u67E5\u770B\u5F53\u524D\u7248\u672C\u7684\u6539\u8FDB\u4E0E\u4FEE\u590D\u3002",
+  "updateNotes.open": "\u67E5\u770B\u65E5\u5FD7",
   "actions.export": "\u5BFC\u51FA\u914D\u7F6E",
   "actions.exportDesc": "\u628A\u5F53\u524D\u7F16\u8F91\u548C\u9605\u8BFB\u4E24\u5957\u8BBE\u7F6E\u5BFC\u51FA\u4E3A JSON \u6587\u4EF6\u3002",
   "actions.import": "\u5BFC\u5165\u914D\u7F6E",
   "actions.importDesc": "\u4ECE JSON \u6587\u4EF6\u5BFC\u5165\u8BBE\u7F6E\uFF0C\u5BFC\u5165\u6210\u529F\u540E\u7ACB\u5373\u66FF\u6362\u5F53\u524D\u914D\u7F6E\u3002",
-  "actions.resetAll": "\u5168\u90E8\u91CD\u7F6E",
+  "actions.resetAll": "\u91CD\u7F6E\u914D\u7F6E",
   "actions.resetAllDesc": "\u6062\u590D\u7F16\u8F91\u548C\u9605\u8BFB\u4E24\u5957\u8BBE\u7F6E\u4EE5\u53CA\u5168\u90E8\u6A21\u5757\u5F00\u5173\u3002",
   "actions.cancel": "\u53D6\u6D88",
   "resetAll.title": "\u91CD\u7F6E\u5168\u90E8\u914D\u7F6E\uFF1F",
@@ -576,8 +619,14 @@ var translations = {
   "mermaid.portraitRatioDesc": "SVG \u539F\u59CB\u5BBD\u5EA6\u9664\u4EE5\u9AD8\u5EA6\uFF1B\u5C0F\u4E8E\u6216\u7B49\u4E8E\u8BE5\u503C\u65F6\u89C6\u4E3A\u7EB5\u5411\u56FE\u3002",
   "mermaid.landscapeWidth": "\u6A2A\u5411\u56FE\u6700\u5C0F\u5BBD\u5EA6",
   "mermaid.landscapeWidthDesc": "\u666E\u901A\u6216\u6A2A\u5411 Mermaid \u7684\u6700\u5C0F\u5BBD\u5EA6\uFF1B\u7A7A\u95F4\u4E0D\u8DB3\u65F6\u5141\u8BB8\u6A2A\u5411\u6EDA\u52A8\u3002",
-  "table.group": "\u6B63\u6587\u8868\u683C\u5916\u89C2\u4E0E\u95F4\u8DDD",
-  "table.groupDesc": "\u6B63\u6587\u8868\u683C\u7684\u5355\u5143\u683C\u5185\u8FB9\u8DDD\u3001\u5185\u5916\u90E8\u8FB9\u6846\u3001\u5706\u89D2\u548C\u4E0A\u4E0B\u95F4\u8DDD\u3002",
+  "table.group": "\u6B63\u6587\u8868\u683C\u6392\u7248\u4E0E\u5916\u89C2",
+  "table.groupDesc": "\u6B63\u6587\u8868\u683C\u7684\u5B57\u53F7\u3001\u6587\u5B57\u884C\u9AD8\u3001\u7A7A\u884C\u9AD8\u5EA6\u3001\u5355\u5143\u683C\u5185\u8FB9\u8DDD\u3001\u8FB9\u6846\u3001\u5706\u89D2\u548C\u4E0A\u4E0B\u95F4\u8DDD\u3002",
+  "table.fontSize": "\u6587\u5B57\u5B57\u53F7",
+  "table.fontSizeDesc": "\u8868\u5934\u548C\u5355\u5143\u683C\u4E2D\u6587\u5B57\u7684\u5927\u5C0F\u3002",
+  "table.lineHeight": "\u6587\u5B57\u884C\u9AD8",
+  "table.lineHeightDesc": "\u8868\u5934\u548C\u5355\u5143\u683C\u4E2D\u6587\u5B57\u7684\u884C\u9AD8\uFF0C\u4EE5\u5B57\u53F7\u7684\u500D\u6570\u8BA1\u7B97\u3002",
+  "table.emptyLine": "\u7A7A\u884C\u9AD8\u5EA6",
+  "table.emptyLineDesc": "\u5355\u5143\u683C\u5185\u6BCF\u4E2A\u7A7A\u884C\u5360\u636E\u7684\u9AD8\u5EA6\uFF0C\u7528\u4E8E\u8C03\u6574\u6BB5\u843D\u4E4B\u95F4\u7684\u7559\u767D\u3002",
   "table.cellPadding": "\u5355\u5143\u683C\u5185\u8FB9\u8DDD",
   "table.cellPaddingDesc": "\u8868\u683C\u5355\u5143\u683C\u5185\u8FB9\u8DDD\u3002",
   "table.innerBorder": "\u5185\u6846\u7EBF\u5BBD\u5EA6",
@@ -667,11 +716,16 @@ var translations2 = {
   "tabs.codeBlockDesc": "\u7A0B\u5F0F\u78BC\u5340\u584A\u884C\u9AD8\u8207\u5404\u6A21\u5F0F\u7684\u4E0A\u4E0B\u908A\u8DDD\u8A2D\u5B9A\u3002",
   "tabs.headingGap": "\u6A19\u984C\u5F8C\u9996\u500B\u5143\u7D20",
   "tabs.headingGapDesc": "\u6A19\u984C\u5F8C\u63A5\u5167\u6587\u3001\u6E05\u55AE\u3001\u7A0B\u5F0F\u78BC\u5340\u584A\u7B49\u5143\u7D20\u6642\u7684\u9593\u8DDD\u88DC\u511F\u3002",
+  "actions.manage": "\u8A2D\u5B9A\u7BA1\u7406",
+  "actions.manageDesc": "\u532F\u5165\u3001\u532F\u51FA\u6216\u91CD\u8A2D\u7DE8\u8F2F\u8207\u95B1\u8B80\u5169\u5957\u8A2D\u5B9A\u3002",
+  "updateNotes.name": "\u66F4\u65B0\u65E5\u8A8C",
+  "updateNotes.description": "\u6AA2\u8996\u76EE\u524D\u7248\u672C\u7684\u6539\u5584\u8207\u4FEE\u6B63\u3002",
+  "updateNotes.open": "\u6AA2\u8996\u65E5\u8A8C",
   "actions.export": "\u532F\u51FA\u8A2D\u5B9A",
   "actions.exportDesc": "\u5C07\u76EE\u524D\u7DE8\u8F2F\u8207\u95B1\u8B80\u5169\u5957\u8A2D\u5B9A\u532F\u51FA\u70BA JSON \u6A94\u6848\u3002",
   "actions.import": "\u532F\u5165\u8A2D\u5B9A",
   "actions.importDesc": "\u5F9E JSON \u6A94\u6848\u532F\u5165\u8A2D\u5B9A\uFF0C\u6210\u529F\u5F8C\u7ACB\u5373\u53D6\u4EE3\u76EE\u524D\u8A2D\u5B9A\u3002",
-  "actions.resetAll": "\u5168\u90E8\u91CD\u8A2D",
+  "actions.resetAll": "\u91CD\u8A2D\u8A2D\u5B9A",
   "actions.resetAllDesc": "\u9084\u539F\u7DE8\u8F2F\u8207\u95B1\u8B80\u5169\u5957\u8A2D\u5B9A\u53CA\u6240\u6709\u6A21\u7D44\u958B\u95DC\u7684\u9810\u8A2D\u503C\u3002",
   "actions.cancel": "\u53D6\u6D88",
   "resetAll.title": "\u91CD\u8A2D\u6240\u6709\u8A2D\u5B9A\uFF1F",
@@ -820,8 +874,14 @@ var translations2 = {
   "mermaid.portraitRatioDesc": "SVG \u539F\u59CB\u5BEC\u5EA6\u9664\u4EE5\u9AD8\u5EA6\uFF1B\u5C0F\u65BC\u6216\u7B49\u65BC\u6B64\u503C\u6642\u8996\u70BA\u76F4\u5411\u5716\u3002",
   "mermaid.landscapeWidth": "\u6A6B\u5411\u5716\u6700\u5C0F\u5BEC\u5EA6",
   "mermaid.landscapeWidthDesc": "\u4E00\u822C\u6216\u6A6B\u5411 Mermaid \u5716\u8868\u7684\u6700\u5C0F\u5BEC\u5EA6\uFF1B\u7A7A\u9593\u4E0D\u8DB3\u6642\u5141\u8A31\u6C34\u5E73\u6372\u52D5\u3002",
-  "table.group": "\u5167\u6587\u8868\u683C\u5916\u89C0\u8207\u9593\u8DDD",
-  "table.groupDesc": "\u5167\u6587\u8868\u683C\u7684\u5132\u5B58\u683C\u5167\u8DDD\u3001\u5167\u5916\u6846\u7DDA\u3001\u5713\u89D2\u8207\u4E0A\u4E0B\u9593\u8DDD\u3002",
+  "table.group": "\u5167\u6587\u8868\u683C\u6392\u7248\u8207\u5916\u89C0",
+  "table.groupDesc": "\u5167\u6587\u8868\u683C\u7684\u5B57\u578B\u5927\u5C0F\u3001\u6587\u5B57\u884C\u9AD8\u3001\u7A7A\u767D\u884C\u9AD8\u5EA6\u3001\u5132\u5B58\u683C\u5167\u8DDD\u3001\u6846\u7DDA\u3001\u5713\u89D2\u8207\u4E0A\u4E0B\u9593\u8DDD\u3002",
+  "table.fontSize": "\u5B57\u578B\u5927\u5C0F",
+  "table.fontSizeDesc": "\u8868\u982D\u8207\u5132\u5B58\u683C\u5167\u6587\u5B57\u7684\u5927\u5C0F\u3002",
+  "table.lineHeight": "\u6587\u5B57\u884C\u9AD8",
+  "table.lineHeightDesc": "\u8868\u982D\u8207\u5132\u5B58\u683C\u5167\u6587\u5B57\u7684\u884C\u9AD8\uFF0C\u4EE5\u5B57\u578B\u5927\u5C0F\u7684\u500D\u6578\u8A08\u7B97\u3002",
+  "table.emptyLine": "\u7A7A\u767D\u884C\u9AD8\u5EA6",
+  "table.emptyLineDesc": "\u5132\u5B58\u683C\u5167\u6BCF\u500B\u7A7A\u767D\u884C\u7684\u9AD8\u5EA6\uFF0C\u7528\u65BC\u8ABF\u6574\u6BB5\u843D\u4E4B\u9593\u7684\u7559\u767D\u3002",
   "table.cellPadding": "\u5132\u5B58\u683C\u5167\u8DDD",
   "table.cellPaddingDesc": "\u8868\u683C\u5132\u5B58\u683C\u5167\u8DDD\u3002",
   "table.innerBorder": "\u5167\u6846\u7DDA\u5BEC\u5EA6",
@@ -911,11 +971,16 @@ var translations3 = {
   "tabs.codeBlockDesc": "\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u306E\u884C\u306E\u9AD8\u3055\u3068\u30D3\u30E5\u30FC\u3054\u3068\u306E\u4E0A\u4E0B\u306E\u4F59\u767D\u3092\u8A2D\u5B9A\u3057\u307E\u3059\u3002",
   "tabs.headingGap": "\u898B\u51FA\u3057\u76F4\u5F8C\u306E\u9593\u9694",
   "tabs.headingGapDesc": "\u898B\u51FA\u3057\u306E\u76F4\u5F8C\u306B\u7D9A\u304F\u672C\u6587\u3001\u30EA\u30B9\u30C8\u3001\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u306A\u3069\u306E\u9593\u9694\u3092\u8ABF\u6574\u3057\u307E\u3059\u3002",
+  "actions.manage": "\u8A2D\u5B9A\u306E\u7BA1\u7406",
+  "actions.manageDesc": "\u7DE8\u96C6\u30FB\u95B2\u89A7\u306E\u4E21\u30D3\u30E5\u30FC\u306E\u8A2D\u5B9A\u3092\u30A4\u30F3\u30DD\u30FC\u30C8\u3001\u30A8\u30AF\u30B9\u30DD\u30FC\u30C8\u3001\u30EA\u30BB\u30C3\u30C8\u3057\u307E\u3059\u3002",
+  "updateNotes.name": "\u66F4\u65B0\u5C65\u6B74",
+  "updateNotes.description": "\u73FE\u5728\u306E\u30D0\u30FC\u30B8\u30E7\u30F3\u306E\u6539\u5584\u70B9\u3068\u4FEE\u6B63\u5185\u5BB9\u3092\u78BA\u8A8D\u3057\u307E\u3059\u3002",
+  "updateNotes.open": "\u66F4\u65B0\u5C65\u6B74\u3092\u898B\u308B",
   "actions.export": "\u8A2D\u5B9A\u3092\u30A8\u30AF\u30B9\u30DD\u30FC\u30C8",
   "actions.exportDesc": "\u7DE8\u96C6\u30FB\u95B2\u89A7\u306E\u4E21\u30D3\u30E5\u30FC\u306E\u73FE\u5728\u306E\u8A2D\u5B9A\u3092 JSON \u30D5\u30A1\u30A4\u30EB\u306B\u30A8\u30AF\u30B9\u30DD\u30FC\u30C8\u3057\u307E\u3059\u3002",
   "actions.import": "\u8A2D\u5B9A\u3092\u30A4\u30F3\u30DD\u30FC\u30C8",
   "actions.importDesc": "JSON \u30D5\u30A1\u30A4\u30EB\u304B\u3089\u8A2D\u5B9A\u3092\u8AAD\u307F\u8FBC\u307F\u3001\u6210\u529F\u3059\u308B\u3068\u73FE\u5728\u306E\u8A2D\u5B9A\u3092\u7F6E\u304D\u63DB\u3048\u307E\u3059\u3002",
-  "actions.resetAll": "\u3059\u3079\u3066\u30EA\u30BB\u30C3\u30C8",
+  "actions.resetAll": "\u8A2D\u5B9A\u3092\u30EA\u30BB\u30C3\u30C8",
   "actions.resetAllDesc": "\u4E21\u30D3\u30E5\u30FC\u306E\u8A2D\u5B9A\u3068\u3059\u3079\u3066\u306E\u30E2\u30B8\u30E5\u30FC\u30EB\u5207\u308A\u66FF\u3048\u3092\u521D\u671F\u5024\u306B\u623B\u3057\u307E\u3059\u3002",
   "actions.cancel": "\u30AD\u30E3\u30F3\u30BB\u30EB",
   "resetAll.title": "\u3059\u3079\u3066\u306E\u8A2D\u5B9A\u3092\u30EA\u30BB\u30C3\u30C8\u3057\u307E\u3059\u304B\uFF1F",
@@ -1064,8 +1129,14 @@ var translations3 = {
   "mermaid.portraitRatioDesc": "SVG \u306E\u5143\u306E\u5E45\u3092\u9AD8\u3055\u3067\u5272\u3063\u305F\u5024\u304C\u3001\u3053\u306E\u5024\u4EE5\u4E0B\u306E\u5834\u5408\u306B\u7E26\u9577\u3068\u5224\u5B9A\u3057\u307E\u3059\u3002",
   "mermaid.landscapeWidth": "\u6A2A\u9577\u306E\u56F3\u306E\u6700\u5C0F\u5E45",
   "mermaid.landscapeWidthDesc": "\u901A\u5E38\u30FB\u6A2A\u9577\u306E Mermaid \u56F3\u306E\u6700\u5C0F\u5E45\u3002\u8868\u793A\u9818\u57DF\u304C\u8DB3\u308A\u306A\u3044\u5834\u5408\u306F\u6A2A\u30B9\u30AF\u30ED\u30FC\u30EB\u3067\u304D\u307E\u3059\u3002",
-  "table.group": "\u672C\u6587\u306E\u8868\u306E\u5916\u89B3\u3068\u9593\u9694",
-  "table.groupDesc": "\u672C\u6587\u306E\u8868\u306E\u30BB\u30EB\u5185\u4F59\u767D\u3001\u5185\u5074\u30FB\u5916\u5074\u306E\u67A0\u7DDA\u3001\u89D2\u306E\u4E38\u307F\u3001\u4E0A\u4E0B\u306E\u9593\u9694\u3002",
+  "table.group": "\u672C\u6587\u306E\u8868\u306E\u66F8\u5F0F\u3068\u5916\u89B3",
+  "table.groupDesc": "\u672C\u6587\u306E\u8868\u306E\u6587\u5B57\u30B5\u30A4\u30BA\u3001\u6587\u5B57\u306E\u884C\u306E\u9AD8\u3055\u3001\u7A7A\u884C\u306E\u9AD8\u3055\u3001\u30BB\u30EB\u5185\u4F59\u767D\u3001\u67A0\u7DDA\u3001\u89D2\u306E\u4E38\u307F\u3001\u4E0A\u4E0B\u306E\u9593\u9694\u3002",
+  "table.fontSize": "\u6587\u5B57\u30B5\u30A4\u30BA",
+  "table.fontSizeDesc": "\u898B\u51FA\u3057\u30BB\u30EB\u3068\u672C\u6587\u30BB\u30EB\u5185\u306E\u6587\u5B57\u306E\u5927\u304D\u3055\u3002",
+  "table.lineHeight": "\u6587\u5B57\u306E\u884C\u306E\u9AD8\u3055",
+  "table.lineHeightDesc": "\u898B\u51FA\u3057\u30BB\u30EB\u3068\u672C\u6587\u30BB\u30EB\u5185\u306E\u884C\u306E\u9AD8\u3055\u3002\u30D5\u30A9\u30F3\u30C8\u30B5\u30A4\u30BA\u306B\u5BFE\u3059\u308B\u500D\u7387\u3067\u6307\u5B9A\u3057\u307E\u3059\u3002",
+  "table.emptyLine": "\u7A7A\u884C\u306E\u9AD8\u3055",
+  "table.emptyLineDesc": "\u30BB\u30EB\u5185\u306E\u5404\u7A7A\u884C\u306E\u9AD8\u3055\u3002\u6BB5\u843D\u9593\u306E\u4F59\u767D\u3092\u8ABF\u6574\u3057\u307E\u3059\u3002",
   "table.cellPadding": "\u30BB\u30EB\u5185\u306E\u4F59\u767D",
   "table.cellPaddingDesc": "\u8868\u306E\u30BB\u30EB\u5185\u306E\u4F59\u767D\u3002",
   "table.innerBorder": "\u5185\u5074\u306E\u67A0\u7DDA\u306E\u5E45",
@@ -1199,6 +1270,9 @@ var MODULE_KEYS = [
 ];
 var HEADING_LEVELS = ["h1", "h2", "h3", "h4", "h5", "h6"];
 var EDIT_TABLE = {
+  fontSizePx: 16,
+  lineHeight: 1.3,
+  emptyLineHeightEm: 0.45,
   cellPaddingPx: 0.6,
   innerBorderPx: 1,
   outerBorderPx: 2,
@@ -1207,6 +1281,9 @@ var EDIT_TABLE = {
   spacingBottomPx: 6
 };
 var READ_TABLE = {
+  fontSizePx: 16,
+  lineHeight: 1.3,
+  emptyLineHeightEm: 0.45,
   cellPaddingPx: 6,
   innerBorderPx: 1,
   outerBorderPx: 2,
@@ -1908,6 +1985,9 @@ var SettingsCatalog = class {
   }
   renderTableFields(container, prefix, label, description) {
     const card = this.addGroup(container, label, description);
+    this.addNumber(card, [...prefix, "fontSizePx"], this.t("table.fontSize"), this.t("table.fontSizeDesc"), { min: 1, max: 128, step: 0.5 });
+    this.addNumber(card, [...prefix, "lineHeight"], this.t("table.lineHeight"), this.t("table.lineHeightDesc"));
+    this.addNumber(card, [...prefix, "emptyLineHeightEm"], this.t("table.emptyLine"), this.t("table.emptyLineDesc"));
     this.addNumber(card, [...prefix, "cellPaddingPx"], this.t("table.cellPadding"), this.t("table.cellPaddingDesc"));
     this.addNumber(card, [...prefix, "innerBorderPx"], this.t("table.innerBorder"), this.t("table.innerBorderDesc"));
     this.addNumber(card, [...prefix, "outerBorderPx"], this.t("table.outerBorder"), this.t("table.outerBorderDesc"));
@@ -2066,17 +2146,21 @@ var RefinedLayoutSettingTab = class extends import_obsidian2.PluginSettingTab {
           { name: t("language.name"), desc: t("language.description"), render: (setting) => {
             this.renderLanguage(setting);
           } },
-          ...[
-            ["actions.export", "actions.exportDesc", () => this.plugin.exportSettings()],
-            ["actions.import", "actions.importDesc", (setting) => this.pickSettingsFile(setting.controlEl)],
-            ["actions.resetAll", "actions.resetAllDesc", () => this.confirmResetAll()]
-          ].map(([name, desc, onClick]) => ({
-            name: t(name),
-            desc: t(desc),
+          {
+            name: t("actions.manage"),
+            desc: t("actions.manageDesc"),
+            aliases: [t("actions.import"), t("actions.export"), t("actions.resetAll")],
             render: (setting) => {
-              setting.addButton((button) => button.setButtonText(t(name)).onClick(() => onClick(setting)));
+              setting.setClass("rl-settings-config-actions").addButton((button) => button.setButtonText(t("actions.import")).setTooltip(t("actions.importDesc")).onClick(() => this.pickSettingsFile(setting.controlEl))).addButton((button) => button.setButtonText(t("actions.export")).setTooltip(t("actions.exportDesc")).onClick(() => this.plugin.exportSettings())).addButton((button) => setDestructiveButton(button).setButtonText(t("actions.resetAll")).setTooltip(t("actions.resetAllDesc")).onClick(() => this.confirmResetAll()));
             }
-          }))
+          },
+          {
+            name: t("updateNotes.name"),
+            desc: t("updateNotes.description"),
+            render: (setting) => {
+              setting.addButton((button) => button.setButtonText(t("updateNotes.open")).onClick(() => this.plugin.showUpdateNotes(true)));
+            }
+          }
         ]
       },
       {
@@ -2195,6 +2279,9 @@ var RefinedLayoutSettingTab = class extends import_obsidian2.PluginSettingTab {
     }
   }
 };
+function setDestructiveButton(button) {
+  return (0, import_obsidian2.requireApiVersion)("1.13.0") ? button.setDestructive().setCta() : button.setWarning();
+}
 var ResetAllModal = class extends import_obsidian2.Modal {
   constructor(app, t, onConfirm) {
     super(app);
@@ -2204,7 +2291,7 @@ var ResetAllModal = class extends import_obsidian2.Modal {
   onOpen() {
     this.setTitle(this.t("resetAll.title"));
     this.setContent(this.t("resetAll.description"));
-    new import_obsidian2.Setting(this.contentEl).addButton((button) => button.setButtonText(this.t("actions.cancel")).onClick(() => this.close())).addButton((button) => button.setButtonText(this.t("actions.resetAll")).setWarning().onClick(() => {
+    new import_obsidian2.Setting(this.contentEl).addButton((button) => button.setButtonText(this.t("actions.cancel")).onClick(() => this.close())).addButton((button) => setDestructiveButton(button).setButtonText(this.t("actions.resetAll")).onClick(() => {
       this.close();
       this.onConfirm();
     }));
@@ -2218,23 +2305,51 @@ var ResetAllModal = class extends import_obsidian2.Modal {
 var import_obsidian3 = require("obsidian");
 
 // RELEASE_NOTES.md
-var RELEASE_NOTES_default = "# Refined Layout \u2014 Release Notes\n\n**English** | [\u7B80\u4F53\u4E2D\u6587](RELEASE_NOTES_zh-CN.md) | [\u7E41\u9AD4\u4E2D\u6587](RELEASE_NOTES_zh-TW.md) | [\u65E5\u672C\u8A9E](RELEASE_NOTES_ja.md)\n\n## 1.0.2\n\n#### Fixed list line height in Reading view\n\nRegular lists, nested lists, and task lists now follow the body line height setting. Lists inside callouts and blockquotes follow their respective inner body line height settings.\n\n#### Improved the update notes dialog\n\nRedesigned the update notes dialog and improved its text layout.\n\n## 1.0.1\n\n#### Fixed an issue where the cursor skipped some blank lines when moving up or down with the arrow keys.\n\nIn Live Preview Mode, Up/Down now stop at blank lines compressed by the plugin. Shift+Up/Down also extends selections across these lines.\n\n#### Other fixes\n\n- Fixed an issue that prevented settings from being imported.\n- Fixed missing confirmation and completion messages when resetting all settings.\n\n## 1.0.0\n\n#### Fixed an issue where the cursor skipped some blank lines when moving up or down with the arrow keys.\n\nIn Live Preview Mode, Up/Down now stop at blank lines compressed by the plugin. Shift+Up/Down also extends selections across these lines.\n\n## 0.2.0\n\n- **Native settings search:** On Obsidian 1.13 and later, search follows your selection of Live Preview Mode or Reading view and provides direct access to every heading level.\n- **Simpler settings navigation:** The home page brings together global controls, the view switcher, and category links. Each category opens its own detail page with native controls.\n- **Compatibility improvements:** Configuration import and export use native element helpers, and Mermaid diagram detection works more reliably across separate windows.\n\nExisting settings and configuration files remain compatible. The minimum supported Obsidian version is 1.12.7.\n\n## 0.1.0\n\nInitial release.\n\n- **Independent view settings:** Customize Live Preview Mode and Reading view separately, with module switches and layout values for each view. Changes apply immediately and save automatically.\n- **Typography and layout controls:** Adjust line height, spacing, and appearance for body text, lists, headings, callouts, blockquotes, images, tables, and code blocks. Set the gap after headings according to the content that follows.\n- **Mermaid diagram layout:** Control diagram width and centering, with horizontal scrolling for wide diagrams.\n- **Configuration management:** Reset individual sections or all layout settings, and import or export complete configurations as JSON files.\n- **Multilingual settings:** Choose English, Simplified Chinese, Traditional Chinese, or Japanese, or follow Obsidian\u2019s language.\n";
+var RELEASE_NOTES_default = '# Refined Layout \u2014 Release Notes\n\n**English** | [\u7B80\u4F53\u4E2D\u6587](RELEASE_NOTES_zh-CN.md) | [\u7E41\u9AD4\u4E2D\u6587](RELEASE_NOTES_zh-TW.md) | [\u65E5\u672C\u8A9E](RELEASE_NOTES_ja.md)\n\n## 1.0.3\n\n#### Added table layout settings\n\nYou can now adjust line height and paragraph spacing inside tables.\n\n#### UI updates\n\n- Updated the layout of the "Manage settings" buttons to be more compact.\n- You can now view the changelog at any time.\n- Updated the update notes dialog and added a "View full changelog" link.\n\n\n## 1.0.2\n\n#### Fixed list line height in Reading view\n\nRegular lists, nested lists, and task lists now follow the body line height setting. Lists inside callouts and blockquotes follow their respective inner body line height settings.\n\n#### Improved the update notes dialog\n\nRedesigned the update notes dialog and improved its text layout.\n\n## 1.0.1\n\n#### Fixed an issue where the cursor skipped some blank lines when moving up or down with the arrow keys.\n\nIn Live Preview Mode, Up/Down now stop at blank lines compressed by the plugin. Shift+Up/Down also extends selections across these lines.\n\n#### Other fixes\n\n- Fixed an issue that prevented settings from being imported.\n- Fixed missing confirmation and completion messages when resetting all settings.\n\n## 1.0.0\n\n#### Fixed an issue where the cursor skipped some blank lines when moving up or down with the arrow keys.\n\nIn Live Preview Mode, Up/Down now stop at blank lines compressed by the plugin. Shift+Up/Down also extends selections across these lines.\n\n## 0.2.0\n\n- **Native settings search:** On Obsidian 1.13 and later, search follows your selection of Live Preview Mode or Reading view and provides direct access to every heading level.\n- **Simpler settings navigation:** The home page brings together global controls, the view switcher, and category links. Each category opens its own detail page with native controls.\n- **Compatibility improvements:** Configuration import and export use native element helpers, and Mermaid diagram detection works more reliably across separate windows.\n\nExisting settings and configuration files remain compatible. The minimum supported Obsidian version is 1.12.7.\n\n## 0.1.0\n\nInitial release.\n\n- **Independent view settings:** Customize Live Preview Mode and Reading view separately, with module switches and layout values for each view. Changes apply immediately and save automatically.\n- **Typography and layout controls:** Adjust line height, spacing, and appearance for body text, lists, headings, callouts, blockquotes, images, tables, and code blocks. Set the gap after headings according to the content that follows.\n- **Mermaid diagram layout:** Control diagram width and centering, with horizontal scrolling for wide diagrams.\n- **Configuration management:** Reset individual sections or all layout settings, and import or export complete configurations as JSON files.\n- **Multilingual settings:** Choose English, Simplified Chinese, Traditional Chinese, or Japanese, or follow Obsidian\u2019s language.\n';
 
 // RELEASE_NOTES_zh-CN.md
-var RELEASE_NOTES_zh_CN_default = "# Refined Layout \u66F4\u65B0\u65E5\u5FD7\n\n[English](RELEASE_NOTES.md) | **\u7B80\u4F53\u4E2D\u6587** | [\u7E41\u9AD4\u4E2D\u6587](RELEASE_NOTES_zh-TW.md) | [\u65E5\u672C\u8A9E](RELEASE_NOTES_ja.md)\n\n## 1.0.2\n\n#### \u4FEE\u590D\u9605\u8BFB\u6A21\u5F0F\u4E0B\u7684\u5217\u8868\u884C\u9AD8\n\n\u666E\u901A\u5217\u8868\u3001\u5D4C\u5957\u5217\u8868\u548C\u4EFB\u52A1\u5217\u8868\u73B0\u5728\u4F1A\u8DDF\u968F\u6B63\u6587\u884C\u9AD8\u8BBE\u7F6E\u3002Callout \u548C\u5F15\u7528\u5757\u5185\u7684\u5217\u8868\u5219\u8DDF\u968F\u5404\u81EA\u7684\u5185\u90E8\u6B63\u6587\u884C\u9AD8\u8BBE\u7F6E\u3002\n\n#### \u4F18\u5316\u66F4\u65B0\u8BF4\u660E\u5F39\u7A97\n\n\u91CD\u65B0\u8BBE\u8BA1\u4E86\u66F4\u65B0\u8BF4\u660E\u5F39\u7A97\uFF0C\u6539\u5584\u4E86\u5F39\u7A97\u5185\u7684\u6587\u5B57\u6392\u7248\u3002\n\n## 1.0.1\n\n#### \u4FEE\u590D\u4E86\u4F7F\u7528\u65B9\u5411\u952E\u4E0A\u4E0B\u5BFC\u822A\u8F93\u5165\u5149\u6807\u65F6\uFF0C\u5149\u6807\u4F1A\u8DF3\u8FC7\u90E8\u5206\u7A7A\u884C\u7684\u95EE\u9898\u3002\n\n\u7F16\u8F91\u6A21\u5F0F\u4E2D\u7684\u4E0A\u3001\u4E0B\u65B9\u5411\u952E\u73B0\u5728\u53EF\u4EE5\u9010\u884C\u505C\u7559\u5728\u88AB\u63D2\u4EF6\u538B\u7F29\u7684\u7A7A\u884C\u4E0A\uFF0C\u4E5F\u652F\u6301\u4F7F\u7528 Shift + \u2191/\u2193 \u8DE8\u8D8A\u8FD9\u4E9B\u7A7A\u884C\u6269\u5C55\u9009\u533A\u3002\n\n#### \u5176\u4ED6\u4FEE\u590D\n\n- \u4FEE\u590D\u4E86\u5BFC\u5165\u914D\u7F6E\u65E0\u6CD5\u4F7F\u7528\u7684\u95EE\u9898\u3002\n- \u4FEE\u590D\u4E86\u91CD\u7F6E\u914D\u7F6E\u6CA1\u6709\u4EFB\u4F55\u63D0\u793A\u7684\u95EE\u9898\u3002\n\n## 1.0.0\n\n#### \u4FEE\u590D\u4E86\u4F7F\u7528\u65B9\u5411\u952E\u4E0A\u4E0B\u5BFC\u822A\u8F93\u5165\u5149\u6807\u65F6\uFF0C\u5149\u6807\u4F1A\u8DF3\u8FC7\u90E8\u5206\u7A7A\u884C\u7684\u95EE\u9898\u3002\n\u7F16\u8F91\u6A21\u5F0F\u4E2D\u7684\u4E0A\u3001\u4E0B\u65B9\u5411\u952E\u73B0\u5728\u53EF\u4EE5\u9010\u884C\u505C\u7559\u5728\u88AB\u63D2\u4EF6\u538B\u7F29\u7684\u7A7A\u884C\u4E0A\uFF0C\u4E5F\u652F\u6301\u4F7F\u7528 Shift + \u2191/\u2193 \u8DE8\u8D8A\u8FD9\u4E9B\u7A7A\u884C\u6269\u5C55\u9009\u533A\u3002\n\n## 0.2.0\n\n- **\u539F\u751F\u8BBE\u7F6E\u641C\u7D22\uFF1A** Obsidian 1.13 \u53CA\u4EE5\u4E0A\u7248\u672C\u652F\u6301\u641C\u7D22\u5F53\u524D\u7F16\u8F91\u6216\u9605\u8BFB\u6A21\u5F0F\u7684\u8BBE\u7F6E\uFF0C\u5E76\u53EF\u76F4\u63A5\u5B9A\u4F4D\u5404\u7EA7\u6807\u9898\u9009\u9879\u3002\n- **\u66F4\u7B80\u6D01\u7684\u8BBE\u7F6E\u5BFC\u822A\uFF1A** \u9996\u9875\u96C6\u4E2D\u63D0\u4F9B\u5168\u5C40\u914D\u7F6E\u3001\u6A21\u5F0F\u5207\u6362\u548C\u5206\u7C7B\u5165\u53E3\uFF0C\u5404\u5206\u7C7B\u5728\u72EC\u7ACB\u7684\u8BE6\u60C5\u9875\u4E2D\u4F7F\u7528\u539F\u751F\u63A7\u4EF6\u5C55\u793A\u3002\n- **\u517C\u5BB9\u6027\u6539\u8FDB\uFF1A** \u914D\u7F6E\u5BFC\u5165\u3001\u5BFC\u51FA\u91C7\u7528\u539F\u751F\u5143\u7D20\u521B\u5EFA\u65B9\u6CD5\uFF0C\u6539\u5584\u72EC\u7ACB\u7A97\u53E3\u4E2D\u7684 Mermaid \u56FE\u8868\u8BC6\u522B\u3002\n\n\u5DF2\u6709\u8BBE\u7F6E\u548C\u914D\u7F6E\u6587\u4EF6\u4FDD\u6301\u517C\u5BB9\uFF0C\u6700\u4F4E\u652F\u6301\u7684 Obsidian \u7248\u672C\u4E3A 1.12.7\u3002\n\n## 0.1.0\n\n\u9996\u6B21\u53D1\u5E03\u3002\n\n- **\u4E24\u79CD\u6A21\u5F0F\u72EC\u7ACB\u914D\u7F6E\uFF1A** \u5B9E\u65F6\u9884\u89C8\u4E0E\u9605\u8BFB\u6A21\u5F0F\u5206\u522B\u62E5\u6709\u6A21\u5757\u5F00\u5173\u548C\u6392\u7248\u53C2\u6570\uFF0C\u4FEE\u6539\u5373\u65F6\u751F\u6548\u5E76\u81EA\u52A8\u4FDD\u5B58\u3002\n- **\u6B63\u6587\u4E0E\u5185\u5BB9\u6392\u7248\uFF1A** \u8C03\u6574\u6B63\u6587\u3001\u5217\u8868\u3001\u6807\u9898\u3001Callout\uFF08\u63D0\u793A\u5757\uFF09\u3001\u5F15\u7528\u5757\u3001\u56FE\u7247\u3001\u8868\u683C\u548C\u4EE3\u7801\u5757\u7684\u884C\u9AD8\u3001\u95F4\u8DDD\u4E0E\u5916\u89C2\uFF0C\u5E76\u6309\u6807\u9898\u540E\u7D27\u63A5\u7684\u5185\u5BB9\u7C7B\u578B\u8BBE\u7F6E\u8854\u63A5\u95F4\u8DDD\u3002\n- **Mermaid \u56FE\u8868\u5E03\u5C40\uFF1A** \u63A7\u5236\u56FE\u8868\u5BBD\u5EA6\u4E0E\u5C45\u4E2D\uFF0C\u4E3A\u8F83\u5BBD\u7684\u56FE\u8868\u63D0\u4F9B\u6A2A\u5411\u6EDA\u52A8\u3002\n- **\u914D\u7F6E\u7BA1\u7406\uFF1A** \u652F\u6301\u6309\u533A\u57DF\u6216\u5168\u90E8\u6062\u590D\u9ED8\u8BA4\u6392\u7248\uFF0C\u4EE5\u53CA\u901A\u8FC7 JSON \u6587\u4EF6\u5BFC\u5165\u3001\u5BFC\u51FA\u5B8C\u6574\u914D\u7F6E\u3002\n- **\u591A\u8BED\u8A00\u8BBE\u7F6E\uFF1A** \u652F\u6301\u7B80\u4F53\u4E2D\u6587\u3001\u7E41\u4F53\u4E2D\u6587\u3001\u82F1\u6587\u3001\u65E5\u6587\uFF0C\u4E5F\u53EF\u8DDF\u968F Obsidian \u7684\u8BED\u8A00\u3002\n";
+var RELEASE_NOTES_zh_CN_default = "# Refined Layout \u66F4\u65B0\u65E5\u5FD7\n\n[English](RELEASE_NOTES.md) | **\u7B80\u4F53\u4E2D\u6587** | [\u7E41\u9AD4\u4E2D\u6587](RELEASE_NOTES_zh-TW.md) | [\u65E5\u672C\u8A9E](RELEASE_NOTES_ja.md)\n\n## 1.0.3\n\n#### \u589E\u52A0\u8868\u683C\u5E03\u5C40\u8BBE\u7F6E\n\n\u73B0\u5728\u8868\u683C\u5185\u53EF\u4EE5\u8C03\u6574\u884C\u9AD8\u548C\u6BB5\u95F4\u8DDD\u3002\n\n#### UI \u66F4\u65B0\n\n- \u66F4\u6539\u4E86\u914D\u7F6E\u7BA1\u7406\u6309\u94AE\u7684\u5E03\u5C40\uFF0C\u73B0\u5728\u66F4\u4E3A\u7D27\u51D1\u3002\n- \u73B0\u5728\u53EF\u4EE5\u968F\u65F6\u67E5\u770B\u66F4\u65B0\u65E5\u5FD7\u3002\n- \u66F4\u6539\u4E86\u66F4\u65B0\u8BF4\u660E\u5F39\u7A97\uFF0C\u589E\u52A0\u4E86\u300C\u67E5\u770B\u5B8C\u6574\u65E5\u5FD7\u300D\u7684\u94FE\u63A5\u3002\n\n\n## 1.0.2\n\n#### \u4FEE\u590D\u9605\u8BFB\u6A21\u5F0F\u4E0B\u7684\u5217\u8868\u884C\u9AD8\n\n\u666E\u901A\u5217\u8868\u3001\u5D4C\u5957\u5217\u8868\u548C\u4EFB\u52A1\u5217\u8868\u73B0\u5728\u4F1A\u8DDF\u968F\u6B63\u6587\u884C\u9AD8\u8BBE\u7F6E\u3002Callout \u548C\u5F15\u7528\u5757\u5185\u7684\u5217\u8868\u5219\u8DDF\u968F\u5404\u81EA\u7684\u5185\u90E8\u6B63\u6587\u884C\u9AD8\u8BBE\u7F6E\u3002\n\n#### \u4F18\u5316\u66F4\u65B0\u8BF4\u660E\u5F39\u7A97\n\n\u91CD\u65B0\u8BBE\u8BA1\u4E86\u66F4\u65B0\u8BF4\u660E\u5F39\u7A97\uFF0C\u6539\u5584\u4E86\u5F39\u7A97\u5185\u7684\u6587\u5B57\u6392\u7248\u3002\n\n## 1.0.1\n\n#### \u4FEE\u590D\u4E86\u4F7F\u7528\u65B9\u5411\u952E\u4E0A\u4E0B\u5BFC\u822A\u8F93\u5165\u5149\u6807\u65F6\uFF0C\u5149\u6807\u4F1A\u8DF3\u8FC7\u90E8\u5206\u7A7A\u884C\u7684\u95EE\u9898\u3002\n\n\u7F16\u8F91\u6A21\u5F0F\u4E2D\u7684\u4E0A\u3001\u4E0B\u65B9\u5411\u952E\u73B0\u5728\u53EF\u4EE5\u9010\u884C\u505C\u7559\u5728\u88AB\u63D2\u4EF6\u538B\u7F29\u7684\u7A7A\u884C\u4E0A\uFF0C\u4E5F\u652F\u6301\u4F7F\u7528 Shift + \u2191/\u2193 \u8DE8\u8D8A\u8FD9\u4E9B\u7A7A\u884C\u6269\u5C55\u9009\u533A\u3002\n\n#### \u5176\u4ED6\u4FEE\u590D\n\n- \u4FEE\u590D\u4E86\u5BFC\u5165\u914D\u7F6E\u65E0\u6CD5\u4F7F\u7528\u7684\u95EE\u9898\u3002\n- \u4FEE\u590D\u4E86\u91CD\u7F6E\u914D\u7F6E\u6CA1\u6709\u4EFB\u4F55\u63D0\u793A\u7684\u95EE\u9898\u3002\n\n## 1.0.0\n\n#### \u4FEE\u590D\u4E86\u4F7F\u7528\u65B9\u5411\u952E\u4E0A\u4E0B\u5BFC\u822A\u8F93\u5165\u5149\u6807\u65F6\uFF0C\u5149\u6807\u4F1A\u8DF3\u8FC7\u90E8\u5206\u7A7A\u884C\u7684\u95EE\u9898\u3002\n\u7F16\u8F91\u6A21\u5F0F\u4E2D\u7684\u4E0A\u3001\u4E0B\u65B9\u5411\u952E\u73B0\u5728\u53EF\u4EE5\u9010\u884C\u505C\u7559\u5728\u88AB\u63D2\u4EF6\u538B\u7F29\u7684\u7A7A\u884C\u4E0A\uFF0C\u4E5F\u652F\u6301\u4F7F\u7528 Shift + \u2191/\u2193 \u8DE8\u8D8A\u8FD9\u4E9B\u7A7A\u884C\u6269\u5C55\u9009\u533A\u3002\n\n## 0.2.0\n\n- **\u539F\u751F\u8BBE\u7F6E\u641C\u7D22\uFF1A** Obsidian 1.13 \u53CA\u4EE5\u4E0A\u7248\u672C\u652F\u6301\u641C\u7D22\u5F53\u524D\u7F16\u8F91\u6216\u9605\u8BFB\u6A21\u5F0F\u7684\u8BBE\u7F6E\uFF0C\u5E76\u53EF\u76F4\u63A5\u5B9A\u4F4D\u5404\u7EA7\u6807\u9898\u9009\u9879\u3002\n- **\u66F4\u7B80\u6D01\u7684\u8BBE\u7F6E\u5BFC\u822A\uFF1A** \u9996\u9875\u96C6\u4E2D\u63D0\u4F9B\u5168\u5C40\u914D\u7F6E\u3001\u6A21\u5F0F\u5207\u6362\u548C\u5206\u7C7B\u5165\u53E3\uFF0C\u5404\u5206\u7C7B\u5728\u72EC\u7ACB\u7684\u8BE6\u60C5\u9875\u4E2D\u4F7F\u7528\u539F\u751F\u63A7\u4EF6\u5C55\u793A\u3002\n- **\u517C\u5BB9\u6027\u6539\u8FDB\uFF1A** \u914D\u7F6E\u5BFC\u5165\u3001\u5BFC\u51FA\u91C7\u7528\u539F\u751F\u5143\u7D20\u521B\u5EFA\u65B9\u6CD5\uFF0C\u6539\u5584\u72EC\u7ACB\u7A97\u53E3\u4E2D\u7684 Mermaid \u56FE\u8868\u8BC6\u522B\u3002\n\n\u5DF2\u6709\u8BBE\u7F6E\u548C\u914D\u7F6E\u6587\u4EF6\u4FDD\u6301\u517C\u5BB9\uFF0C\u6700\u4F4E\u652F\u6301\u7684 Obsidian \u7248\u672C\u4E3A 1.12.7\u3002\n\n## 0.1.0\n\n\u9996\u6B21\u53D1\u5E03\u3002\n\n- **\u4E24\u79CD\u6A21\u5F0F\u72EC\u7ACB\u914D\u7F6E\uFF1A** \u5B9E\u65F6\u9884\u89C8\u4E0E\u9605\u8BFB\u6A21\u5F0F\u5206\u522B\u62E5\u6709\u6A21\u5757\u5F00\u5173\u548C\u6392\u7248\u53C2\u6570\uFF0C\u4FEE\u6539\u5373\u65F6\u751F\u6548\u5E76\u81EA\u52A8\u4FDD\u5B58\u3002\n- **\u6B63\u6587\u4E0E\u5185\u5BB9\u6392\u7248\uFF1A** \u8C03\u6574\u6B63\u6587\u3001\u5217\u8868\u3001\u6807\u9898\u3001Callout\uFF08\u63D0\u793A\u5757\uFF09\u3001\u5F15\u7528\u5757\u3001\u56FE\u7247\u3001\u8868\u683C\u548C\u4EE3\u7801\u5757\u7684\u884C\u9AD8\u3001\u95F4\u8DDD\u4E0E\u5916\u89C2\uFF0C\u5E76\u6309\u6807\u9898\u540E\u7D27\u63A5\u7684\u5185\u5BB9\u7C7B\u578B\u8BBE\u7F6E\u8854\u63A5\u95F4\u8DDD\u3002\n- **Mermaid \u56FE\u8868\u5E03\u5C40\uFF1A** \u63A7\u5236\u56FE\u8868\u5BBD\u5EA6\u4E0E\u5C45\u4E2D\uFF0C\u4E3A\u8F83\u5BBD\u7684\u56FE\u8868\u63D0\u4F9B\u6A2A\u5411\u6EDA\u52A8\u3002\n- **\u914D\u7F6E\u7BA1\u7406\uFF1A** \u652F\u6301\u6309\u533A\u57DF\u6216\u5168\u90E8\u6062\u590D\u9ED8\u8BA4\u6392\u7248\uFF0C\u4EE5\u53CA\u901A\u8FC7 JSON \u6587\u4EF6\u5BFC\u5165\u3001\u5BFC\u51FA\u5B8C\u6574\u914D\u7F6E\u3002\n- **\u591A\u8BED\u8A00\u8BBE\u7F6E\uFF1A** \u652F\u6301\u7B80\u4F53\u4E2D\u6587\u3001\u7E41\u4F53\u4E2D\u6587\u3001\u82F1\u6587\u3001\u65E5\u6587\uFF0C\u4E5F\u53EF\u8DDF\u968F Obsidian \u7684\u8BED\u8A00\u3002\n";
 
 // RELEASE_NOTES_zh-TW.md
-var RELEASE_NOTES_zh_TW_default = "# Refined Layout \u66F4\u65B0\u65E5\u8A8C\n\n[English](RELEASE_NOTES.md) | [\u7B80\u4F53\u4E2D\u6587](RELEASE_NOTES_zh-CN.md) | **\u7E41\u9AD4\u4E2D\u6587** | [\u65E5\u672C\u8A9E](RELEASE_NOTES_ja.md)\n\n## 1.0.2\n\n#### \u4FEE\u6B63\u95B1\u8B80\u6A21\u5F0F\u4E0B\u7684\u6E05\u55AE\u884C\u9AD8\n\n\u4E00\u822C\u6E05\u55AE\u3001\u5DE2\u72C0\u6E05\u55AE\u8207\u4EFB\u52D9\u6E05\u55AE\u73FE\u5728\u6703\u8DDF\u96A8\u300C\u5167\u6587\u884C\u9AD8\u300D\u8A2D\u5B9A\u3002Callout \u8207\u5F15\u7528\u5340\u584A\u5167\u7684\u6E05\u55AE\u5247\u6703\u8DDF\u96A8\u5404\u81EA\u7684\u300C\u5167\u90E8\u5167\u6587\u884C\u9AD8\u300D\u8A2D\u5B9A\u3002\n\n#### \u6539\u5584\u66F4\u65B0\u8AAA\u660E\u5F48\u51FA\u8996\u7A97\n\n\u91CD\u65B0\u8A2D\u8A08\u66F4\u65B0\u8AAA\u660E\u5F48\u51FA\u8996\u7A97\uFF0C\u6539\u5584\u8996\u7A97\u5167\u7684\u6587\u5B57\u6392\u7248\u3002\n\n## 1.0.1\n\n#### \u4FEE\u6B63\u4F7F\u7528\u65B9\u5411\u9375\u4E0A\u4E0B\u79FB\u52D5\u8F38\u5165\u6E38\u6A19\u6642\uFF0C\u6E38\u6A19\u6703\u8DF3\u904E\u90E8\u5206\u7A7A\u767D\u884C\u7684\u554F\u984C\u3002\n\n\u7DE8\u8F2F\u6A21\u5F0F\u4E2D\u7684\u4E0A\u3001\u4E0B\u65B9\u5411\u9375\u73FE\u5728\u53EF\u4EE5\u9010\u884C\u505C\u7559\u5728\u88AB\u5916\u639B\u7A0B\u5F0F\u58D3\u7E2E\u7684\u7A7A\u767D\u884C\u4E0A\uFF0C\u4E5F\u652F\u63F4\u4F7F\u7528 Shift + \u2191/\u2193 \u8DE8\u8D8A\u9019\u4E9B\u7A7A\u767D\u884C\u64F4\u5927\u9078\u53D6\u7BC4\u570D\u3002\n\n#### \u5176\u4ED6\u4FEE\u6B63\n\n- \u4FEE\u6B63\u7121\u6CD5\u532F\u5165\u8A2D\u5B9A\u7684\u554F\u984C\u3002\n- \u4FEE\u6B63\u91CD\u8A2D\u8A2D\u5B9A\u6642\u6C92\u6709\u986F\u793A\u4EFB\u4F55\u63D0\u793A\u7684\u554F\u984C\u3002\n\n## 1.0.0\n\n#### \u4FEE\u6B63\u4F7F\u7528\u65B9\u5411\u9375\u4E0A\u4E0B\u79FB\u52D5\u8F38\u5165\u6E38\u6A19\u6642\uFF0C\u6E38\u6A19\u6703\u8DF3\u904E\u90E8\u5206\u7A7A\u767D\u884C\u7684\u554F\u984C\u3002\n\n\u7DE8\u8F2F\u6A21\u5F0F\u4E2D\u7684\u4E0A\u3001\u4E0B\u65B9\u5411\u9375\u73FE\u5728\u53EF\u4EE5\u9010\u884C\u505C\u7559\u5728\u88AB\u5916\u639B\u7A0B\u5F0F\u58D3\u7E2E\u7684\u7A7A\u767D\u884C\u4E0A\uFF0C\u4E5F\u652F\u63F4\u4F7F\u7528 Shift + \u2191/\u2193 \u8DE8\u8D8A\u9019\u4E9B\u7A7A\u767D\u884C\u64F4\u5927\u9078\u53D6\u7BC4\u570D\u3002\n\n## 0.2.0\n\n- **\u539F\u751F\u8A2D\u5B9A\u641C\u5C0B\uFF1A** Obsidian 1.13 \u53CA\u4EE5\u4E0A\u7248\u672C\u652F\u63F4\u641C\u5C0B\u76EE\u524D\u7DE8\u8F2F\u6216\u95B1\u8B80\u6A21\u5F0F\u7684\u8A2D\u5B9A\uFF0C\u4E26\u53EF\u76F4\u63A5\u5B9A\u4F4D\u5404\u5C64\u7D1A\u6A19\u984C\u9078\u9805\u3002\n- **\u66F4\u7C21\u6F54\u7684\u8A2D\u5B9A\u5C0E\u89BD\uFF1A** \u9996\u9801\u96C6\u4E2D\u63D0\u4F9B\u5168\u57DF\u8A2D\u5B9A\u3001\u6A21\u5F0F\u5207\u63DB\u8207\u5206\u985E\u5165\u53E3\uFF0C\u5404\u5206\u985E\u5728\u7368\u7ACB\u7684\u8A73\u7D30\u9801\u9762\u4E2D\u4F7F\u7528\u539F\u751F\u63A7\u5236\u9805\u5448\u73FE\u3002\n- **\u76F8\u5BB9\u6027\u6539\u9032\uFF1A** \u8A2D\u5B9A\u532F\u5165\u3001\u532F\u51FA\u63A1\u7528\u539F\u751F\u5143\u7D20\u5EFA\u7ACB\u65B9\u6CD5\uFF0C\u6539\u5584\u7368\u7ACB\u8996\u7A97\u4E2D\u7684 Mermaid \u5716\u8868\u8B58\u5225\u3002\n\n\u65E2\u6709\u8A2D\u5B9A\u8207\u8A2D\u5B9A\u6A94\u4FDD\u6301\u76F8\u5BB9\uFF0C\u6700\u4F4E\u652F\u63F4\u7684 Obsidian \u7248\u672C\u70BA 1.12.7\u3002\n\n## 0.1.0\n\n\u9996\u6B21\u767C\u5E03\u3002\n\n- **\u5169\u7A2E\u6A21\u5F0F\u7368\u7ACB\u8A2D\u5B9A\uFF1A** \u5373\u6642\u9810\u89BD\u8207\u95B1\u8B80\u6A21\u5F0F\u5404\u81EA\u64C1\u6709\u6A21\u7D44\u958B\u95DC\u8207\u6392\u7248\u53C3\u6578\uFF0C\u4FEE\u6539\u5F8C\u7ACB\u5373\u751F\u6548\u4E26\u81EA\u52D5\u5132\u5B58\u3002\n- **\u5167\u6587\u8207\u5167\u5BB9\u6392\u7248\uFF1A** \u8ABF\u6574\u5167\u6587\u3001\u6E05\u55AE\u3001\u6A19\u984C\u3001Callout\uFF08\u63D0\u793A\u5340\u584A\uFF09\u3001\u5F15\u7528\u5340\u584A\u3001\u5716\u7247\u3001\u8868\u683C\u8207\u7A0B\u5F0F\u78BC\u5340\u584A\u7684\u884C\u9AD8\u3001\u9593\u8DDD\u8207\u5916\u89C0\uFF0C\u4E26\u4F9D\u6A19\u984C\u5F8C\u7DCA\u63A5\u7684\u5167\u5BB9\u985E\u578B\u8A2D\u5B9A\u929C\u63A5\u9593\u8DDD\u3002\n- **Mermaid \u5716\u8868\u7248\u9762\u914D\u7F6E\uFF1A** \u63A7\u5236\u5716\u8868\u5BEC\u5EA6\u8207\u7F6E\u4E2D\u986F\u793A\uFF0C\u70BA\u8F03\u5BEC\u7684\u5716\u8868\u63D0\u4F9B\u6C34\u5E73\u6372\u52D5\u3002\n- **\u8A2D\u5B9A\u7BA1\u7406\uFF1A** \u652F\u63F4\u6309\u5206\u5340\u6216\u5168\u90E8\u9084\u539F\u9810\u8A2D\u6392\u7248\uFF0C\u4EE5\u53CA\u900F\u904E JSON \u6A94\u6848\u532F\u5165\u3001\u532F\u51FA\u5B8C\u6574\u8A2D\u5B9A\u3002\n- **\u591A\u8A9E\u8A00\u8A2D\u5B9A\uFF1A** \u652F\u63F4\u7E41\u9AD4\u4E2D\u6587\u3001\u7C21\u9AD4\u4E2D\u6587\u3001\u82F1\u6587\u3001\u65E5\u6587\uFF0C\u4E5F\u53EF\u8DDF\u96A8 Obsidian \u7684\u4ECB\u9762\u8A9E\u8A00\u3002\n";
+var RELEASE_NOTES_zh_TW_default = "# Refined Layout \u66F4\u65B0\u65E5\u8A8C\n\n[English](RELEASE_NOTES.md) | [\u7B80\u4F53\u4E2D\u6587](RELEASE_NOTES_zh-CN.md) | **\u7E41\u9AD4\u4E2D\u6587** | [\u65E5\u672C\u8A9E](RELEASE_NOTES_ja.md)\n\n## 1.0.3\n\n#### \u65B0\u589E\u8868\u683C\u6392\u7248\u8A2D\u5B9A\n\n\u73FE\u5728\u8868\u683C\u5167\u53EF\u4EE5\u8ABF\u6574\u884C\u9AD8\u8207\u6BB5\u843D\u9593\u8DDD\u3002\n\n#### UI \u66F4\u65B0\n\n- \u66F4\u6539\u4E86\u300C\u8A2D\u5B9A\u7BA1\u7406\u300D\u6309\u9215\u7684\u7248\u9762\u914D\u7F6E\uFF0C\u73FE\u5728\u66F4\u70BA\u7DCA\u6E4A\u3002\n- \u73FE\u5728\u53EF\u4EE5\u96A8\u6642\u6AA2\u8996\u66F4\u65B0\u65E5\u8A8C\u3002\n- \u66F4\u6539\u4E86\u66F4\u65B0\u8AAA\u660E\u5F48\u51FA\u8996\u7A97\uFF0C\u589E\u52A0\u4E86\u300C\u6AA2\u8996\u5B8C\u6574\u65E5\u8A8C\u300D\u7684\u9023\u7D50\u3002\n\n\n## 1.0.2\n\n#### \u4FEE\u6B63\u95B1\u8B80\u6A21\u5F0F\u4E0B\u7684\u6E05\u55AE\u884C\u9AD8\n\n\u4E00\u822C\u6E05\u55AE\u3001\u5DE2\u72C0\u6E05\u55AE\u8207\u4EFB\u52D9\u6E05\u55AE\u73FE\u5728\u6703\u8DDF\u96A8\u300C\u5167\u6587\u884C\u9AD8\u300D\u8A2D\u5B9A\u3002Callout \u8207\u5F15\u7528\u5340\u584A\u5167\u7684\u6E05\u55AE\u5247\u6703\u8DDF\u96A8\u5404\u81EA\u7684\u300C\u5167\u90E8\u5167\u6587\u884C\u9AD8\u300D\u8A2D\u5B9A\u3002\n\n#### \u6539\u5584\u66F4\u65B0\u8AAA\u660E\u5F48\u51FA\u8996\u7A97\n\n\u91CD\u65B0\u8A2D\u8A08\u66F4\u65B0\u8AAA\u660E\u5F48\u51FA\u8996\u7A97\uFF0C\u6539\u5584\u8996\u7A97\u5167\u7684\u6587\u5B57\u6392\u7248\u3002\n\n## 1.0.1\n\n#### \u4FEE\u6B63\u4F7F\u7528\u65B9\u5411\u9375\u4E0A\u4E0B\u79FB\u52D5\u8F38\u5165\u6E38\u6A19\u6642\uFF0C\u6E38\u6A19\u6703\u8DF3\u904E\u90E8\u5206\u7A7A\u767D\u884C\u7684\u554F\u984C\u3002\n\n\u7DE8\u8F2F\u6A21\u5F0F\u4E2D\u7684\u4E0A\u3001\u4E0B\u65B9\u5411\u9375\u73FE\u5728\u53EF\u4EE5\u9010\u884C\u505C\u7559\u5728\u88AB\u5916\u639B\u7A0B\u5F0F\u58D3\u7E2E\u7684\u7A7A\u767D\u884C\u4E0A\uFF0C\u4E5F\u652F\u63F4\u4F7F\u7528 Shift + \u2191/\u2193 \u8DE8\u8D8A\u9019\u4E9B\u7A7A\u767D\u884C\u64F4\u5927\u9078\u53D6\u7BC4\u570D\u3002\n\n#### \u5176\u4ED6\u4FEE\u6B63\n\n- \u4FEE\u6B63\u7121\u6CD5\u532F\u5165\u8A2D\u5B9A\u7684\u554F\u984C\u3002\n- \u4FEE\u6B63\u91CD\u8A2D\u8A2D\u5B9A\u6642\u6C92\u6709\u986F\u793A\u4EFB\u4F55\u63D0\u793A\u7684\u554F\u984C\u3002\n\n## 1.0.0\n\n#### \u4FEE\u6B63\u4F7F\u7528\u65B9\u5411\u9375\u4E0A\u4E0B\u79FB\u52D5\u8F38\u5165\u6E38\u6A19\u6642\uFF0C\u6E38\u6A19\u6703\u8DF3\u904E\u90E8\u5206\u7A7A\u767D\u884C\u7684\u554F\u984C\u3002\n\n\u7DE8\u8F2F\u6A21\u5F0F\u4E2D\u7684\u4E0A\u3001\u4E0B\u65B9\u5411\u9375\u73FE\u5728\u53EF\u4EE5\u9010\u884C\u505C\u7559\u5728\u88AB\u5916\u639B\u7A0B\u5F0F\u58D3\u7E2E\u7684\u7A7A\u767D\u884C\u4E0A\uFF0C\u4E5F\u652F\u63F4\u4F7F\u7528 Shift + \u2191/\u2193 \u8DE8\u8D8A\u9019\u4E9B\u7A7A\u767D\u884C\u64F4\u5927\u9078\u53D6\u7BC4\u570D\u3002\n\n## 0.2.0\n\n- **\u539F\u751F\u8A2D\u5B9A\u641C\u5C0B\uFF1A** Obsidian 1.13 \u53CA\u4EE5\u4E0A\u7248\u672C\u652F\u63F4\u641C\u5C0B\u76EE\u524D\u7DE8\u8F2F\u6216\u95B1\u8B80\u6A21\u5F0F\u7684\u8A2D\u5B9A\uFF0C\u4E26\u53EF\u76F4\u63A5\u5B9A\u4F4D\u5404\u5C64\u7D1A\u6A19\u984C\u9078\u9805\u3002\n- **\u66F4\u7C21\u6F54\u7684\u8A2D\u5B9A\u5C0E\u89BD\uFF1A** \u9996\u9801\u96C6\u4E2D\u63D0\u4F9B\u5168\u57DF\u8A2D\u5B9A\u3001\u6A21\u5F0F\u5207\u63DB\u8207\u5206\u985E\u5165\u53E3\uFF0C\u5404\u5206\u985E\u5728\u7368\u7ACB\u7684\u8A73\u7D30\u9801\u9762\u4E2D\u4F7F\u7528\u539F\u751F\u63A7\u5236\u9805\u5448\u73FE\u3002\n- **\u76F8\u5BB9\u6027\u6539\u9032\uFF1A** \u8A2D\u5B9A\u532F\u5165\u3001\u532F\u51FA\u63A1\u7528\u539F\u751F\u5143\u7D20\u5EFA\u7ACB\u65B9\u6CD5\uFF0C\u6539\u5584\u7368\u7ACB\u8996\u7A97\u4E2D\u7684 Mermaid \u5716\u8868\u8B58\u5225\u3002\n\n\u65E2\u6709\u8A2D\u5B9A\u8207\u8A2D\u5B9A\u6A94\u4FDD\u6301\u76F8\u5BB9\uFF0C\u6700\u4F4E\u652F\u63F4\u7684 Obsidian \u7248\u672C\u70BA 1.12.7\u3002\n\n## 0.1.0\n\n\u9996\u6B21\u767C\u5E03\u3002\n\n- **\u5169\u7A2E\u6A21\u5F0F\u7368\u7ACB\u8A2D\u5B9A\uFF1A** \u5373\u6642\u9810\u89BD\u8207\u95B1\u8B80\u6A21\u5F0F\u5404\u81EA\u64C1\u6709\u6A21\u7D44\u958B\u95DC\u8207\u6392\u7248\u53C3\u6578\uFF0C\u4FEE\u6539\u5F8C\u7ACB\u5373\u751F\u6548\u4E26\u81EA\u52D5\u5132\u5B58\u3002\n- **\u5167\u6587\u8207\u5167\u5BB9\u6392\u7248\uFF1A** \u8ABF\u6574\u5167\u6587\u3001\u6E05\u55AE\u3001\u6A19\u984C\u3001Callout\uFF08\u63D0\u793A\u5340\u584A\uFF09\u3001\u5F15\u7528\u5340\u584A\u3001\u5716\u7247\u3001\u8868\u683C\u8207\u7A0B\u5F0F\u78BC\u5340\u584A\u7684\u884C\u9AD8\u3001\u9593\u8DDD\u8207\u5916\u89C0\uFF0C\u4E26\u4F9D\u6A19\u984C\u5F8C\u7DCA\u63A5\u7684\u5167\u5BB9\u985E\u578B\u8A2D\u5B9A\u929C\u63A5\u9593\u8DDD\u3002\n- **Mermaid \u5716\u8868\u7248\u9762\u914D\u7F6E\uFF1A** \u63A7\u5236\u5716\u8868\u5BEC\u5EA6\u8207\u7F6E\u4E2D\u986F\u793A\uFF0C\u70BA\u8F03\u5BEC\u7684\u5716\u8868\u63D0\u4F9B\u6C34\u5E73\u6372\u52D5\u3002\n- **\u8A2D\u5B9A\u7BA1\u7406\uFF1A** \u652F\u63F4\u6309\u5206\u5340\u6216\u5168\u90E8\u9084\u539F\u9810\u8A2D\u6392\u7248\uFF0C\u4EE5\u53CA\u900F\u904E JSON \u6A94\u6848\u532F\u5165\u3001\u532F\u51FA\u5B8C\u6574\u8A2D\u5B9A\u3002\n- **\u591A\u8A9E\u8A00\u8A2D\u5B9A\uFF1A** \u652F\u63F4\u7E41\u9AD4\u4E2D\u6587\u3001\u7C21\u9AD4\u4E2D\u6587\u3001\u82F1\u6587\u3001\u65E5\u6587\uFF0C\u4E5F\u53EF\u8DDF\u96A8 Obsidian \u7684\u4ECB\u9762\u8A9E\u8A00\u3002\n";
 
 // RELEASE_NOTES_ja.md
-var RELEASE_NOTES_ja_default = "# Refined Layout \u30EA\u30EA\u30FC\u30B9\u30CE\u30FC\u30C8\n\n[English](RELEASE_NOTES.md) | [\u7B80\u4F53\u4E2D\u6587](RELEASE_NOTES_zh-CN.md) | [\u7E41\u9AD4\u4E2D\u6587](RELEASE_NOTES_zh-TW.md) | **\u65E5\u672C\u8A9E**\n\n## 1.0.2\n\n#### \u95B2\u89A7\u30D3\u30E5\u30FC\u3067\u306E\u30EA\u30B9\u30C8\u306E\u884C\u306E\u9AD8\u3055\u3092\u4FEE\u6B63\n\n\u901A\u5E38\u306E\u30EA\u30B9\u30C8\u3001\u5165\u308C\u5B50\u306E\u30EA\u30B9\u30C8\u3001\u30BF\u30B9\u30AF\u30EA\u30B9\u30C8\u306B\u300C\u672C\u6587\u306E\u884C\u306E\u9AD8\u3055\u300D\u306E\u8A2D\u5B9A\u304C\u9069\u7528\u3055\u308C\u308B\u3088\u3046\u306B\u306A\u308A\u307E\u3057\u305F\u3002Callout \u3084\u5F15\u7528\u30D6\u30ED\u30C3\u30AF\u5185\u306E\u30EA\u30B9\u30C8\u306B\u306F\u3001\u305D\u308C\u305E\u308C\u306E\u300C\u5185\u90E8\u306E\u672C\u6587\u306E\u884C\u306E\u9AD8\u3055\u300D\u306E\u8A2D\u5B9A\u304C\u9069\u7528\u3055\u308C\u307E\u3059\u3002\n\n#### \u66F4\u65B0\u5185\u5BB9\u30C0\u30A4\u30A2\u30ED\u30B0\u306E\u6539\u5584\n\n\u66F4\u65B0\u5185\u5BB9\u30C0\u30A4\u30A2\u30ED\u30B0\u306E\u30C7\u30B6\u30A4\u30F3\u3092\u898B\u76F4\u3057\u3001\u30C0\u30A4\u30A2\u30ED\u30B0\u5185\u306E\u30C6\u30AD\u30B9\u30C8\u306E\u30EC\u30A4\u30A2\u30A6\u30C8\u3092\u6539\u5584\u3057\u307E\u3057\u305F\u3002\n\n## 1.0.1\n\n#### \u4E0A\u4E0B\u306E\u77E2\u5370\u30AD\u30FC\u3067\u30AB\u30FC\u30BD\u30EB\u3092\u79FB\u52D5\u3059\u308B\u969B\u3001\u4E00\u90E8\u306E\u7A7A\u884C\u304C\u30B9\u30AD\u30C3\u30D7\u3055\u308C\u308B\u554F\u984C\u3092\u4FEE\u6B63\n\n\u7DE8\u96C6\u30D3\u30E5\u30FC\uFF08\u30E9\u30A4\u30D6\u30D7\u30EC\u30D3\u30E5\u30FC\uFF09\u3067\u3001\u30D7\u30E9\u30B0\u30A4\u30F3\u306B\u3088\u3063\u3066\u9AD8\u3055\u304C\u8A70\u3081\u3089\u308C\u305F\u7A7A\u884C\u306B\u3082\u4E0A\u4E0B\u306E\u77E2\u5370\u30AD\u30FC\u30671\u884C\u305A\u3064\u6B62\u307E\u308C\u308B\u3088\u3046\u306B\u306A\u308A\u307E\u3057\u305F\u3002Shift + \u2191/\u2193 \u3067\u3053\u308C\u3089\u306E\u7A7A\u884C\u3092\u307E\u305F\u3044\u3067\u9078\u629E\u7BC4\u56F2\u3092\u5E83\u3052\u308B\u64CD\u4F5C\u306B\u3082\u5BFE\u5FDC\u3057\u3066\u3044\u307E\u3059\u3002\n\n#### \u305D\u306E\u4ED6\u306E\u4FEE\u6B63\n\n- \u8A2D\u5B9A\u306E\u30A4\u30F3\u30DD\u30FC\u30C8\u304C\u6A5F\u80FD\u3057\u306A\u3044\u554F\u984C\u3092\u4FEE\u6B63\u3057\u307E\u3057\u305F\u3002\n- \u8A2D\u5B9A\u306E\u30EA\u30BB\u30C3\u30C8\u6642\u306B\u78BA\u8A8D\u3084\u5B8C\u4E86\u306E\u30E1\u30C3\u30BB\u30FC\u30B8\u304C\u8868\u793A\u3055\u308C\u306A\u3044\u554F\u984C\u3092\u4FEE\u6B63\u3057\u307E\u3057\u305F\u3002\n\n## 1.0.0\n\n#### \u4E0A\u4E0B\u306E\u77E2\u5370\u30AD\u30FC\u3067\u30AB\u30FC\u30BD\u30EB\u3092\u79FB\u52D5\u3059\u308B\u969B\u3001\u4E00\u90E8\u306E\u7A7A\u884C\u304C\u30B9\u30AD\u30C3\u30D7\u3055\u308C\u308B\u554F\u984C\u3092\u4FEE\u6B63\n\n\u7DE8\u96C6\u30D3\u30E5\u30FC\uFF08\u30E9\u30A4\u30D6\u30D7\u30EC\u30D3\u30E5\u30FC\uFF09\u3067\u3001\u30D7\u30E9\u30B0\u30A4\u30F3\u306B\u3088\u3063\u3066\u9AD8\u3055\u304C\u8A70\u3081\u3089\u308C\u305F\u7A7A\u884C\u306B\u3082\u4E0A\u4E0B\u306E\u77E2\u5370\u30AD\u30FC\u30671\u884C\u305A\u3064\u6B62\u307E\u308C\u308B\u3088\u3046\u306B\u306A\u308A\u307E\u3057\u305F\u3002Shift + \u2191/\u2193 \u3067\u3053\u308C\u3089\u306E\u7A7A\u884C\u3092\u307E\u305F\u3044\u3067\u9078\u629E\u7BC4\u56F2\u3092\u5E83\u3052\u308B\u64CD\u4F5C\u306B\u3082\u5BFE\u5FDC\u3057\u3066\u3044\u307E\u3059\u3002\n\n## 0.2.0\n\n- **\u30CD\u30A4\u30C6\u30A3\u30D6\u306E\u8A2D\u5B9A\u691C\u7D22\u306B\u5BFE\u5FDC\uFF1A** Obsidian 1.13 \u4EE5\u964D\u3067\u3001\u9078\u629E\u4E2D\u306E\u7DE8\u96C6\u30D3\u30E5\u30FC\u307E\u305F\u306F\u95B2\u89A7\u30D3\u30E5\u30FC\u306E\u8A2D\u5B9A\u3092\u691C\u7D22\u3067\u304D\u3001\u5404\u898B\u51FA\u3057\u30EC\u30D9\u30EB\uFF08H1\u2013H6\uFF09\u306E\u9805\u76EE\u3078\u76F4\u63A5\u79FB\u52D5\u3067\u304D\u308B\u3088\u3046\u306B\u306A\u308A\u307E\u3057\u305F\u3002\n- **\u3088\u308A\u30B7\u30F3\u30D7\u30EB\u306A\u8A2D\u5B9A\u30CA\u30D3\u30B2\u30FC\u30B7\u30E7\u30F3\uFF1A** \u8A2D\u5B9A\u306E\u30DB\u30FC\u30E0\u753B\u9762\u306B\u5168\u4F53\u8A2D\u5B9A\u3001\u30D3\u30E5\u30FC\u306E\u5207\u308A\u66FF\u3048\u3001\u5404\u30AB\u30C6\u30B4\u30EA\u30FC\u3078\u306E\u5165\u308A\u53E3\u3092\u96C6\u7D04\u3057\u3001\u30AB\u30C6\u30B4\u30EA\u30FC\u3054\u3068\u306E\u8A73\u7D30\u30DA\u30FC\u30B8\u3092\u30CD\u30A4\u30C6\u30A3\u30D6\u306E\u30B3\u30F3\u30C8\u30ED\u30FC\u30EB\u3067\u8868\u793A\u3059\u308B\u3088\u3046\u306B\u3057\u307E\u3057\u305F\u3002\n- **\u4E92\u63DB\u6027\u306E\u6539\u5584\uFF1A** \u8A2D\u5B9A\u306E\u30A4\u30F3\u30DD\u30FC\u30C8\u30FB\u30A8\u30AF\u30B9\u30DD\u30FC\u30C8\u306B\u30CD\u30A4\u30C6\u30A3\u30D6\u306E\u8981\u7D20\u751F\u6210\u30E1\u30BD\u30C3\u30C9\u3092\u4F7F\u7528\u3057\u3001\u5225\u30A6\u30A3\u30F3\u30C9\u30A6\u3067\u306E Mermaid \u56F3\u306E\u691C\u51FA\u3092\u6539\u5584\u3057\u307E\u3057\u305F\u3002\n\n\u65E2\u5B58\u306E\u8A2D\u5B9A\u304A\u3088\u3073\u8A2D\u5B9A\u30D5\u30A1\u30A4\u30EB\u3068\u306E\u4E92\u63DB\u6027\u306F\u7DAD\u6301\u3055\u308C\u3066\u3044\u307E\u3059\u3002\u5BFE\u5FDC\u3059\u308B Obsidian \u306E\u6700\u5C0F\u30D0\u30FC\u30B8\u30E7\u30F3\u306F 1.12.7 \u3067\u3059\u3002\n\n## 0.1.0\n\n\u521D\u56DE\u30EA\u30EA\u30FC\u30B9\u3002\n\n- **2\u3064\u306E\u30D3\u30E5\u30FC\u3092\u500B\u5225\u306B\u8A2D\u5B9A\uFF1A** \u30E9\u30A4\u30D6\u30D7\u30EC\u30D3\u30E5\u30FC\uFF08\u7DE8\u96C6\u30D3\u30E5\u30FC\uFF09\u3068\u95B2\u89A7\u30D3\u30E5\u30FC\u306E\u305D\u308C\u305E\u308C\u306B\u30E2\u30B8\u30E5\u30FC\u30EB\u306E\u5207\u308A\u66FF\u3048\u3068\u30EC\u30A4\u30A2\u30A6\u30C8\u8A2D\u5B9A\u3092\u7528\u610F\u3057\u307E\u3057\u305F\u3002\u5909\u66F4\u306F\u3059\u3050\u306B\u53CD\u6620\u3055\u308C\u3001\u81EA\u52D5\u7684\u306B\u4FDD\u5B58\u3055\u308C\u307E\u3059\u3002\n- **\u672C\u6587\u3068\u5404\u8981\u7D20\u306E\u30EC\u30A4\u30A2\u30A6\u30C8\u8ABF\u6574\uFF1A** \u672C\u6587\u3001\u30EA\u30B9\u30C8\u3001\u898B\u51FA\u3057\u3001Callout\u3001\u5F15\u7528\u30D6\u30ED\u30C3\u30AF\u3001\u753B\u50CF\u3001\u8868\u3001\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u306E\u884C\u306E\u9AD8\u3055\u3001\u9593\u9694\u3001\u5916\u89B3\u3092\u8ABF\u6574\u3067\u304D\u307E\u3059\u3002\u898B\u51FA\u3057\u306E\u76F4\u5F8C\u306B\u7D9A\u304F\u8981\u7D20\u306E\u7A2E\u985E\u306B\u5FDC\u3058\u305F\u9593\u9694\u8ABF\u6574\u306B\u3082\u5BFE\u5FDC\u3057\u3066\u3044\u307E\u3059\u3002\n- **Mermaid \u56F3\u306E\u30EC\u30A4\u30A2\u30A6\u30C8\uFF1A** \u56F3\u306E\u5E45\u3068\u4E2D\u592E\u914D\u7F6E\u3092\u8ABF\u6574\u3057\u3001\u6A2A\u5E45\u306E\u5E83\u3044\u56F3\u3067\u306F\u6A2A\u30B9\u30AF\u30ED\u30FC\u30EB\u3067\u304D\u308B\u3088\u3046\u306B\u3057\u307E\u3059\u3002\n- **\u8A2D\u5B9A\u306E\u7BA1\u7406\uFF1A** \u30AB\u30C6\u30B4\u30EA\u30FC\u3054\u3068\u3001\u307E\u305F\u306F\u3059\u3079\u3066\u306E\u8A2D\u5B9A\u3092\u521D\u671F\u5024\u306B\u623B\u3059\u3053\u3068\u304C\u3067\u304D\u3001JSON \u30D5\u30A1\u30A4\u30EB\u306B\u3088\u308B\u8A2D\u5B9A\u306E\u30A4\u30F3\u30DD\u30FC\u30C8\u30FB\u30A8\u30AF\u30B9\u30DD\u30FC\u30C8\u306B\u3082\u5BFE\u5FDC\u3057\u3066\u3044\u307E\u3059\u3002\n- **\u591A\u8A00\u8A9E\u5BFE\u5FDC\uFF1A** \u65E5\u672C\u8A9E\u3001\u82F1\u8A9E\u3001\u7C21\u4F53\u5B57\u4E2D\u56FD\u8A9E\u3001\u7E41\u4F53\u5B57\u4E2D\u56FD\u8A9E\u306B\u5BFE\u5FDC\u3057\u3001Obsidian \u306E\u8868\u793A\u8A00\u8A9E\u306B\u5408\u308F\u305B\u308B\u3053\u3068\u3082\u3067\u304D\u307E\u3059\u3002\n";
+var RELEASE_NOTES_ja_default = "# Refined Layout \u30EA\u30EA\u30FC\u30B9\u30CE\u30FC\u30C8\n\n[English](RELEASE_NOTES.md) | [\u7B80\u4F53\u4E2D\u6587](RELEASE_NOTES_zh-CN.md) | [\u7E41\u9AD4\u4E2D\u6587](RELEASE_NOTES_zh-TW.md) | **\u65E5\u672C\u8A9E**\n\n## 1.0.3\n\n#### \u8868\u306E\u30EC\u30A4\u30A2\u30A6\u30C8\u8A2D\u5B9A\u3092\u8FFD\u52A0\n\n\u8868\u5185\u306E\u884C\u306E\u9AD8\u3055\u3068\u6BB5\u843D\u9593\u9694\u3092\u8ABF\u6574\u3067\u304D\u308B\u3088\u3046\u306B\u306A\u308A\u307E\u3057\u305F\u3002\n\n#### UI \u306E\u66F4\u65B0\n\n- \u300C\u8A2D\u5B9A\u306E\u7BA1\u7406\u300D\u30DC\u30BF\u30F3\u306E\u30EC\u30A4\u30A2\u30A6\u30C8\u3092\u5909\u66F4\u3057\u3001\u3088\u308A\u30B3\u30F3\u30D1\u30AF\u30C8\u306B\u3057\u307E\u3057\u305F\u3002\n- \u3044\u3064\u3067\u3082\u66F4\u65B0\u5C65\u6B74\u3092\u898B\u3089\u308C\u308B\u3088\u3046\u306B\u306A\u308A\u307E\u3057\u305F\u3002\n- \u66F4\u65B0\u5185\u5BB9\u30C0\u30A4\u30A2\u30ED\u30B0\u3092\u5909\u66F4\u3057\u3001\u300C\u3059\u3079\u3066\u306E\u66F4\u65B0\u5C65\u6B74\u3092\u898B\u308B\u300D\u30EA\u30F3\u30AF\u3092\u8FFD\u52A0\u3057\u307E\u3057\u305F\u3002\n\n\n## 1.0.2\n\n#### \u95B2\u89A7\u30D3\u30E5\u30FC\u3067\u306E\u30EA\u30B9\u30C8\u306E\u884C\u306E\u9AD8\u3055\u3092\u4FEE\u6B63\n\n\u901A\u5E38\u306E\u30EA\u30B9\u30C8\u3001\u5165\u308C\u5B50\u306E\u30EA\u30B9\u30C8\u3001\u30BF\u30B9\u30AF\u30EA\u30B9\u30C8\u306B\u300C\u672C\u6587\u306E\u884C\u306E\u9AD8\u3055\u300D\u306E\u8A2D\u5B9A\u304C\u9069\u7528\u3055\u308C\u308B\u3088\u3046\u306B\u306A\u308A\u307E\u3057\u305F\u3002Callout \u3084\u5F15\u7528\u30D6\u30ED\u30C3\u30AF\u5185\u306E\u30EA\u30B9\u30C8\u306B\u306F\u3001\u305D\u308C\u305E\u308C\u306E\u300C\u5185\u90E8\u306E\u672C\u6587\u306E\u884C\u306E\u9AD8\u3055\u300D\u306E\u8A2D\u5B9A\u304C\u9069\u7528\u3055\u308C\u307E\u3059\u3002\n\n#### \u66F4\u65B0\u5185\u5BB9\u30C0\u30A4\u30A2\u30ED\u30B0\u306E\u6539\u5584\n\n\u66F4\u65B0\u5185\u5BB9\u30C0\u30A4\u30A2\u30ED\u30B0\u306E\u30C7\u30B6\u30A4\u30F3\u3092\u898B\u76F4\u3057\u3001\u30C0\u30A4\u30A2\u30ED\u30B0\u5185\u306E\u30C6\u30AD\u30B9\u30C8\u306E\u30EC\u30A4\u30A2\u30A6\u30C8\u3092\u6539\u5584\u3057\u307E\u3057\u305F\u3002\n\n## 1.0.1\n\n#### \u4E0A\u4E0B\u306E\u77E2\u5370\u30AD\u30FC\u3067\u30AB\u30FC\u30BD\u30EB\u3092\u79FB\u52D5\u3059\u308B\u969B\u3001\u4E00\u90E8\u306E\u7A7A\u884C\u304C\u30B9\u30AD\u30C3\u30D7\u3055\u308C\u308B\u554F\u984C\u3092\u4FEE\u6B63\n\n\u7DE8\u96C6\u30D3\u30E5\u30FC\uFF08\u30E9\u30A4\u30D6\u30D7\u30EC\u30D3\u30E5\u30FC\uFF09\u3067\u3001\u30D7\u30E9\u30B0\u30A4\u30F3\u306B\u3088\u3063\u3066\u9AD8\u3055\u304C\u8A70\u3081\u3089\u308C\u305F\u7A7A\u884C\u306B\u3082\u4E0A\u4E0B\u306E\u77E2\u5370\u30AD\u30FC\u30671\u884C\u305A\u3064\u6B62\u307E\u308C\u308B\u3088\u3046\u306B\u306A\u308A\u307E\u3057\u305F\u3002Shift + \u2191/\u2193 \u3067\u3053\u308C\u3089\u306E\u7A7A\u884C\u3092\u307E\u305F\u3044\u3067\u9078\u629E\u7BC4\u56F2\u3092\u5E83\u3052\u308B\u64CD\u4F5C\u306B\u3082\u5BFE\u5FDC\u3057\u3066\u3044\u307E\u3059\u3002\n\n#### \u305D\u306E\u4ED6\u306E\u4FEE\u6B63\n\n- \u8A2D\u5B9A\u306E\u30A4\u30F3\u30DD\u30FC\u30C8\u304C\u6A5F\u80FD\u3057\u306A\u3044\u554F\u984C\u3092\u4FEE\u6B63\u3057\u307E\u3057\u305F\u3002\n- \u8A2D\u5B9A\u306E\u30EA\u30BB\u30C3\u30C8\u6642\u306B\u78BA\u8A8D\u3084\u5B8C\u4E86\u306E\u30E1\u30C3\u30BB\u30FC\u30B8\u304C\u8868\u793A\u3055\u308C\u306A\u3044\u554F\u984C\u3092\u4FEE\u6B63\u3057\u307E\u3057\u305F\u3002\n\n## 1.0.0\n\n#### \u4E0A\u4E0B\u306E\u77E2\u5370\u30AD\u30FC\u3067\u30AB\u30FC\u30BD\u30EB\u3092\u79FB\u52D5\u3059\u308B\u969B\u3001\u4E00\u90E8\u306E\u7A7A\u884C\u304C\u30B9\u30AD\u30C3\u30D7\u3055\u308C\u308B\u554F\u984C\u3092\u4FEE\u6B63\n\n\u7DE8\u96C6\u30D3\u30E5\u30FC\uFF08\u30E9\u30A4\u30D6\u30D7\u30EC\u30D3\u30E5\u30FC\uFF09\u3067\u3001\u30D7\u30E9\u30B0\u30A4\u30F3\u306B\u3088\u3063\u3066\u9AD8\u3055\u304C\u8A70\u3081\u3089\u308C\u305F\u7A7A\u884C\u306B\u3082\u4E0A\u4E0B\u306E\u77E2\u5370\u30AD\u30FC\u30671\u884C\u305A\u3064\u6B62\u307E\u308C\u308B\u3088\u3046\u306B\u306A\u308A\u307E\u3057\u305F\u3002Shift + \u2191/\u2193 \u3067\u3053\u308C\u3089\u306E\u7A7A\u884C\u3092\u307E\u305F\u3044\u3067\u9078\u629E\u7BC4\u56F2\u3092\u5E83\u3052\u308B\u64CD\u4F5C\u306B\u3082\u5BFE\u5FDC\u3057\u3066\u3044\u307E\u3059\u3002\n\n## 0.2.0\n\n- **\u30CD\u30A4\u30C6\u30A3\u30D6\u306E\u8A2D\u5B9A\u691C\u7D22\u306B\u5BFE\u5FDC\uFF1A** Obsidian 1.13 \u4EE5\u964D\u3067\u3001\u9078\u629E\u4E2D\u306E\u7DE8\u96C6\u30D3\u30E5\u30FC\u307E\u305F\u306F\u95B2\u89A7\u30D3\u30E5\u30FC\u306E\u8A2D\u5B9A\u3092\u691C\u7D22\u3067\u304D\u3001\u5404\u898B\u51FA\u3057\u30EC\u30D9\u30EB\uFF08H1\u2013H6\uFF09\u306E\u9805\u76EE\u3078\u76F4\u63A5\u79FB\u52D5\u3067\u304D\u308B\u3088\u3046\u306B\u306A\u308A\u307E\u3057\u305F\u3002\n- **\u3088\u308A\u30B7\u30F3\u30D7\u30EB\u306A\u8A2D\u5B9A\u30CA\u30D3\u30B2\u30FC\u30B7\u30E7\u30F3\uFF1A** \u8A2D\u5B9A\u306E\u30DB\u30FC\u30E0\u753B\u9762\u306B\u5168\u4F53\u8A2D\u5B9A\u3001\u30D3\u30E5\u30FC\u306E\u5207\u308A\u66FF\u3048\u3001\u5404\u30AB\u30C6\u30B4\u30EA\u30FC\u3078\u306E\u5165\u308A\u53E3\u3092\u96C6\u7D04\u3057\u3001\u30AB\u30C6\u30B4\u30EA\u30FC\u3054\u3068\u306E\u8A73\u7D30\u30DA\u30FC\u30B8\u3092\u30CD\u30A4\u30C6\u30A3\u30D6\u306E\u30B3\u30F3\u30C8\u30ED\u30FC\u30EB\u3067\u8868\u793A\u3059\u308B\u3088\u3046\u306B\u3057\u307E\u3057\u305F\u3002\n- **\u4E92\u63DB\u6027\u306E\u6539\u5584\uFF1A** \u8A2D\u5B9A\u306E\u30A4\u30F3\u30DD\u30FC\u30C8\u30FB\u30A8\u30AF\u30B9\u30DD\u30FC\u30C8\u306B\u30CD\u30A4\u30C6\u30A3\u30D6\u306E\u8981\u7D20\u751F\u6210\u30E1\u30BD\u30C3\u30C9\u3092\u4F7F\u7528\u3057\u3001\u5225\u30A6\u30A3\u30F3\u30C9\u30A6\u3067\u306E Mermaid \u56F3\u306E\u691C\u51FA\u3092\u6539\u5584\u3057\u307E\u3057\u305F\u3002\n\n\u65E2\u5B58\u306E\u8A2D\u5B9A\u304A\u3088\u3073\u8A2D\u5B9A\u30D5\u30A1\u30A4\u30EB\u3068\u306E\u4E92\u63DB\u6027\u306F\u7DAD\u6301\u3055\u308C\u3066\u3044\u307E\u3059\u3002\u5BFE\u5FDC\u3059\u308B Obsidian \u306E\u6700\u5C0F\u30D0\u30FC\u30B8\u30E7\u30F3\u306F 1.12.7 \u3067\u3059\u3002\n\n## 0.1.0\n\n\u521D\u56DE\u30EA\u30EA\u30FC\u30B9\u3002\n\n- **2\u3064\u306E\u30D3\u30E5\u30FC\u3092\u500B\u5225\u306B\u8A2D\u5B9A\uFF1A** \u30E9\u30A4\u30D6\u30D7\u30EC\u30D3\u30E5\u30FC\uFF08\u7DE8\u96C6\u30D3\u30E5\u30FC\uFF09\u3068\u95B2\u89A7\u30D3\u30E5\u30FC\u306E\u305D\u308C\u305E\u308C\u306B\u30E2\u30B8\u30E5\u30FC\u30EB\u306E\u5207\u308A\u66FF\u3048\u3068\u30EC\u30A4\u30A2\u30A6\u30C8\u8A2D\u5B9A\u3092\u7528\u610F\u3057\u307E\u3057\u305F\u3002\u5909\u66F4\u306F\u3059\u3050\u306B\u53CD\u6620\u3055\u308C\u3001\u81EA\u52D5\u7684\u306B\u4FDD\u5B58\u3055\u308C\u307E\u3059\u3002\n- **\u672C\u6587\u3068\u5404\u8981\u7D20\u306E\u30EC\u30A4\u30A2\u30A6\u30C8\u8ABF\u6574\uFF1A** \u672C\u6587\u3001\u30EA\u30B9\u30C8\u3001\u898B\u51FA\u3057\u3001Callout\u3001\u5F15\u7528\u30D6\u30ED\u30C3\u30AF\u3001\u753B\u50CF\u3001\u8868\u3001\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u306E\u884C\u306E\u9AD8\u3055\u3001\u9593\u9694\u3001\u5916\u89B3\u3092\u8ABF\u6574\u3067\u304D\u307E\u3059\u3002\u898B\u51FA\u3057\u306E\u76F4\u5F8C\u306B\u7D9A\u304F\u8981\u7D20\u306E\u7A2E\u985E\u306B\u5FDC\u3058\u305F\u9593\u9694\u8ABF\u6574\u306B\u3082\u5BFE\u5FDC\u3057\u3066\u3044\u307E\u3059\u3002\n- **Mermaid \u56F3\u306E\u30EC\u30A4\u30A2\u30A6\u30C8\uFF1A** \u56F3\u306E\u5E45\u3068\u4E2D\u592E\u914D\u7F6E\u3092\u8ABF\u6574\u3057\u3001\u6A2A\u5E45\u306E\u5E83\u3044\u56F3\u3067\u306F\u6A2A\u30B9\u30AF\u30ED\u30FC\u30EB\u3067\u304D\u308B\u3088\u3046\u306B\u3057\u307E\u3059\u3002\n- **\u8A2D\u5B9A\u306E\u7BA1\u7406\uFF1A** \u30AB\u30C6\u30B4\u30EA\u30FC\u3054\u3068\u3001\u307E\u305F\u306F\u3059\u3079\u3066\u306E\u8A2D\u5B9A\u3092\u521D\u671F\u5024\u306B\u623B\u3059\u3053\u3068\u304C\u3067\u304D\u3001JSON \u30D5\u30A1\u30A4\u30EB\u306B\u3088\u308B\u8A2D\u5B9A\u306E\u30A4\u30F3\u30DD\u30FC\u30C8\u30FB\u30A8\u30AF\u30B9\u30DD\u30FC\u30C8\u306B\u3082\u5BFE\u5FDC\u3057\u3066\u3044\u307E\u3059\u3002\n- **\u591A\u8A00\u8A9E\u5BFE\u5FDC\uFF1A** \u65E5\u672C\u8A9E\u3001\u82F1\u8A9E\u3001\u7C21\u4F53\u5B57\u4E2D\u56FD\u8A9E\u3001\u7E41\u4F53\u5B57\u4E2D\u56FD\u8A9E\u306B\u5BFE\u5FDC\u3057\u3001Obsidian \u306E\u8868\u793A\u8A00\u8A9E\u306B\u5408\u308F\u305B\u308B\u3053\u3068\u3082\u3067\u304D\u307E\u3059\u3002\n";
 
 // src/update-notes.ts
 var localizedNotes = {
-  en: { markdown: RELEASE_NOTES_default, title: "Update Notes", heading: "What's new", close: "Got it" },
-  "zh-CN": { markdown: RELEASE_NOTES_zh_CN_default, title: "\u66F4\u65B0\u8BF4\u660E", heading: "\u66F4\u65B0\u8BF4\u660E", close: "\u77E5\u9053\u4E86" },
-  "zh-TW": { markdown: RELEASE_NOTES_zh_TW_default, title: "\u66F4\u65B0\u8AAA\u660E", heading: "\u66F4\u65B0\u8AAA\u660E", close: "\u77E5\u9053\u4E86" },
-  ja: { markdown: RELEASE_NOTES_ja_default, title: "\u66F4\u65B0\u5185\u5BB9", heading: "\u66F4\u65B0\u5185\u5BB9", close: "\u9589\u3058\u308B" }
+  en: {
+    markdown: RELEASE_NOTES_default,
+    title: "Update Notes",
+    heading: "What's new",
+    close: "Got it",
+    fullLogLabel: "View full changelog",
+    file: "RELEASE_NOTES.md"
+  },
+  "zh-CN": {
+    markdown: RELEASE_NOTES_zh_CN_default,
+    title: "\u66F4\u65B0\u8BF4\u660E",
+    heading: "\u66F4\u65B0\u8BF4\u660E",
+    close: "\u77E5\u9053\u4E86",
+    fullLogLabel: "\u67E5\u770B\u5B8C\u6574\u65E5\u5FD7",
+    file: "RELEASE_NOTES_zh-CN.md"
+  },
+  "zh-TW": {
+    markdown: RELEASE_NOTES_zh_TW_default,
+    title: "\u66F4\u65B0\u8AAA\u660E",
+    heading: "\u66F4\u65B0\u8AAA\u660E",
+    close: "\u77E5\u9053\u4E86",
+    fullLogLabel: "\u6AA2\u8996\u5B8C\u6574\u65E5\u8A8C",
+    file: "RELEASE_NOTES_zh-TW.md"
+  },
+  ja: {
+    markdown: RELEASE_NOTES_ja_default,
+    title: "\u66F4\u65B0\u5185\u5BB9",
+    heading: "\u66F4\u65B0\u5185\u5BB9",
+    close: "\u9589\u3058\u308B",
+    fullLogLabel: "\u3059\u3079\u3066\u306E\u66F4\u65B0\u5C65\u6B74\u3092\u898B\u308B",
+    file: "RELEASE_NOTES_ja.md"
+  }
 };
 function shouldShowUpdateNotes(lastSeen, currentId) {
   return lastSeen !== currentId;
@@ -2271,7 +2386,9 @@ function getUpdateNotes(preference, version, readLanguage = import_obsidian3.get
     title: `Refined Layout ${version} ${notes.title}`,
     heading: notes.heading,
     markdown,
-    close: notes.close
+    close: notes.close,
+    fullLogLabel: notes.fullLogLabel,
+    fullLogUrl: `https://github.com/Floratina/Obsidian-Refined-Layout/blob/main/${notes.file}`
   };
 }
 var UpdateNotesModal = class extends import_obsidian3.Modal {
@@ -2292,6 +2409,12 @@ var UpdateNotesModal = class extends import_obsidian3.Modal {
     version.createSpan({ cls: "rl-update-notes-version-number", text: `v${this.notes.id}` });
     const markdown = scroll.createDiv({ cls: "rl-update-notes-markdown" });
     const footer = this.contentEl.createDiv({ cls: "rl-update-notes-footer" });
+    footer.createEl("a", {
+      cls: "external-link rl-update-notes-link",
+      text: this.notes.fullLogLabel,
+      href: this.notes.fullLogUrl,
+      attr: { target: "_blank", rel: "noopener noreferrer" }
+    });
     new import_obsidian3.Setting(footer).addButton((button) => button.setButtonText(this.notes.close).setCta().onClick(() => this.close()));
     this.renderComponent.load();
     try {
@@ -2307,6 +2430,93 @@ var UpdateNotesModal = class extends import_obsidian3.Modal {
     this.renderComponent.unload();
     this.contentEl.empty();
     this.onClosed();
+  }
+};
+
+// src/table-typography.ts
+var TABLE_ATTRIBUTE = "data-rl-table-typography";
+var BLANK_CLASS = "rl-table-blank-line";
+var EXCLUDED2 = ".canvas-wrapper, .canvas-node, .mermaid, .block-language-dataviewjs";
+var BREAK_EXCLUDED = "pre, code, svg, math, .math, .MathJax, .markdown-embed";
+function previousContent(node) {
+  let previous = node.previousSibling;
+  while (previous && (previous.nodeType === Node.COMMENT_NODE || previous.nodeType === Node.TEXT_NODE && /^[\t\r\n ]*$/.test(previous.textContent ?? ""))) {
+    previous = previous.previousSibling;
+  }
+  return previous;
+}
+function followsBreak(node) {
+  const previous = previousContent(node);
+  return previous?.nodeType === Node.ELEMENT_NODE && previous.matches(`br, span.${BLANK_CLASS}`);
+}
+function unwrap(element) {
+  element.replaceWith(...Array.from(element.childNodes));
+}
+var TableTypography = class {
+  constructor(getSettings) {
+    this.getSettings = getSettings;
+    this.observer = null;
+  }
+  start() {
+    this.observer = new MutationObserver((records) => {
+      const tables = /* @__PURE__ */ new Set();
+      const collect = (node) => {
+        const element = node.nodeType === Node.ELEMENT_NODE ? node : node.parentElement;
+        if (!element) return;
+        const table = element.closest("table");
+        if (table) tables.add(table);
+        for (const nested of element.querySelectorAll("table")) tables.add(nested);
+      };
+      for (const record of records) {
+        collect(record.target);
+        for (const node of record.addedNodes) collect(node);
+      }
+      for (const table of tables) {
+        if (table.isConnected) this.updateTable(table);
+      }
+    });
+    this.observer.observe(document.body, { childList: true, subtree: true, characterData: true });
+    this.refresh();
+  }
+  refresh() {
+    if (!this.observer) return;
+    for (const table of document.querySelectorAll("table")) this.updateTable(table);
+  }
+  stop() {
+    this.observer?.disconnect();
+    this.observer = null;
+    for (const table of document.querySelectorAll(`table[${TABLE_ATTRIBUTE}]`)) {
+      table.removeAttribute(TABLE_ATTRIBUTE);
+    }
+    for (const blank of document.querySelectorAll(`span.${BLANK_CLASS}`)) unwrap(blank);
+  }
+  updateTable(table) {
+    const mode = table.closest(".markdown-source-view.mod-cm6") ? "edit" : table.closest(".markdown-preview-view.markdown-rendered") ? "read" : null;
+    const context = table.closest(".callout, .cm-callout") ? "callout" : table.closest("blockquote, .el-blockquote") ? "blockquote" : null;
+    const module2 = context === "callout" ? "callouts" : context === "blockquote" ? "blockquotes" : "tables";
+    const enabled = mode !== null && !table.closest(EXCLUDED2) && this.getSettings()[mode].modules[module2];
+    const blanks = Array.from(table.querySelectorAll(`span.${BLANK_CLASS}`)).filter((blank) => blank.closest("table") === table);
+    if (!enabled) {
+      table.removeAttribute(TABLE_ATTRIBUTE);
+      for (const blank of blanks) unwrap(blank);
+      return;
+    }
+    table.setAttribute(TABLE_ATTRIBUTE, `${mode}-${context ? `${context}-table` : "table"}`);
+    for (const blank of blanks) {
+      if (!followsBreak(blank) || !this.isRenderedContent(table, blank)) unwrap(blank);
+    }
+    for (const br of table.querySelectorAll("br")) {
+      if (br.parentElement?.classList.contains(BLANK_CLASS) || !this.isRenderedContent(table, br) || !followsBreak(br)) continue;
+      const blank = br.ownerDocument.createElement("span");
+      blank.className = BLANK_CLASS;
+      br.replaceWith(blank);
+      blank.appendChild(br);
+    }
+  }
+  isRenderedContent(table, element) {
+    if (element.closest("table") !== table || !element.closest("th, td") || element.closest(BREAK_EXCLUDED)) return false;
+    const editor = element.closest(".cm-editor");
+    return !editor || !table.contains(editor);
   }
 };
 
@@ -2386,6 +2596,7 @@ var RefinedLayoutPlugin = class extends import_obsidian4.Plugin {
     this.mermaidObserver = null;
     this.invalidMermaidSvgs = /* @__PURE__ */ new WeakSet();
     this.blankLineNavigation = createBlankLineNavigation();
+    this.tableTypography = new TableTypography(() => this.settings);
     this.saveQueue = Promise.resolve();
     this.unloaded = false;
     this.updateNotesModal = null;
@@ -2399,6 +2610,7 @@ var RefinedLayoutPlugin = class extends import_obsidian4.Plugin {
     this.registerEditorExtension(this.blankLineNavigation.extension);
     this.applySettings();
     this.startMermaidObserver();
+    this.tableTypography.start();
     this.addSettingTab(new RefinedLayoutSettingTab(this.app, this));
     this.app.workspace.onLayoutReady(() => this.showUpdateNotes());
   }
@@ -2407,6 +2619,7 @@ var RefinedLayoutPlugin = class extends import_obsidian4.Plugin {
     this.updateNotesModal?.close();
     this.updateNotesModal = null;
     this.stopMermaidObserver();
+    this.tableTypography.stop();
     if (this.saveTimer !== null) {
       window.clearTimeout(this.saveTimer);
       this.saveTimer = null;
@@ -2414,12 +2627,12 @@ var RefinedLayoutPlugin = class extends import_obsidian4.Plugin {
     }
     this.clearAppliedStyles();
   }
-  showUpdateNotes() {
+  showUpdateNotes(force = false) {
     if (this.unloaded || this.updateNotesModal) return;
     const notes = getUpdateNotes(this.settings.language, this.manifest.version);
-    if (!notes || !shouldShowUpdateNotes(this.lastSeenUpdateNotesId, notes.id)) return;
+    if (!notes || !force && !shouldShowUpdateNotes(this.lastSeenUpdateNotesId, notes.id)) return;
     this.updateNotesModal = new UpdateNotesModal(this.app, notes, () => {
-      if (this.unloaded) return;
+      if (this.unloaded || this.lastSeenUpdateNotesId === notes.id) return;
       this.lastSeenUpdateNotesId = notes.id;
       void this.savePluginData();
     }, () => {
@@ -2557,6 +2770,7 @@ var RefinedLayoutPlugin = class extends import_obsidian4.Plugin {
     }
     this.appliedProperties = new Set(variables.keys());
     this.refreshMermaidClassifications();
+    this.tableTypography.refresh();
     this.blankLineNavigation.requestMeasure();
   }
   startMermaidObserver() {

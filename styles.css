@@ -829,6 +829,78 @@ body.refined-layout-enabled.rl-read-mermaid .markdown-preview-view.markdown-rend
    Tables: top-level body, Callout and blockquote contexts
    -------------------------------------------------------------------------- */
 
+/* Each table gets the variables for its actual view and owning settings group.
+   Live Preview widgets also carry .markdown-rendered, so that class alone must
+   not choose the reading-view typography. */
+body.refined-layout-enabled table[data-rl-table-typography="edit-table"] {
+  --rl-table-font-size-px: var(--rl-edit-table-font-size-px);
+  --rl-table-line-height: var(--rl-edit-table-line-height);
+  --rl-table-empty-line-height-em: var(--rl-edit-table-empty-line-height-em);
+}
+
+body.refined-layout-enabled table[data-rl-table-typography="read-table"] {
+  --rl-table-font-size-px: var(--rl-read-table-font-size-px);
+  --rl-table-line-height: var(--rl-read-table-line-height);
+  --rl-table-empty-line-height-em: var(--rl-read-table-empty-line-height-em);
+}
+
+body.refined-layout-enabled table[data-rl-table-typography="edit-callout-table"] {
+  --rl-table-font-size-px: var(--rl-edit-callout-table-font-size-px);
+  --rl-table-line-height: var(--rl-edit-callout-table-line-height);
+  --rl-table-empty-line-height-em: var(--rl-edit-callout-table-empty-line-height-em);
+}
+
+body.refined-layout-enabled table[data-rl-table-typography="read-callout-table"] {
+  --rl-table-font-size-px: var(--rl-read-callout-table-font-size-px);
+  --rl-table-line-height: var(--rl-read-callout-table-line-height);
+  --rl-table-empty-line-height-em: var(--rl-read-callout-table-empty-line-height-em);
+}
+
+body.refined-layout-enabled table[data-rl-table-typography="edit-blockquote-table"] {
+  --rl-table-font-size-px: var(--rl-edit-blockquote-table-font-size-px);
+  --rl-table-line-height: var(--rl-edit-blockquote-table-line-height);
+  --rl-table-empty-line-height-em: var(--rl-edit-blockquote-table-empty-line-height-em);
+}
+
+body.refined-layout-enabled table[data-rl-table-typography="read-blockquote-table"] {
+  --rl-table-font-size-px: var(--rl-read-blockquote-table-font-size-px);
+  --rl-table-line-height: var(--rl-read-blockquote-table-line-height);
+  --rl-table-empty-line-height-em: var(--rl-read-blockquote-table-empty-line-height-em);
+}
+
+body.refined-layout-enabled table[data-rl-table-typography] {
+  font-size: var(--rl-table-font-size-px) !important;
+}
+
+/* Size the nested editor and scroller too, so its measurements and caret use
+   the same font size as the rendered cell, including after focus changes. */
+body.refined-layout-enabled :is(.markdown-source-view.mod-cm6, .markdown-preview-view.markdown-rendered) table[data-rl-table-typography] :is(th, td, .table-cell-wrapper, .cm-s-obsidian, .cm-editor, .cm-scroller, .cm-content, .cm-line, p, li):not(:where(.canvas-wrapper *, .canvas-node *, .mermaid *, .block-language-dataviewjs *, .markdown-embed *)) {
+  font-size: var(--rl-table-font-size-px) !important;
+  line-height: var(--rl-table-line-height) !important;
+}
+
+/* A cell editor can stay mounted after blur; never depend on .cm-focused.
+   Empty CM lines keep their own height so CodeMirror can measure them. */
+body.refined-layout-enabled .markdown-source-view.mod-cm6 table[data-rl-table-typography] .cm-content > .cm-line:has(> br:only-child):not(:where(.canvas-wrapper *, .canvas-node *, .mermaid *, .block-language-dataviewjs *, .markdown-embed *)) {
+  line-height: var(--rl-table-empty-line-height-em) !important;
+}
+
+/* Rendered empty lines are boxed individually, preserving the first BR and
+   adding exactly one independently sized gap for each subsequent empty line. */
+body.refined-layout-enabled table[data-rl-table-typography] .rl-table-blank-line {
+  display: block !important;
+  height: var(--rl-table-empty-line-height-em) !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  line-height: 0 !important;
+}
+
+body.refined-layout-enabled table[data-rl-table-typography] .rl-table-blank-line > br {
+  display: none !important;
+}
+
 body.refined-layout-enabled.rl-edit-tables .markdown-source-view.mod-cm6 .cm-content table:not(.callout *):not(blockquote *):not(:where(.canvas-wrapper, .canvas-wrapper *, .canvas-node, .canvas-node *, .mermaid, .mermaid *)),
 body.refined-layout-enabled.rl-read-tables .markdown-rendered table:not(.callout *):not(.el-blockquote *):not(:where(.block-language-dataviewjs *)):not(:where(.canvas-wrapper, .canvas-wrapper *, .canvas-node, .canvas-node *, .mermaid, .mermaid *)),
 body.refined-layout-enabled.rl-edit-callouts .markdown-source-view.mod-cm6 :is(.callout, .callout-content) table:not(:where(.canvas-wrapper, .canvas-wrapper *, .canvas-node, .canvas-node *, .mermaid, .mermaid *)),
@@ -1396,13 +1468,36 @@ body.refined-layout-enabled.rl-read-code-blocks .markdown-rendered code[class*="
 }
 
 .rl-update-notes-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   flex-shrink: 0;
+  gap: var(--size-4-3, 12px);
   padding-top: 16px;
   border-top: 1px solid var(--background-modifier-border);
 }
 
+.rl-update-notes-footer .rl-update-notes-link {
+  color: var(--text-accent);
+  font-size: var(--font-ui-small, 14px);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.rl-update-notes-footer .rl-update-notes-link:hover {
+  color: var(--text-accent-hover);
+}
+
+.rl-update-notes-footer .rl-update-notes-link:focus-visible {
+  border-radius: var(--radius-s, 4px);
+  outline: 2px solid var(--background-modifier-border-focus);
+  outline-offset: 3px;
+}
+
 .rl-update-notes-footer .setting-item {
+  flex-shrink: 0;
   margin: 0;
+  margin-inline-start: auto;
   padding: 0;
   border: none;
 }
@@ -1452,6 +1547,22 @@ body.refined-layout-enabled.rl-read-code-blocks .markdown-rendered code[class*="
 
 .refined-layout-settings.rl-settings-native-group {
   padding-bottom: 0;
+}
+
+/* Let the shared action row wrap within narrow settings panes. */
+.setting-item.rl-settings-config-actions {
+  flex-wrap: wrap;
+  gap: var(--size-4-3, 12px);
+}
+
+.rl-settings-config-actions .setting-item-info {
+  flex: 1 1 180px;
+}
+
+.rl-settings-config-actions .setting-item-control {
+  flex-wrap: wrap;
+  gap: var(--size-4-2, 8px);
+  max-width: 100%;
 }
 
 /* Mode switch ------------------------------------------------------------- */

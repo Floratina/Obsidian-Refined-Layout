@@ -6,11 +6,30 @@ import japaneseNotes from "../RELEASE_NOTES_ja.md";
 import { selectLocale } from "./i18n/core";
 import type { LanguagePreference, Locale } from "./i18n/language";
 
-const localizedNotes: Record<Locale, { markdown: string; title: string; heading: string; close: string }> = {
-  en: { markdown: englishNotes, title: "Update Notes", heading: "What's new", close: "Got it" },
-  "zh-CN": { markdown: chineseNotes, title: "更新说明", heading: "更新说明", close: "知道了" },
-  "zh-TW": { markdown: traditionalChineseNotes, title: "更新說明", heading: "更新說明", close: "知道了" },
-  ja: { markdown: japaneseNotes, title: "更新内容", heading: "更新内容", close: "閉じる" },
+const localizedNotes: Record<Locale, {
+  markdown: string;
+  title: string;
+  heading: string;
+  close: string;
+  fullLogLabel: string;
+  file: string;
+}> = {
+  en: {
+    markdown: englishNotes, title: "Update Notes", heading: "What's new", close: "Got it",
+    fullLogLabel: "View full changelog", file: "RELEASE_NOTES.md",
+  },
+  "zh-CN": {
+    markdown: chineseNotes, title: "更新说明", heading: "更新说明", close: "知道了",
+    fullLogLabel: "查看完整日志", file: "RELEASE_NOTES_zh-CN.md",
+  },
+  "zh-TW": {
+    markdown: traditionalChineseNotes, title: "更新說明", heading: "更新說明", close: "知道了",
+    fullLogLabel: "檢視完整日誌", file: "RELEASE_NOTES_zh-TW.md",
+  },
+  ja: {
+    markdown: japaneseNotes, title: "更新内容", heading: "更新内容", close: "閉じる",
+    fullLogLabel: "すべての更新履歴を見る", file: "RELEASE_NOTES_ja.md",
+  },
 };
 
 export function shouldShowUpdateNotes(lastSeen: unknown, currentId: string): boolean {
@@ -52,6 +71,8 @@ export function getUpdateNotes(preference: LanguagePreference, version: string, 
     heading: notes.heading,
     markdown,
     close: notes.close,
+    fullLogLabel: notes.fullLogLabel,
+    fullLogUrl: `https://github.com/Floratina/Obsidian-Refined-Layout/blob/main/${notes.file}`,
   };
 }
 
@@ -73,6 +94,12 @@ export class UpdateNotesModal extends Modal {
     version.createSpan({ cls: "rl-update-notes-version-number", text: `v${this.notes.id}` });
     const markdown = scroll.createDiv({ cls: "rl-update-notes-markdown" });
     const footer = this.contentEl.createDiv({ cls: "rl-update-notes-footer" });
+    footer.createEl("a", {
+      cls: "external-link rl-update-notes-link",
+      text: this.notes.fullLogLabel,
+      href: this.notes.fullLogUrl,
+      attr: { target: "_blank", rel: "noopener noreferrer" },
+    });
     new Setting(footer).addButton((button) => button
       .setButtonText(this.notes.close)
       .setCta()

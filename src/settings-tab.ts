@@ -5,6 +5,7 @@ import {
   PluginSettingTab,
   Setting,
   requireApiVersion,
+  type ButtonComponent,
   type SettingDefinitionItem,
   type SettingDefinitionGroup,
   type SettingDefinitionPage,
@@ -149,17 +150,35 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
         type: "group",
         items: [
           { name: t("language.name"), desc: t("language.description"), render: (setting) => { this.renderLanguage(setting); } },
-          ...([
-            ["actions.export", "actions.exportDesc", () => this.plugin.exportSettings()],
-            ["actions.import", "actions.importDesc", (setting: Setting) => this.pickSettingsFile(setting.controlEl)],
-            ["actions.resetAll", "actions.resetAllDesc", () => this.confirmResetAll()],
-          ] as const).map(([name, desc, onClick]) => ({
-            name: t(name),
-            desc: t(desc),
-            render: (setting: Setting) => {
-              setting.addButton((button) => button.setButtonText(t(name)).onClick(() => onClick(setting)));
+          {
+            name: t("actions.manage"),
+            desc: t("actions.manageDesc"),
+            aliases: [t("actions.import"), t("actions.export"), t("actions.resetAll")],
+            render: (setting) => {
+              setting.setClass("rl-settings-config-actions")
+                .addButton((button) => button
+                  .setButtonText(t("actions.import"))
+                  .setTooltip(t("actions.importDesc"))
+                  .onClick(() => this.pickSettingsFile(setting.controlEl)))
+                .addButton((button) => button
+                  .setButtonText(t("actions.export"))
+                  .setTooltip(t("actions.exportDesc"))
+                  .onClick(() => this.plugin.exportSettings()))
+                .addButton((button) => setDestructiveButton(button)
+                  .setButtonText(t("actions.resetAll"))
+                  .setTooltip(t("actions.resetAllDesc"))
+                  .onClick(() => this.confirmResetAll()));
             },
-          })),
+          },
+          {
+            name: t("updateNotes.name"),
+            desc: t("updateNotes.description"),
+            render: (setting) => {
+              setting.addButton((button) => button
+                .setButtonText(t("updateNotes.open"))
+                .onClick(() => this.plugin.showUpdateNotes(true)));
+            },
+          },
         ],
       },
       {
@@ -302,6 +321,12 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
   }
 }
 
+function setDestructiveButton(button: ButtonComponent): ButtonComponent {
+  return requireApiVersion("1.13.0")
+    ? button.setDestructive().setCta()
+    : button.setWarning();
+}
+
 class ResetAllModal extends Modal {
   constructor(app: App, private readonly t: ReturnType<typeof getTranslator>,
     private readonly onConfirm: () => void) {
@@ -315,9 +340,8 @@ class ResetAllModal extends Modal {
       .addButton((button) => button
         .setButtonText(this.t("actions.cancel"))
         .onClick(() => this.close()))
-      .addButton((button) => button
+      .addButton((button) => setDestructiveButton(button)
         .setButtonText(this.t("actions.resetAll"))
-        .setWarning()
         .onClick(() => {
           this.close();
           this.onConfirm();
