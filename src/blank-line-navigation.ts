@@ -1,7 +1,14 @@
 import { EditorSelection, Prec, type Line, type SelectionRange } from "@codemirror/state";
 import { BlockType, EditorView, keymap, ViewPlugin } from "@codemirror/view";
 
-const EXCLUDED = ".canvas-wrapper, .canvas-node, .mermaid, .block-language-dataviewjs, .markdown-embed, .callout, .cm-callout, .cm-table-widget";
+const TABLE_EXCLUDED = ".canvas-wrapper, .canvas-node, .mermaid, .block-language-dataviewjs, .markdown-embed";
+const EXCLUDED = `${TABLE_EXCLUDED}, .callout, .cm-callout, .cm-table-widget`;
+
+function isTableCellEditor(view: EditorView): boolean {
+  const table = view.dom.closest("table");
+  return !!table?.getAttribute("data-rl-table-typography")?.startsWith("edit-")
+    && view.dom.closest("th, td")?.closest("table") === table;
+}
 
 function hasBlockingWidget(dom: HTMLElement): boolean {
   return Array.from(dom.querySelectorAll('[contenteditable="false"], .cm-widgetBuffer')).some((widget) => {
@@ -14,7 +21,7 @@ function hasBlockingWidget(dom: HTMLElement): boolean {
   });
 }
 
-function textLineElement(view: EditorView, line: Line): HTMLElement | null {
+function textLineElement(view: EditorView, line: Line, excluded: string): HTMLElement | null {
   if (!view.visibleRanges.some(({ from, to }) => from <= line.from && to >= line.to)) return null;
   const block = view.lineBlockAt(line.from);
   if (block.type !== BlockType.Text || block.from !== line.from || block.to !== line.to) return null;
@@ -23,12 +30,12 @@ function textLineElement(view: EditorView, line: Line): HTMLElement | null {
   const element = node.nodeType === 1 ? node as HTMLElement : node.parentElement;
   const dom = element?.closest<HTMLElement>(".cm-line");
   if (!dom || dom.parentElement !== view.contentDOM || view.posAtDOM(dom, 0) !== line.from) return null;
-  if (dom.closest(EXCLUDED) || hasBlockingWidget(dom)) return null;
+  if (dom.closest(excluded) || hasBlockingWidget(dom)) return null;
   if (dom.getClientRects().length === 0) return null;
   return dom;
 }
 
-function compressedBlank(view: EditorView, line: Line, dom: HTMLElement): boolean {
+function compressedBlank(view: EditorView, line: Line, dom: HTMLElement, tableCell: boolean): boolean {
   if (line.length !== 0 || !dom.matches(":has(> br:only-child)")) return false;
   const classes = dom.ownerDocument.body.classList;
   const bodyRule = classes.contains("rl-edit-body");
@@ -37,7 +44,9 @@ function compressedBlank(view: EditorView, line: Line, dom: HTMLElement): boolea
   const headingRule = classes.contains("rl-edit-heading-gaps")
     && dom.previousElementSibling?.matches('[class*="HyperMD-header"]')
     && dom.nextElementSibling?.matches('.cm-line:not([class*="HyperMD-header"]), .cm-callout, .cm-table-widget, .image-embed');
-  if (!bodyRule && !codeRule && !headingRule) return false;
+  // TableTypography marks enabled tables with their own settings context;
+  // cell navigation must also work when the body module is disabled.
+  if (!tableCell && !bodyRule && !codeRule && !headingRule) return false;
 
   const style = dom.ownerDocument.defaultView!.getComputedStyle(dom);
   return style.visibility !== "hidden"
@@ -65,7 +74,9 @@ export function moveAcrossBlankLines(view: EditorView, forward: boolean, extend 
   const selection = view.state.selection;
   if (!view.hasFocus || view.composing || view.compositionStarted || view.state.readOnly
     || selection.ranges.length !== 1 || (!extend && !selection.main.empty)) return false;
-  if (!view.dom.closest(".markdown-source-view.mod-cm6") || view.dom.closest(EXCLUDED)
+  const tableCell = isTableCellEditor(view);
+  const excluded = tableCell ? TABLE_EXCLUDED : EXCLUDED;
+  if (!view.dom.closest(".markdown-source-view.mod-cm6") || view.dom.closest(excluded)
     || view.dom.classList.contains("cm-vimMode")) return false;
   const body = view.dom.ownerDocument.body;
   if (!body.classList.contains("refined-layout-enabled")) return false;
@@ -78,11 +89,11 @@ export function moveAcrossBlankLines(view: EditorView, forward: boolean, extend 
   const next = doc.line(nextNumber);
   if (current.length !== 0 && next.length !== 0) return false;
 
-  const currentDOM = textLineElement(view, current);
-  const nextDOM = textLineElement(view, next);
+  const currentDOM = textLineElement(view, current, excluded);
+  const nextDOM = textLineElement(view, next, excluded);
   if (!currentDOM || !nextDOM) return false;
-  const currentBlank = compressedBlank(view, current, currentDOM);
-  const nextBlank = compressedBlank(view, next, nextDOM);
+  const currentBlank = compressedBlank(view, current, currentDOM, tableCell);
+  const nextBlank = compressedBlank(view, next, nextDOM, tableCell);
   if (!currentBlank && !nextBlank) return false;
 
   // Suggestion lists belong to the host, not to the editor's vertical navigation.
@@ -132,6 +143,23 @@ export function moveAcrossBlankLines(view: EditorView, forward: boolean, extend 
   return true;
 }
 
+function handleTableArrow(event: KeyboardEvent): void {
+  if (event.defaultPrevented || event.isComposing || event.altKey || event.ctrlKey || event.metaKey
+    || (event.key !== "ArrowUp" && event.key !== "ArrowDown")) return;
+  const target = event.target as HTMLElement | null;
+  if (!target || target.nodeType !== 1) return;
+  const editor = target.closest<HTMLElement>(".cm-editor");
+  if (!editor) return;
+  const view = EditorView.findFromDOM(editor);
+  if (!view || view.dom !== editor || !isTableCellEditor(view)) return;
+
+  // Work in the cell's own document. At its first/last line, the shared
+  // handler yields so Obsidian can continue navigating between cells.
+  if (!moveAcrossBlankLines(view, event.key === "ArrowDown", event.shiftKey)) return;
+  event.preventDefault();
+  event.stopPropagation();
+}
+
 export function createBlankLineNavigation() {
   const views = new Set<EditorView>();
   const lifecycle = ViewPlugin.define((view) => {
@@ -142,6 +170,12 @@ export function createBlankLineNavigation() {
   return {
     extension: [
       lifecycle,
+      // Nested cell editors need not inherit the note's extensions. Capture
+      // their arrows on the containing editor before the table handles them.
+      ViewPlugin.define((view) => {
+        view.dom.addEventListener("keydown", handleTableArrow, true);
+        return { destroy: () => { view.dom.removeEventListener("keydown", handleTableArrow, true); } };
+      }),
       // Host/plugin arrow keymaps can already occupy the high-precedence group.
       // Run before those handlers; unaffected keys still fall through to them.
       Prec.highest(keymap.of([

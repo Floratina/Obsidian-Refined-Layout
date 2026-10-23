@@ -2,6 +2,19 @@
 
 **English** | [简体中文](RELEASE_NOTES_zh-CN.md) | [繁體中文](RELEASE_NOTES_zh-TW.md) | [日本語](RELEASE_NOTES_ja.md)
 
+## 1.0.3
+
+#### Added table layout settings
+
+You can now adjust line height and paragraph spacing inside tables.
+
+#### UI updates
+
+- Updated the layout of the "Manage settings" buttons to be more compact.
+- You can now view the changelog at any time.
+- Updated the update notes dialog and added a "View full changelog" link.
+
+
 ## 1.0.2
 
 #### Fixed list line height in Reading view

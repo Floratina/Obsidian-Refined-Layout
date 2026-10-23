@@ -29,14 +29,19 @@ var import_obsidian4 = require("obsidian");
 // src/blank-line-navigation.ts
 var import_state = require("@codemirror/state");
 var import_view = require("@codemirror/view");
-var EXCLUDED = ".canvas-wrapper, .canvas-node, .mermaid, .block-language-dataviewjs, .markdown-embed, .callout, .cm-callout, .cm-table-widget";
+var TABLE_EXCLUDED = ".canvas-wrapper, .canvas-node, .mermaid, .block-language-dataviewjs, .markdown-embed";
+var EXCLUDED = `${TABLE_EXCLUDED}, .callout, .cm-callout, .cm-table-widget`;
+function isTableCellEditor(view) {
+  const table = view.dom.closest("table");
+  return !!table?.getAttribute("data-rl-table-typography")?.startsWith("edit-") && view.dom.closest("th, td")?.closest("table") === table;
+}
 function hasBlockingWidget(dom) {
   return Array.from(dom.querySelectorAll('[contenteditable="false"], .cm-widgetBuffer')).some((widget) => {
     if (widget.closest(".cm-fold-indicator") || widget.matches('img.cm-widgetBuffer[aria-hidden="true"]')) return false;
     return !(widget.tagName === "SPAN" && widget.childNodes.length === 0 && widget.getBoundingClientRect().width === 0);
   });
 }
-function textLineElement(view, line) {
+function textLineElement(view, line, excluded) {
   if (!view.visibleRanges.some(({ from, to }) => from <= line.from && to >= line.to)) return null;
   const block = view.lineBlockAt(line.from);
   if (block.type !== import_view.BlockType.Text || block.from !== line.from || block.to !== line.to) return null;
@@ -44,17 +49,17 @@ function textLineElement(view, line) {
   const element = node.nodeType === 1 ? node : node.parentElement;
   const dom = element?.closest(".cm-line");
   if (!dom || dom.parentElement !== view.contentDOM || view.posAtDOM(dom, 0) !== line.from) return null;
-  if (dom.closest(EXCLUDED) || hasBlockingWidget(dom)) return null;
+  if (dom.closest(excluded) || hasBlockingWidget(dom)) return null;
   if (dom.getClientRects().length === 0) return null;
   return dom;
 }
-function compressedBlank(view, line, dom) {
+function compressedBlank(view, line, dom, tableCell) {
   if (line.length !== 0 || !dom.matches(":has(> br:only-child)")) return false;
   const classes = dom.ownerDocument.body.classList;
   const bodyRule = classes.contains("rl-edit-body");
   const codeRule = classes.contains("rl-edit-code-blocks") && dom.matches(".HyperMD-codeblock.HyperMD-codeblock-bg");
   const headingRule = classes.contains("rl-edit-heading-gaps") && dom.previousElementSibling?.matches('[class*="HyperMD-header"]') && dom.nextElementSibling?.matches('.cm-line:not([class*="HyperMD-header"]), .cm-callout, .cm-table-widget, .image-embed');
-  if (!bodyRule && !codeRule && !headingRule) return false;
+  if (!tableCell && !bodyRule && !codeRule && !headingRule) return false;
   const style = dom.ownerDocument.defaultView.getComputedStyle(dom);
   return style.visibility !== "hidden" && Number.parseFloat(style.lineHeight) < Math.max(view.defaultLineHeight, Number.parseFloat(style.fontSize)) - 0.5;
 }
@@ -73,7 +78,9 @@ function cursorAt(head, original, goalColumn) {
 function moveAcrossBlankLines(view, forward, extend = false) {
   const selection = view.state.selection;
   if (!view.hasFocus || view.composing || view.compositionStarted || view.state.readOnly || selection.ranges.length !== 1 || !extend && !selection.main.empty) return false;
-  if (!view.dom.closest(".markdown-source-view.mod-cm6") || view.dom.closest(EXCLUDED) || view.dom.classList.contains("cm-vimMode")) return false;
+  const tableCell = isTableCellEditor(view);
+  const excluded = tableCell ? TABLE_EXCLUDED : EXCLUDED;
+  if (!view.dom.closest(".markdown-source-view.mod-cm6") || view.dom.closest(excluded) || view.dom.classList.contains("cm-vimMode")) return false;
   const body = view.dom.ownerDocument.body;
   if (!body.classList.contains("refined-layout-enabled")) return false;
   const start = selection.main;
@@ -83,11 +90,11 @@ function moveAcrossBlankLines(view, forward, extend = false) {
   if (nextNumber < 1 || nextNumber > doc.lines) return false;
   const next = doc.line(nextNumber);
   if (current.length !== 0 && next.length !== 0) return false;
-  const currentDOM = textLineElement(view, current);
-  const nextDOM = textLineElement(view, next);
+  const currentDOM = textLineElement(view, current, excluded);
+  const nextDOM = textLineElement(view, next, excluded);
   if (!currentDOM || !nextDOM) return false;
-  const currentBlank = compressedBlank(view, current, currentDOM);
-  const nextBlank = compressedBlank(view, next, nextDOM);
+  const currentBlank = compressedBlank(view, current, currentDOM, tableCell);
+  const nextBlank = compressedBlank(view, next, nextDOM, tableCell);
   if (!currentBlank && !nextBlank) return false;
   if (Array.from(body.querySelectorAll(".suggestion-container")).some((element) => element.getClientRects().length > 0 && element.ownerDocument.defaultView.getComputedStyle(element).visibility !== "hidden")) return false;
   const cursor = cursorAt(start.head, start, start.goalColumn);
@@ -124,6 +131,18 @@ function moveAcrossBlankLines(view, forward, extend = false) {
   });
   return true;
 }
+function handleTableArrow(event) {
+  if (event.defaultPrevented || event.isComposing || event.altKey || event.ctrlKey || event.metaKey || event.key !== "ArrowUp" && event.key !== "ArrowDown") return;
+  const target = event.target;
+  if (!target || target.nodeType !== 1) return;
+  const editor = target.closest(".cm-editor");
+  if (!editor) return;
+  const view = import_view.EditorView.findFromDOM(editor);
+  if (!view || view.dom !== editor || !isTableCellEditor(view)) return;
+  if (!moveAcrossBlankLines(view, event.key === "ArrowDown", event.shiftKey)) return;
+  event.preventDefault();
+  event.stopPropagation();
+}
 function createBlankLineNavigation() {
   const views = /* @__PURE__ */ new Set();
   const lifecycle = import_view.ViewPlugin.define((view) => {
@@ -136,6 +155,14 @@ function createBlankLineNavigation() {
   return {
     extension: [
       lifecycle,
+      // Nested cell editors need not inherit the note's extensions. Capture
+      // their arrows on the containing editor before the table handles them.
+      import_view.ViewPlugin.define((view) => {
+        view.dom.addEventListener("keydown", handleTableArrow, true);
+        return { destroy: () => {
+          view.dom.removeEventListener("keydown", handleTableArrow, true);
+        } };
+      }),
       // Host/plugin arrow keymaps can already occupy the high-precedence group.
       // Run before those handlers; unaffected keys still fall through to them.
       import_state.Prec.highest(import_view.keymap.of([
