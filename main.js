@@ -1322,8 +1322,8 @@ var READ_CALLOUT_HEADINGS = {
   h2: { lineHeight: 1.372, topEm: 0.4, bottomEm: 0, bottomPx: 1 },
   h3: { lineHeight: 1.372, topEm: 0.4, bottomEm: 0, bottomPx: 0 },
   h4: { lineHeight: 1.372, topEm: 0.4, bottomEm: 0, bottomPx: 8 },
-  h5: { lineHeight: 1.3524, topEm: 0.35, bottomEm: 0, bottomPx: -4 },
-  h6: { lineHeight: 1.3328, topEm: 0.35, bottomEm: 0, bottomPx: -2 }
+  h5: { lineHeight: 1.3524, topEm: 0.35, bottomEm: 0, bottomPx: 4 },
+  h6: { lineHeight: 1.3328, topEm: 0.35, bottomEm: 0, bottomPx: 2 }
 };
 var EDIT_BLOCKQUOTE_HEADINGS = {
   h1: { lineHeight: 1.4, topEm: 0.4, bottomEm: 4e-3, bottomPx: 0 },
