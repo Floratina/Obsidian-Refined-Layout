@@ -3,7 +3,7 @@ import { createBlankLineNavigation } from "./blank-line-navigation";
 import { getTranslator } from "./i18n";
 import { normalizeLanguagePreference } from "./i18n/language";
 import { formatImportError } from "./i18n/import-error";
-import { isPortraitMermaid, isPositiveFiniteNumber } from "./mermaid";
+import { isPortraitMermaid, isPositiveFiniteNumber, readMermaidNaturalDimensions } from "./mermaid";
 import {
   cloneDefaultSettings,
   HEADING_LEVELS,
@@ -311,9 +311,13 @@ export default class RefinedLayoutPlugin extends Plugin {
   private startMermaidObserver(): void {
     this.mermaidObserver = new MutationObserver((records) => {
       for (const record of records) {
-        // Mermaid can finish its viewBox after inserting the SVG into the page.
+        // Legacy Mermaid can finish its viewBox after inserting the SVG into the page;
+        // Pele keeps natural dimensions on width/height attributes and mutates viewBox while zooming.
         if (record.type === "attributes" && record.target.instanceOf(Element)
           && record.target.matches(MERMAID_SVG_SELECTOR)) {
+          if (record.attributeName === "viewBox" && record.target.classList.contains("pele")) {
+            continue;
+          }
           this.classifyMermaid(record.target as SVGSVGElement);
         }
         for (const node of record.addedNodes) {
@@ -333,7 +337,7 @@ export default class RefinedLayoutPlugin extends Plugin {
       childList: true,
       subtree: true,
       attributes: true,
-      attributeFilter: ["viewBox"],
+      attributeFilter: ["viewBox", "width", "height"],
     });
     this.refreshMermaidClassifications();
   }
@@ -372,24 +376,21 @@ export default class RefinedLayoutPlugin extends Plugin {
       return;
     }
 
-    const { width, height } = svg.viewBox.baseVal;
+    const dimensions = readMermaidNaturalDimensions(svg);
     const portraitAspectRatio = this.settings[mode].mermaid.portraitAspectRatio;
-    if (
-      !isPositiveFiniteNumber(width)
-      || !isPositiveFiniteNumber(height)
-      || !isPositiveFiniteNumber(portraitAspectRatio)
-    ) {
+    if (dimensions === null || !isPositiveFiniteNumber(portraitAspectRatio)) {
       container.classList.remove(MERMAID_PORTRAIT_CLASS);
       svg.style.removeProperty(MERMAID_NATURAL_WIDTH_PROPERTY);
       if (!this.invalidMermaidSvgs.has(svg)) {
         console.error(
-          "[Refined Layout] Mermaid SVG has an invalid viewBox or portrait aspect-ratio setting; diagram left unclassified.",
-          { width, height, portraitAspectRatio, svg },
+          "[Refined Layout] Mermaid SVG has invalid natural dimensions or portrait aspect-ratio setting; diagram left unclassified.",
+          { dimensions, portraitAspectRatio, svg },
         );
         this.invalidMermaidSvgs.add(svg);
       }
       return;
     }
+    const { width, height } = dimensions;
 
     this.invalidMermaidSvgs.delete(svg);
     // Use the unscaled SVG coordinate width, never its already-scaled DOM width.

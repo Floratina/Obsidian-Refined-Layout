@@ -794,8 +794,8 @@ body.refined-layout-enabled.rl-read-mermaid .markdown-preview-view.markdown-rend
   overflow-x: auto !important;
 }
 
-body.refined-layout-enabled.rl-edit-mermaid .markdown-source-view.mod-cm6 .mermaid:not(:where(.block-language-dataviewjs *)) > svg:not(:where(.canvas-wrapper, .canvas-wrapper *, .canvas-node, .canvas-node *)),
-body.refined-layout-enabled.rl-read-mermaid .markdown-preview-view.markdown-rendered .mermaid:not(:where(.block-language-dataviewjs *)) > svg:not(:where(.canvas-wrapper, .canvas-wrapper *, .canvas-node, .canvas-node *)) {
+body.refined-layout-enabled.rl-edit-mermaid .markdown-source-view.mod-cm6 .mermaid:not(:where(.block-language-dataviewjs *)) > svg:not(.pele):not(:where(.canvas-wrapper, .canvas-wrapper *, .canvas-node, .canvas-node *)),
+body.refined-layout-enabled.rl-read-mermaid .markdown-preview-view.markdown-rendered .mermaid:not(:where(.block-language-dataviewjs *)) > svg:not(.pele):not(:where(.canvas-wrapper, .canvas-wrapper *, .canvas-node, .canvas-node *)) {
   display: block !important;
   width: 100% !important;
   min-width: var(--rl-edit-mermaid-landscape-min-width-px) !important;
@@ -805,11 +805,11 @@ body.refined-layout-enabled.rl-read-mermaid .markdown-preview-view.markdown-rend
   margin-left: auto !important;
 }
 
-body.refined-layout-enabled.rl-read-mermaid .markdown-preview-view.markdown-rendered .mermaid:not(:where(.block-language-dataviewjs *)) > svg:not(:where(.canvas-wrapper, .canvas-wrapper *, .canvas-node, .canvas-node *)) {
+body.refined-layout-enabled.rl-read-mermaid .markdown-preview-view.markdown-rendered .mermaid:not(:where(.block-language-dataviewjs *)) > svg:not(.pele):not(:where(.canvas-wrapper, .canvas-wrapper *, .canvas-node, .canvas-node *)) {
   min-width: var(--rl-read-mermaid-landscape-min-width-px) !important;
 }
 
-body.refined-layout-enabled.rl-edit-mermaid .markdown-source-view.mod-cm6 .mermaid.rl-mermaid-portrait:not(:where(.block-language-dataviewjs *)) > svg:not(:where(.canvas-wrapper, .canvas-wrapper *, .canvas-node, .canvas-node *)) {
+body.refined-layout-enabled.rl-edit-mermaid .markdown-source-view.mod-cm6 .mermaid.rl-mermaid-portrait:not(:where(.block-language-dataviewjs *)) > svg:not(.pele):not(:where(.canvas-wrapper, .canvas-wrapper *, .canvas-node, .canvas-node *)) {
   --rl-mermaid-natural-width: 100%;
 
   width: var(--rl-mermaid-natural-width) !important;
@@ -817,12 +817,41 @@ body.refined-layout-enabled.rl-edit-mermaid .markdown-source-view.mod-cm6 .merma
   max-width: var(--rl-edit-mermaid-portrait-max-width-pct) !important;
 }
 
-body.refined-layout-enabled.rl-read-mermaid .markdown-preview-view.markdown-rendered .mermaid.rl-mermaid-portrait:not(:where(.block-language-dataviewjs *)) > svg:not(:where(.canvas-wrapper, .canvas-wrapper *, .canvas-node, .canvas-node *)) {
+body.refined-layout-enabled.rl-read-mermaid .markdown-preview-view.markdown-rendered .mermaid.rl-mermaid-portrait:not(:where(.block-language-dataviewjs *)) > svg:not(.pele):not(:where(.canvas-wrapper, .canvas-wrapper *, .canvas-node, .canvas-node *)) {
   --rl-mermaid-natural-width: 100%;
 
   width: var(--rl-mermaid-natural-width) !important;
   min-width: 0 !important;
   max-width: var(--rl-read-mermaid-portrait-max-width-pct) !important;
+}
+
+/* Pele sets inline width, height, and margin while zoomed, then restores its
+   initial inline styles on reset. Avoid !important on those properties so
+   Pele's zoom box can take over and hand control back cleanly. */
+body.refined-layout-enabled.rl-edit-mermaid .markdown-source-view.mod-cm6 .mermaid:not(:where(.block-language-dataviewjs *)) > svg.pele:not(:where(.canvas-wrapper, .canvas-wrapper *, .canvas-node, .canvas-node *)),
+body.refined-layout-enabled.rl-read-mermaid .markdown-preview-view.markdown-rendered .mermaid:not(:where(.block-language-dataviewjs *)) > svg.pele:not(:where(.canvas-wrapper, .canvas-wrapper *, .canvas-node, .canvas-node *)) {
+  display: block;
+  width: max(100%, var(--rl-edit-mermaid-landscape-min-width-px));
+  max-width: none !important;
+  height: auto;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+body.refined-layout-enabled.rl-read-mermaid .markdown-preview-view.markdown-rendered .mermaid:not(:where(.block-language-dataviewjs *)) > svg.pele:not(:where(.canvas-wrapper, .canvas-wrapper *, .canvas-node, .canvas-node *)) {
+  width: max(100%, var(--rl-read-mermaid-landscape-min-width-px));
+}
+
+body.refined-layout-enabled.rl-edit-mermaid .markdown-source-view.mod-cm6 .mermaid.rl-mermaid-portrait:not(:where(.block-language-dataviewjs *)) > svg.pele:not(:where(.canvas-wrapper, .canvas-wrapper *, .canvas-node, .canvas-node *)) {
+  --rl-mermaid-natural-width: 100%;
+
+  width: min(var(--rl-mermaid-natural-width), var(--rl-edit-mermaid-portrait-max-width-pct));
+}
+
+body.refined-layout-enabled.rl-read-mermaid .markdown-preview-view.markdown-rendered .mermaid.rl-mermaid-portrait:not(:where(.block-language-dataviewjs *)) > svg.pele:not(:where(.canvas-wrapper, .canvas-wrapper *, .canvas-node, .canvas-node *)) {
+  --rl-mermaid-natural-width: 100%;
+
+  width: min(var(--rl-mermaid-natural-width), var(--rl-read-mermaid-portrait-max-width-pct));
 }
 
 /* --------------------------------------------------------------------------

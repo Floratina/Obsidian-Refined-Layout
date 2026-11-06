@@ -1717,6 +1717,29 @@ function formatImportError(error, t) {
 function isPositiveFiniteNumber(value) {
   return Number.isFinite(value) && value > 0;
 }
+function parsePositiveDimensionAttribute(value) {
+  if (value === null) {
+    return null;
+  }
+  const trimmed = value.trim();
+  if (trimmed === "") {
+    return null;
+  }
+  const parsed = Number(trimmed);
+  return isPositiveFiniteNumber(parsed) ? parsed : null;
+}
+function readMermaidNaturalDimensions(svg) {
+  if (svg.classList.contains("pele")) {
+    const width = parsePositiveDimensionAttribute(svg.getAttribute("width"));
+    const height = parsePositiveDimensionAttribute(svg.getAttribute("height"));
+    return width !== null && height !== null ? { width, height } : null;
+  }
+  const baseVal = svg.viewBox?.baseVal;
+  if (baseVal !== null && baseVal !== void 0 && isPositiveFiniteNumber(baseVal.width) && isPositiveFiniteNumber(baseVal.height)) {
+    return { width: baseVal.width, height: baseVal.height };
+  }
+  return null;
+}
 function isPortraitMermaid(width, height, portraitAspectRatio) {
   if (!isPositiveFiniteNumber(width) || !isPositiveFiniteNumber(height)) {
     throw new RangeError(`Mermaid viewBox dimensions must be positive finite numbers: ${width} x ${height}`);
@@ -2777,6 +2800,9 @@ var RefinedLayoutPlugin = class extends import_obsidian4.Plugin {
     this.mermaidObserver = new MutationObserver((records) => {
       for (const record of records) {
         if (record.type === "attributes" && record.target.instanceOf(Element) && record.target.matches(MERMAID_SVG_SELECTOR)) {
+          if (record.attributeName === "viewBox" && record.target.classList.contains("pele")) {
+            continue;
+          }
           this.classifyMermaid(record.target);
         }
         for (const node of record.addedNodes) {
@@ -2796,7 +2822,7 @@ var RefinedLayoutPlugin = class extends import_obsidian4.Plugin {
       childList: true,
       subtree: true,
       attributes: true,
-      attributeFilter: ["viewBox"]
+      attributeFilter: ["viewBox", "width", "height"]
     });
     this.refreshMermaidClassifications();
   }
@@ -2825,20 +2851,21 @@ var RefinedLayoutPlugin = class extends import_obsidian4.Plugin {
       svg.style.removeProperty(MERMAID_NATURAL_WIDTH_PROPERTY);
       return;
     }
-    const { width, height } = svg.viewBox.baseVal;
+    const dimensions = readMermaidNaturalDimensions(svg);
     const portraitAspectRatio = this.settings[mode].mermaid.portraitAspectRatio;
-    if (!isPositiveFiniteNumber(width) || !isPositiveFiniteNumber(height) || !isPositiveFiniteNumber(portraitAspectRatio)) {
+    if (dimensions === null || !isPositiveFiniteNumber(portraitAspectRatio)) {
       container.classList.remove(MERMAID_PORTRAIT_CLASS);
       svg.style.removeProperty(MERMAID_NATURAL_WIDTH_PROPERTY);
       if (!this.invalidMermaidSvgs.has(svg)) {
         console.error(
-          "[Refined Layout] Mermaid SVG has an invalid viewBox or portrait aspect-ratio setting; diagram left unclassified.",
-          { width, height, portraitAspectRatio, svg }
+          "[Refined Layout] Mermaid SVG has invalid natural dimensions or portrait aspect-ratio setting; diagram left unclassified.",
+          { dimensions, portraitAspectRatio, svg }
         );
         this.invalidMermaidSvgs.add(svg);
       }
       return;
     }
+    const { width, height } = dimensions;
     this.invalidMermaidSvgs.delete(svg);
     svg.style.setProperty(MERMAID_NATURAL_WIDTH_PROPERTY, `${width}px`);
     container.classList.toggle(
