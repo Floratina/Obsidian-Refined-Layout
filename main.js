@@ -1420,7 +1420,7 @@ var DEFAULT_SETTINGS = {
     image: { ...EDIT_IMAGE, marginTopPx: 5, marginBottomPx: 10 },
     mermaid: {
       portraitMaxWidthPct: 55,
-      portraitAspectRatio: 1,
+      portraitAspectRatio: 0.8,
       landscapeMinWidthPx: 450
     },
     table: { ...EDIT_TABLE },
@@ -1524,7 +1524,7 @@ var DEFAULT_SETTINGS = {
     image: { ...READ_IMAGE, marginTopPx: 0, marginBottomPx: 10 },
     mermaid: {
       portraitMaxWidthPct: 55,
-      portraitAspectRatio: 1,
+      portraitAspectRatio: 0.8,
       landscapeMinWidthPx: 450
     },
     table: { ...READ_TABLE },

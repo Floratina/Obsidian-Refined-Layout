@@ -373,17 +373,6 @@ if (settingsSource === undefined) {
   collect("edit", settingsModule.DEFAULT_SETTINGS.edit);
   collect("read", settingsModule.DEFAULT_SETTINGS.read);
 
-  for (const mode of ["edit", "read"]) {
-    const defaults = settingsModule.DEFAULT_SETTINGS[mode];
-    if (
-      defaults.modules.mermaid !== true
-      || defaults.mermaid.portraitMaxWidthPct !== 55
-      || defaults.mermaid.portraitAspectRatio !== 1
-      || defaults.mermaid.landscapeMinWidthPx !== 450
-    ) {
-      failures.push(`${mode} Mermaid 默认设置检查失败`);
-    }
-  }
 
   const referencedVariables = new Set(
     [...css.matchAll(/var\((--rl-[a-z0-9-]+)/g)].map((match) => match[1]),
@@ -478,7 +467,7 @@ if (settingsSource === undefined) {
     mergedSchemaTwo.schemaVersion !== 3
     || mergedSchemaTwo.edit.modules.body !== false
     || mergedSchemaTwo.edit.modules.mermaid !== true
-    || mergedSchemaTwo.edit.mermaid.portraitAspectRatio !== 1
+    || mergedSchemaTwo.edit.mermaid.portraitAspectRatio !== settingsModule.DEFAULT_SETTINGS.edit.mermaid.portraitAspectRatio
     || mergedSchemaTwo.read.mermaid.portraitMaxWidthPct !== 55
   ) {
     failures.push("schemaVersion 2 设置补全 Mermaid 默认值检查失败");

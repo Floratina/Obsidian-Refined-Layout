@@ -93,7 +93,7 @@ When a heading is immediately followed by a paragraph, list, blockquote, code bl
 
 Mermaid generates flowcharts and other diagrams from text syntax. The plugin uses each diagram’s original aspect ratio to distinguish portrait diagrams from standard or landscape diagrams, with three controls:
 
-- **Portrait aspect ratio threshold**: Define which width-to-height ratios count as portrait.
+- **Portrait aspect ratio threshold**: Defaults to `0.8`. A diagram is treated as portrait when its original width divided by height is at or below this value, meaning its height is at least 1.25 times its width. Updating the default does not overwrite saved values.
 - **Portrait maximum width**: Display portrait diagrams centered at their original size without enlarging them. Scale them down proportionally only when they exceed the configured percentage of the content width.
 - **Landscape minimum width**: Preserve a minimum width for standard or landscape diagrams and allow horizontal scrolling when there is not enough space.
 
