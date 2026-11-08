@@ -2499,7 +2499,11 @@ var UpdateNotesModal = class extends import_obsidian3.Modal {
       href: this.notes.fullLogUrl,
       attr: { target: "_blank", rel: "noopener noreferrer" }
     });
-    new import_obsidian3.Setting(footer).addButton((button) => button.setButtonText(this.notes.close).setCta().onClick(() => this.close()));
+    footer.createEl("button", {
+      cls: "mod-cta",
+      text: this.notes.close,
+      attr: { type: "button" }
+    }).addEventListener("click", () => this.close());
     this.renderComponent.load();
     try {
       await import_obsidian3.MarkdownRenderer.render(this.app, this.notes.markdown, markdown, "", this.renderComponent);

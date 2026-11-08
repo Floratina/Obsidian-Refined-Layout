@@ -1517,24 +1517,11 @@ body.refined-layout-enabled.rl-read-code-blocks .markdown-rendered code[class*="
   outline-offset: 3px;
 }
 
-.rl-update-notes-footer .setting-item {
+.rl-update-notes-footer button {
   flex-shrink: 0;
+  min-width: 88px;
   margin: 0;
   margin-inline-start: auto;
-  padding: 0;
-  border: none;
-}
-
-.rl-update-notes-footer .setting-item-info {
-  display: none;
-}
-
-.rl-update-notes-footer .setting-item-control {
-  justify-content: flex-end;
-}
-
-.rl-update-notes-footer button {
-  min-width: 88px;
 }
 
 @media (max-width: 480px) {
