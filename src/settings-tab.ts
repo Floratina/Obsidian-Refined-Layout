@@ -5,6 +5,7 @@ import {
   PluginSettingTab,
   Setting,
   requireApiVersion,
+  setIcon,
   type ButtonComponent,
   type SettingDefinitionItem,
   type SettingDefinitionGroup,
@@ -113,6 +114,7 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
     // other configuration after switching the home tab.
     const mode = this.mode;
     const modes = getModeLabels(t);
+    const nativeMermaidZoom = requireApiVersion("1.15.0");
     const pages = getSettingsTabs(t).map((tab): SettingDefinitionPage => ({
       type: "page",
       name: `${modes[mode]} · ${tab.label}`,
@@ -123,7 +125,7 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
           desc: tab.description,
           render: (setting) => { this.renderModule(setting, mode, tab, () => this.refresh()); },
         },
-        ...new SettingsCatalog(t, mode).build(tab).flatMap((group): SettingDefinitionGroup[] => {
+        ...new SettingsCatalog(t, mode, { nativeMermaidZoom }).build(tab).flatMap((group): SettingDefinitionGroup[] => {
           const makeGroup = (heading: string, fields: NumberField[]): SettingDefinitionGroup => ({
             type: "group",
             heading,
@@ -134,13 +136,30 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
               aliases: [modes[mode], tab.label, group.title, field.path.join(" ")],
               render: (setting) => {
                 this.renderNumber(setting, mode, field);
-                setting.setDisabled(!this.plugin.settings[mode].modules[tab.module]);
+                setting.setDisabled(Boolean(field.disabled) || !this.plugin.settings[mode].modules[tab.module]);
               },
             })),
           });
-          return "fields" in group
+          const groups = "fields" in group
             ? [makeGroup(group.title, group.fields)]
             : HEADING_LEVELS.map((level) => makeGroup(`${group.title} · ${HEADING_LABELS[level]}`, group.levels[level]));
+          if (group.infoBox !== undefined) {
+            const infoBox = group.infoBox;
+            groups.push({
+              type: "group",
+              cls: "refined-layout-settings rl-settings-native-group rl-settings-infobox-group",
+              items: [{
+                name: "",
+                searchable: false,
+                render: (setting) => {
+                  setting.settingEl.empty();
+                  setting.settingEl.addClass("refined-layout-settings", "rl-settings-infobox-row");
+                  this.renderInfoBox(setting.settingEl, infoBox);
+                },
+              }],
+            });
+          }
+          return groups;
         }),
       ],
     }));
@@ -299,8 +318,24 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
 
   }
 
+  private renderInfoBox(container: HTMLElement, message: string): void {
+    const callout = container.createDiv({
+      cls: "callout rl-settings-infobox",
+      attr: { "data-callout": "info", role: "note" },
+    });
+    const icon = callout.createDiv({
+      cls: "callout-icon",
+      attr: { "aria-hidden": "true" },
+    });
+    setIcon(icon, "lucide-info");
+    callout.createDiv({
+      cls: "rl-settings-infobox-content",
+      text: message,
+    });
+  }
+
   private renderNumber(setting: Setting, mode: ModeKey, field: NumberField): void {
-    const { path, name, description, options: config } = field;
+    const { path, name, description, options: config, disabled } = field;
     setting.setName(name).setDesc(description);
     setting.addText((text) => {
       text.setValue(String(this.plugin.getNumber(mode, path)));
@@ -309,7 +344,11 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
       text.inputEl.min = String(config.min);
       text.inputEl.max = String(config.max);
       text.inputEl.addClass("rl-settings-number");
+      if (disabled) {
+        text.inputEl.disabled = true;
+      }
       text.onChange((rawValue) => {
+        if (disabled) return;
         const parsed = Number(rawValue);
         if (!Number.isFinite(parsed) || parsed < config.min || parsed > config.max) return;
         this.plugin.setNumber(mode, path, parsed);
@@ -317,6 +356,9 @@ export class RefinedLayoutSettingTab extends PluginSettingTab {
     });
     if (config.unit !== "") {
       setting.controlEl.createSpan({ cls: "rl-settings-unit", text: config.unit === "ratio" ? this.t("unit.ratio") : config.unit });
+    }
+    if (disabled) {
+      setting.setDisabled(true);
     }
   }
 }

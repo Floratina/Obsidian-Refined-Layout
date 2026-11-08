@@ -184,6 +184,7 @@ export const translations = {
   "mermaid.portraitRatioDesc": "SVG の元の幅を高さで割った値が、この値以下の場合に縦長と判定します。",
   "mermaid.landscapeWidth": "横長の図の最小幅",
   "mermaid.landscapeWidthDesc": "通常・横長の Mermaid 図の最小幅。表示領域が足りない場合は横スクロールできます。",
+  "mermaid.landscapeWidthDisabledNotice": "Obsidian 1.15 以降では Mermaid 図の自動調整とズーム・パンに標準対応しているため、横方向の最小幅を制限する必要がなくなり、このバージョンでは「横長の図の最小幅」は無効化されています。",
   "table.group": "本文の表の書式と外観",
   "table.groupDesc": "本文の表の文字サイズ、文字の行の高さ、空行の高さ、セル内余白、枠線、角の丸み、上下の間隔。",
   "table.fontSize": "文字サイズ",

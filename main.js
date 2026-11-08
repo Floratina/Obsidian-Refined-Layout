@@ -364,6 +364,7 @@ var en = {
   "mermaid.portraitRatioDesc": "Original SVG width divided by height. Ratios at or below this value are treated as portrait.",
   "mermaid.landscapeWidth": "Landscape minimum width",
   "mermaid.landscapeWidthDesc": "Minimum width for regular or landscape Mermaid diagrams. Allow horizontal scrolling when space is insufficient.",
+  "mermaid.landscapeWidthDisabledNotice": "Obsidian 1.15+ natively supports responsive Mermaid diagrams with zoom and pan, so a minimum landscape width is no longer needed and \u201CLandscape minimum width\u201D is disabled in this version.",
   "table.group": "Body table typography & appearance",
   "table.groupDesc": "Font size, text line height, blank line height, cell padding, borders, corner radius, and vertical spacing of body tables.",
   "table.fontSize": "Font size",
@@ -619,6 +620,7 @@ var translations = {
   "mermaid.portraitRatioDesc": "SVG \u539F\u59CB\u5BBD\u5EA6\u9664\u4EE5\u9AD8\u5EA6\uFF1B\u5C0F\u4E8E\u6216\u7B49\u4E8E\u8BE5\u503C\u65F6\u89C6\u4E3A\u7EB5\u5411\u56FE\u3002",
   "mermaid.landscapeWidth": "\u6A2A\u5411\u56FE\u6700\u5C0F\u5BBD\u5EA6",
   "mermaid.landscapeWidthDesc": "\u666E\u901A\u6216\u6A2A\u5411 Mermaid \u7684\u6700\u5C0F\u5BBD\u5EA6\uFF1B\u7A7A\u95F4\u4E0D\u8DB3\u65F6\u5141\u8BB8\u6A2A\u5411\u6EDA\u52A8\u3002",
+  "mermaid.landscapeWidthDisabledNotice": "Obsidian 1.15 \u8D77\u5DF2\u539F\u751F\u652F\u6301 Mermaid \u56FE\u8868\u81EA\u9002\u5E94\u4E0E\u7F29\u653E\u5E73\u79FB\uFF0C\u65E0\u9700\u518D\u9650\u5236\u6A2A\u5411\u6700\u5C0F\u5BBD\u5EA6\uFF0C\u56E0\u6B64\u201C\u6A2A\u5411\u56FE\u6700\u5C0F\u5BBD\u5EA6\u201D\u5728\u5F53\u524D\u7248\u672C\u4E0B\u5DF2\u505C\u7528\u3002",
   "table.group": "\u6B63\u6587\u8868\u683C\u6392\u7248\u4E0E\u5916\u89C2",
   "table.groupDesc": "\u6B63\u6587\u8868\u683C\u7684\u5B57\u53F7\u3001\u6587\u5B57\u884C\u9AD8\u3001\u7A7A\u884C\u9AD8\u5EA6\u3001\u5355\u5143\u683C\u5185\u8FB9\u8DDD\u3001\u8FB9\u6846\u3001\u5706\u89D2\u548C\u4E0A\u4E0B\u95F4\u8DDD\u3002",
   "table.fontSize": "\u6587\u5B57\u5B57\u53F7",
@@ -874,6 +876,7 @@ var translations2 = {
   "mermaid.portraitRatioDesc": "SVG \u539F\u59CB\u5BEC\u5EA6\u9664\u4EE5\u9AD8\u5EA6\uFF1B\u5C0F\u65BC\u6216\u7B49\u65BC\u6B64\u503C\u6642\u8996\u70BA\u76F4\u5411\u5716\u3002",
   "mermaid.landscapeWidth": "\u6A6B\u5411\u5716\u6700\u5C0F\u5BEC\u5EA6",
   "mermaid.landscapeWidthDesc": "\u4E00\u822C\u6216\u6A6B\u5411 Mermaid \u5716\u8868\u7684\u6700\u5C0F\u5BEC\u5EA6\uFF1B\u7A7A\u9593\u4E0D\u8DB3\u6642\u5141\u8A31\u6C34\u5E73\u6372\u52D5\u3002",
+  "mermaid.landscapeWidthDisabledNotice": "Obsidian 1.15 \u8D77\u5DF2\u539F\u751F\u652F\u63F4 Mermaid \u5716\u8868\u81EA\u9069\u61C9\u8207\u7E2E\u653E\u5E73\u79FB\uFF0C\u7121\u9700\u518D\u9650\u5236\u6A6B\u5411\u6700\u5C0F\u5BEC\u5EA6\uFF0C\u56E0\u6B64\u300C\u6A6B\u5411\u5716\u6700\u5C0F\u5BEC\u5EA6\u300D\u5728\u76EE\u524D\u7248\u672C\u4E0B\u5DF2\u505C\u7528\u3002",
   "table.group": "\u5167\u6587\u8868\u683C\u6392\u7248\u8207\u5916\u89C0",
   "table.groupDesc": "\u5167\u6587\u8868\u683C\u7684\u5B57\u578B\u5927\u5C0F\u3001\u6587\u5B57\u884C\u9AD8\u3001\u7A7A\u767D\u884C\u9AD8\u5EA6\u3001\u5132\u5B58\u683C\u5167\u8DDD\u3001\u6846\u7DDA\u3001\u5713\u89D2\u8207\u4E0A\u4E0B\u9593\u8DDD\u3002",
   "table.fontSize": "\u5B57\u578B\u5927\u5C0F",
@@ -1129,6 +1132,7 @@ var translations3 = {
   "mermaid.portraitRatioDesc": "SVG \u306E\u5143\u306E\u5E45\u3092\u9AD8\u3055\u3067\u5272\u3063\u305F\u5024\u304C\u3001\u3053\u306E\u5024\u4EE5\u4E0B\u306E\u5834\u5408\u306B\u7E26\u9577\u3068\u5224\u5B9A\u3057\u307E\u3059\u3002",
   "mermaid.landscapeWidth": "\u6A2A\u9577\u306E\u56F3\u306E\u6700\u5C0F\u5E45",
   "mermaid.landscapeWidthDesc": "\u901A\u5E38\u30FB\u6A2A\u9577\u306E Mermaid \u56F3\u306E\u6700\u5C0F\u5E45\u3002\u8868\u793A\u9818\u57DF\u304C\u8DB3\u308A\u306A\u3044\u5834\u5408\u306F\u6A2A\u30B9\u30AF\u30ED\u30FC\u30EB\u3067\u304D\u307E\u3059\u3002",
+  "mermaid.landscapeWidthDisabledNotice": "Obsidian 1.15 \u4EE5\u964D\u3067\u306F Mermaid \u56F3\u306E\u81EA\u52D5\u8ABF\u6574\u3068\u30BA\u30FC\u30E0\u30FB\u30D1\u30F3\u306B\u6A19\u6E96\u5BFE\u5FDC\u3057\u3066\u3044\u308B\u305F\u3081\u3001\u6A2A\u65B9\u5411\u306E\u6700\u5C0F\u5E45\u3092\u5236\u9650\u3059\u308B\u5FC5\u8981\u304C\u306A\u304F\u306A\u308A\u3001\u3053\u306E\u30D0\u30FC\u30B8\u30E7\u30F3\u3067\u306F\u300C\u6A2A\u9577\u306E\u56F3\u306E\u6700\u5C0F\u5E45\u300D\u306F\u7121\u52B9\u5316\u3055\u308C\u3066\u3044\u307E\u3059\u3002",
   "table.group": "\u672C\u6587\u306E\u8868\u306E\u66F8\u5F0F\u3068\u5916\u89B3",
   "table.groupDesc": "\u672C\u6587\u306E\u8868\u306E\u6587\u5B57\u30B5\u30A4\u30BA\u3001\u6587\u5B57\u306E\u884C\u306E\u9AD8\u3055\u3001\u7A7A\u884C\u306E\u9AD8\u3055\u3001\u30BB\u30EB\u5185\u4F59\u767D\u3001\u67A0\u7DDA\u3001\u89D2\u306E\u4E38\u307F\u3001\u4E0A\u4E0B\u306E\u9593\u9694\u3002",
   "table.fontSize": "\u6587\u5B57\u30B5\u30A4\u30BA",
@@ -1809,9 +1813,10 @@ function inferNumberOptions(path, mode) {
   return { unit, min: allowsNegative ? -10 : 0, max: 100, step: 0.01 };
 }
 var SettingsCatalog = class {
-  constructor(t, mode) {
+  constructor(t, mode, options = {}) {
     this.t = t;
     this.mode = mode;
+    this.nativeMermaidZoom = Boolean(options.nativeMermaidZoom);
   }
   build(tab) {
     const panel = [];
@@ -1849,9 +1854,9 @@ var SettingsCatalog = class {
     }
     return panel;
   }
-  addGroup(groups, title, description) {
+  addGroup(groups, title, description, infoBox) {
     const fields = [];
-    groups.push({ title, description, fields });
+    groups.push(infoBox === void 0 ? { title, description, fields } : { title, description, infoBox, fields });
     return fields;
   }
   addHeadingGroup(groups, title, description, context) {
@@ -1859,8 +1864,12 @@ var SettingsCatalog = class {
     groups.push({ title, description, context, levels });
     return levels;
   }
-  addNumber(fields, path, name, description, options = {}) {
-    fields.push({ path, name, description, options: { ...inferNumberOptions(path, this.mode), ...options } });
+  addNumber(fields, path, name, description, options = {}, disabled = false) {
+    const field = { path, name, description, options: { ...inferNumberOptions(path, this.mode), ...options } };
+    if (disabled) {
+      field.disabled = true;
+    }
+    fields.push(field);
   }
   renderBodySection(container) {
     const content = container;
@@ -1997,10 +2006,22 @@ var SettingsCatalog = class {
   }
   renderMermaidSection(container) {
     const content = container;
-    const card = this.addGroup(content, this.t("mermaid.group"), this.t("mermaid.groupDesc"));
+    const card = this.addGroup(
+      content,
+      this.t("mermaid.group"),
+      this.t("mermaid.groupDesc"),
+      this.nativeMermaidZoom ? this.t("mermaid.landscapeWidthDisabledNotice") : void 0
+    );
     this.addNumber(card, ["mermaid", "portraitMaxWidthPct"], this.t("mermaid.portraitWidth"), this.t("mermaid.portraitWidthDesc"));
     this.addNumber(card, ["mermaid", "portraitAspectRatio"], this.t("mermaid.portraitRatio"), this.t("mermaid.portraitRatioDesc"), { min: 0.05, max: 5, step: 0.05 });
-    this.addNumber(card, ["mermaid", "landscapeMinWidthPx"], this.t("mermaid.landscapeWidth"), this.t("mermaid.landscapeWidthDesc"), { min: 0, max: 4096, step: 10 });
+    this.addNumber(
+      card,
+      ["mermaid", "landscapeMinWidthPx"],
+      this.t("mermaid.landscapeWidth"),
+      this.t("mermaid.landscapeWidthDesc"),
+      { min: 0, max: 4096, step: 10 },
+      this.nativeMermaidZoom
+    );
   }
   renderTableSection(container) {
     const content = container;
@@ -2131,6 +2152,7 @@ var RefinedLayoutSettingTab = class extends import_obsidian2.PluginSettingTab {
     const t = this.t;
     const mode = this.mode;
     const modes = getModeLabels(t);
+    const nativeMermaidZoom = (0, import_obsidian2.requireApiVersion)("1.15.0");
     const pages = getSettingsTabs(t).map((tab) => ({
       type: "page",
       name: `${modes[mode]} \xB7 ${tab.label}`,
@@ -2143,7 +2165,7 @@ var RefinedLayoutSettingTab = class extends import_obsidian2.PluginSettingTab {
             this.renderModule(setting, mode, tab, () => this.refresh());
           }
         },
-        ...new SettingsCatalog(t, mode).build(tab).flatMap((group) => {
+        ...new SettingsCatalog(t, mode, { nativeMermaidZoom }).build(tab).flatMap((group) => {
           const makeGroup = (heading, fields) => ({
             type: "group",
             heading,
@@ -2154,11 +2176,28 @@ var RefinedLayoutSettingTab = class extends import_obsidian2.PluginSettingTab {
               aliases: [modes[mode], tab.label, group.title, field.path.join(" ")],
               render: (setting) => {
                 this.renderNumber(setting, mode, field);
-                setting.setDisabled(!this.plugin.settings[mode].modules[tab.module]);
+                setting.setDisabled(Boolean(field.disabled) || !this.plugin.settings[mode].modules[tab.module]);
               }
             }))
           });
-          return "fields" in group ? [makeGroup(group.title, group.fields)] : HEADING_LEVELS.map((level) => makeGroup(`${group.title} \xB7 ${HEADING_LABELS[level]}`, group.levels[level]));
+          const groups = "fields" in group ? [makeGroup(group.title, group.fields)] : HEADING_LEVELS.map((level) => makeGroup(`${group.title} \xB7 ${HEADING_LABELS[level]}`, group.levels[level]));
+          if (group.infoBox !== void 0) {
+            const infoBox = group.infoBox;
+            groups.push({
+              type: "group",
+              cls: "refined-layout-settings rl-settings-native-group rl-settings-infobox-group",
+              items: [{
+                name: "",
+                searchable: false,
+                render: (setting) => {
+                  setting.settingEl.empty();
+                  setting.settingEl.addClass("refined-layout-settings", "rl-settings-infobox-row");
+                  this.renderInfoBox(setting.settingEl, infoBox);
+                }
+              }]
+            });
+          }
+          return groups;
         })
       ]
     }));
@@ -2281,8 +2320,23 @@ var RefinedLayoutSettingTab = class extends import_obsidian2.PluginSettingTab {
       });
     });
   }
+  renderInfoBox(container, message) {
+    const callout = container.createDiv({
+      cls: "callout rl-settings-infobox",
+      attr: { "data-callout": "info", role: "note" }
+    });
+    const icon = callout.createDiv({
+      cls: "callout-icon",
+      attr: { "aria-hidden": "true" }
+    });
+    (0, import_obsidian2.setIcon)(icon, "lucide-info");
+    callout.createDiv({
+      cls: "rl-settings-infobox-content",
+      text: message
+    });
+  }
   renderNumber(setting, mode, field) {
-    const { path, name, description, options: config } = field;
+    const { path, name, description, options: config, disabled } = field;
     setting.setName(name).setDesc(description);
     setting.addText((text) => {
       text.setValue(String(this.plugin.getNumber(mode, path)));
@@ -2291,7 +2345,11 @@ var RefinedLayoutSettingTab = class extends import_obsidian2.PluginSettingTab {
       text.inputEl.min = String(config.min);
       text.inputEl.max = String(config.max);
       text.inputEl.addClass("rl-settings-number");
+      if (disabled) {
+        text.inputEl.disabled = true;
+      }
       text.onChange((rawValue) => {
+        if (disabled) return;
         const parsed = Number(rawValue);
         if (!Number.isFinite(parsed) || parsed < config.min || parsed > config.max) return;
         this.plugin.setNumber(mode, path, parsed);
@@ -2299,6 +2357,9 @@ var RefinedLayoutSettingTab = class extends import_obsidian2.PluginSettingTab {
     });
     if (config.unit !== "") {
       setting.controlEl.createSpan({ cls: "rl-settings-unit", text: config.unit === "ratio" ? this.t("unit.ratio") : config.unit });
+    }
+    if (disabled) {
+      setting.setDisabled(true);
     }
   }
 };

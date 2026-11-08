@@ -43,6 +43,7 @@ const result = await build({
         }
         export function getLanguage() { return "en"; }
         export function requireApiVersion() { return true; }
+        export function setIcon() {}
       ` }));
     },
   }],

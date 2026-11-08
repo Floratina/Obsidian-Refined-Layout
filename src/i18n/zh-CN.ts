@@ -184,6 +184,7 @@ export const translations = {
   "mermaid.portraitRatioDesc": "SVG 原始宽度除以高度；小于或等于该值时视为纵向图。",
   "mermaid.landscapeWidth": "横向图最小宽度",
   "mermaid.landscapeWidthDesc": "普通或横向 Mermaid 的最小宽度；空间不足时允许横向滚动。",
+  "mermaid.landscapeWidthDisabledNotice": "Obsidian 1.15 起已原生支持 Mermaid 图表自适应与缩放平移，无需再限制横向最小宽度，因此“横向图最小宽度”在当前版本下已停用。",
   "table.group": "正文表格排版与外观",
   "table.groupDesc": "正文表格的字号、文字行高、空行高度、单元格内边距、边框、圆角和上下间距。",
   "table.fontSize": "文字字号",
