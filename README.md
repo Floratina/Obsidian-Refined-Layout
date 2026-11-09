@@ -95,7 +95,7 @@ Mermaid generates flowcharts and other diagrams from text syntax. The plugin use
 
 - **Portrait aspect ratio threshold**: Defaults to `0.8`. A diagram is treated as portrait when its original width divided by height is at or below this value, meaning its height is at least 1.25 times its width. Updating the default does not overwrite saved values.
 - **Portrait maximum width**: Display portrait diagrams centered at their original size without enlarging them. Scale them down proportionally only when they exceed the configured percentage of the content width.
-- **Landscape minimum width**: Preserve a minimum width for standard or landscape diagrams and allow horizontal scrolling when there is not enough space.
+- **Landscape minimum width**: Preserve a minimum width for standard or landscape diagrams and allow horizontal scrolling when there is not enough space. Note: Obsidian 1.15+ natively supports responsive Mermaid diagrams with zoom and pan, so a minimum landscape width is no longer needed and this setting is disabled in Obsidian 1.15 and later (earlier versions remain supported).
 
 ## Usage and Configuration
 
