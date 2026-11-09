@@ -1,4 +1,4 @@
-import { Component, getLanguage, MarkdownRenderer, Modal, Setting, type App } from "obsidian";
+import { Component, getLanguage, MarkdownRenderer, Modal, type App } from "obsidian";
 import englishNotes from "../RELEASE_NOTES.md";
 import chineseNotes from "../RELEASE_NOTES_zh-CN.md";
 import traditionalChineseNotes from "../RELEASE_NOTES_zh-TW.md";
@@ -100,10 +100,11 @@ export class UpdateNotesModal extends Modal {
       href: this.notes.fullLogUrl,
       attr: { target: "_blank", rel: "noopener noreferrer" },
     });
-    new Setting(footer).addButton((button) => button
-      .setButtonText(this.notes.close)
-      .setCta()
-      .onClick(() => this.close()));
+    footer.createEl("button", {
+      cls: "mod-cta",
+      text: this.notes.close,
+      attr: { type: "button" },
+    }).addEventListener("click", () => this.close());
     this.renderComponent.load();
     try {
       await MarkdownRenderer.render(this.app, this.notes.markdown, markdown, "", this.renderComponent);

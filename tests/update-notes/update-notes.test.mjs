@@ -34,8 +34,13 @@ const result = await build({
             return this;
           }
         }
-        export class Component {}
-        export class MarkdownRenderer {}
+        export class Component {
+          load() {}
+          unload() {}
+        }
+        export class MarkdownRenderer {
+          static async render(_app, markdown, el) { el.renderedMarkdown = markdown; }
+        }
         export class Modal {
           static opened = 0;
           open() { Modal.opened++; this.onShown(); }
@@ -43,6 +48,7 @@ const result = await build({
         }
         export function getLanguage() { return "en"; }
         export function requireApiVersion() { return true; }
+        export function setIcon() {}
       ` }));
     },
   }],
@@ -52,7 +58,7 @@ const result = await build({
   format: "esm",
   write: false,
 });
-const { LayoutPlugin, Modal, Setting, extractVersionNotes, shouldShowUpdateNotes, getUpdateNotes } =
+const { LayoutPlugin, Modal, Setting, UpdateNotesModal, extractVersionNotes, shouldShowUpdateNotes, getUpdateNotes } =
   await import(`data:text/javascript;base64,${Buffer.from(result.outputFiles[0].text).toString("base64")}`);
 const UPDATE_NOTES_ID = "1.0.0";
 
@@ -253,4 +259,52 @@ test("save failure is reported and leaves an unseen announcement eligible on res
   restarted.ready();
   await restarted.plugin.saveQueue;
   assert.equal(Modal.opened, opened + 1);
+});
+
+test("modal footer renders the changelog link and CTA button directly without a Setting row", async () => {
+  const makeElement = (tag, options = {}) => {
+    const listeners = new Map();
+    const element = {
+      tag,
+      cls: options.cls ?? "",
+      text: options.text ?? "",
+      href: options.href,
+      attr: options.attr ?? {},
+      children: [],
+      addClass(cls) { this.cls = this.cls ? `${this.cls} ${cls}` : cls; },
+      setAttribute(name, value) { this.attr[name] = value; },
+      addEventListener(type, fn) { listeners.set(type, fn); },
+      click() { listeners.get("click")?.(); },
+      empty() { this.children.length = 0; },
+      createEl(childTag, childOptions) {
+        const child = makeElement(childTag, childOptions);
+        this.children.push(child);
+        return child;
+      },
+      createDiv(childOptions) { return this.createEl("div", childOptions); },
+      createSpan(childOptions) { return this.createEl("span", childOptions); },
+    };
+    return element;
+  };
+  const notes = getUpdateNotes("zh-CN", "1.0.2");
+  let shown = false;
+  let closed = false;
+  const modal = new UpdateNotesModal({}, notes, () => { shown = true; }, () => { closed = true; });
+  modal.modalEl = makeElement("div");
+  modal.contentEl = makeElement("div");
+  modal.containerEl = { isConnected: true };
+  modal.setTitle = (title) => { modal.title = title; };
+  await modal.onOpen();
+  assert.equal(shown, true);
+  const footer = modal.contentEl.children.find((child) => child.cls === "rl-update-notes-footer");
+  assert.ok(footer);
+  assert.deepEqual(
+    footer.children.map((child) => ({ tag: child.tag, cls: child.cls, text: child.text, type: child.attr.type })),
+    [
+      { tag: "a", cls: "external-link rl-update-notes-link", text: "查看完整日志", type: undefined },
+      { tag: "button", cls: "mod-cta", text: "知道了", type: "button" },
+    ],
+  );
+  footer.children[1].click();
+  assert.equal(closed, true);
 });

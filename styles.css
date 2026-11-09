@@ -794,8 +794,8 @@ body.refined-layout-enabled.rl-read-mermaid .markdown-preview-view.markdown-rend
   overflow-x: auto !important;
 }
 
-body.refined-layout-enabled.rl-edit-mermaid .markdown-source-view.mod-cm6 .mermaid:not(:where(.block-language-dataviewjs *)) > svg:not(:where(.canvas-wrapper, .canvas-wrapper *, .canvas-node, .canvas-node *)),
-body.refined-layout-enabled.rl-read-mermaid .markdown-preview-view.markdown-rendered .mermaid:not(:where(.block-language-dataviewjs *)) > svg:not(:where(.canvas-wrapper, .canvas-wrapper *, .canvas-node, .canvas-node *)) {
+body.refined-layout-enabled.rl-edit-mermaid .markdown-source-view.mod-cm6 .mermaid:not(:where(.block-language-dataviewjs *)) > svg:not(.pele):not(:where(.canvas-wrapper, .canvas-wrapper *, .canvas-node, .canvas-node *)),
+body.refined-layout-enabled.rl-read-mermaid .markdown-preview-view.markdown-rendered .mermaid:not(:where(.block-language-dataviewjs *)) > svg:not(.pele):not(:where(.canvas-wrapper, .canvas-wrapper *, .canvas-node, .canvas-node *)) {
   display: block !important;
   width: 100% !important;
   min-width: var(--rl-edit-mermaid-landscape-min-width-px) !important;
@@ -805,11 +805,11 @@ body.refined-layout-enabled.rl-read-mermaid .markdown-preview-view.markdown-rend
   margin-left: auto !important;
 }
 
-body.refined-layout-enabled.rl-read-mermaid .markdown-preview-view.markdown-rendered .mermaid:not(:where(.block-language-dataviewjs *)) > svg:not(:where(.canvas-wrapper, .canvas-wrapper *, .canvas-node, .canvas-node *)) {
+body.refined-layout-enabled.rl-read-mermaid .markdown-preview-view.markdown-rendered .mermaid:not(:where(.block-language-dataviewjs *)) > svg:not(.pele):not(:where(.canvas-wrapper, .canvas-wrapper *, .canvas-node, .canvas-node *)) {
   min-width: var(--rl-read-mermaid-landscape-min-width-px) !important;
 }
 
-body.refined-layout-enabled.rl-edit-mermaid .markdown-source-view.mod-cm6 .mermaid.rl-mermaid-portrait:not(:where(.block-language-dataviewjs *)) > svg:not(:where(.canvas-wrapper, .canvas-wrapper *, .canvas-node, .canvas-node *)) {
+body.refined-layout-enabled.rl-edit-mermaid .markdown-source-view.mod-cm6 .mermaid.rl-mermaid-portrait:not(:where(.block-language-dataviewjs *)) > svg:not(.pele):not(:where(.canvas-wrapper, .canvas-wrapper *, .canvas-node, .canvas-node *)) {
   --rl-mermaid-natural-width: 100%;
 
   width: var(--rl-mermaid-natural-width) !important;
@@ -817,12 +817,35 @@ body.refined-layout-enabled.rl-edit-mermaid .markdown-source-view.mod-cm6 .merma
   max-width: var(--rl-edit-mermaid-portrait-max-width-pct) !important;
 }
 
-body.refined-layout-enabled.rl-read-mermaid .markdown-preview-view.markdown-rendered .mermaid.rl-mermaid-portrait:not(:where(.block-language-dataviewjs *)) > svg:not(:where(.canvas-wrapper, .canvas-wrapper *, .canvas-node, .canvas-node *)) {
+body.refined-layout-enabled.rl-read-mermaid .markdown-preview-view.markdown-rendered .mermaid.rl-mermaid-portrait:not(:where(.block-language-dataviewjs *)) > svg:not(.pele):not(:where(.canvas-wrapper, .canvas-wrapper *, .canvas-node, .canvas-node *)) {
   --rl-mermaid-natural-width: 100%;
 
   width: var(--rl-mermaid-natural-width) !important;
   min-width: 0 !important;
   max-width: var(--rl-read-mermaid-portrait-max-width-pct) !important;
+}
+
+/* Pele sets inline width, height, and margin while zoomed, then restores its
+   initial inline styles on reset. Avoid !important on those properties so
+   Pele's zoom box can take over and hand control back cleanly. */
+body.refined-layout-enabled.rl-edit-mermaid .markdown-source-view.mod-cm6 .mermaid:not(:where(.block-language-dataviewjs *)) > svg.pele:not(:where(.canvas-wrapper, .canvas-wrapper *, .canvas-node, .canvas-node *)),
+body.refined-layout-enabled.rl-read-mermaid .markdown-preview-view.markdown-rendered .mermaid:not(:where(.block-language-dataviewjs *)) > svg.pele:not(:where(.canvas-wrapper, .canvas-wrapper *, .canvas-node, .canvas-node *)) {
+  display: block;
+  height: auto;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+body.refined-layout-enabled.rl-edit-mermaid .markdown-source-view.mod-cm6 .mermaid.rl-mermaid-portrait:not(:where(.block-language-dataviewjs *)) > svg.pele:not(:where(.canvas-wrapper, .canvas-wrapper *, .canvas-node, .canvas-node *)) {
+  --rl-mermaid-natural-width: 100%;
+
+  width: min(var(--rl-mermaid-natural-width), var(--rl-edit-mermaid-portrait-max-width-pct));
+}
+
+body.refined-layout-enabled.rl-read-mermaid .markdown-preview-view.markdown-rendered .mermaid.rl-mermaid-portrait:not(:where(.block-language-dataviewjs *)) > svg.pele:not(:where(.canvas-wrapper, .canvas-wrapper *, .canvas-node, .canvas-node *)) {
+  --rl-mermaid-natural-width: 100%;
+
+  width: min(var(--rl-mermaid-natural-width), var(--rl-read-mermaid-portrait-max-width-pct));
 }
 
 /* --------------------------------------------------------------------------
@@ -1494,24 +1517,11 @@ body.refined-layout-enabled.rl-read-code-blocks .markdown-rendered code[class*="
   outline-offset: 3px;
 }
 
-.rl-update-notes-footer .setting-item {
+.rl-update-notes-footer button {
   flex-shrink: 0;
+  min-width: 88px;
   margin: 0;
   margin-inline-start: auto;
-  padding: 0;
-  border: none;
-}
-
-.rl-update-notes-footer .setting-item-info {
-  display: none;
-}
-
-.rl-update-notes-footer .setting-item-control {
-  justify-content: flex-end;
-}
-
-.rl-update-notes-footer button {
-  min-width: 88px;
 }
 
 @media (max-width: 480px) {
@@ -1536,13 +1546,19 @@ body.refined-layout-enabled.rl-read-code-blocks .markdown-rendered code[class*="
 
 /* Keep the mode tabs outside the native configuration and category cards. */
 .rl-settings-mode-group > .setting-items,
-.rl-settings-mode-group .setting-item.rl-settings-mode-row {
+.rl-settings-mode-group .setting-item.rl-settings-mode-row,
+.rl-settings-infobox-group > .setting-items,
+.rl-settings-infobox-group .setting-item.rl-settings-infobox-row {
   display: block;
   margin: 0;
   padding: 0;
   border: none;
   background: transparent;
   box-shadow: none;
+}
+
+.setting-group + .setting-group.rl-settings-infobox-group {
+  margin-top: var(--size-4-3, 12px);
 }
 
 .refined-layout-settings.rl-settings-native-group {
@@ -1631,4 +1647,29 @@ body.refined-layout-enabled.rl-read-code-blocks .markdown-rendered code[class*="
   background: transparent;
   font-size: var(--font-ui-smaller, 12px);
   font-weight: var(--font-medium, 500);
+}
+
+.refined-layout-settings .setting-item.is-disabled .setting-item-info,
+.refined-layout-settings .setting-item.is-disabled .rl-settings-unit {
+  opacity: 0.5;
+}
+
+.refined-layout-settings .callout.rl-settings-infobox {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--size-4-2, 8px);
+  margin: 0;
+  padding: var(--size-4-3, 12px) var(--setting-items-padding-x, 16px);
+  border-radius: var(--setting-items-radius, var(--callout-radius, 8px));
+  mix-blend-mode: normal;
+}
+
+.refined-layout-settings .rl-settings-infobox .callout-icon {
+  margin-top: 2px;
+}
+
+.refined-layout-settings .rl-settings-infobox-content {
+  color: var(--text-normal);
+  font-size: var(--font-ui-small, 13px);
+  line-height: var(--line-height-normal, 1.5);
 }

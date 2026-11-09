@@ -128,17 +128,30 @@ export interface NumberField {
   name: string;
   description: string;
   options: Required<NumberOptions>;
+  disabled?: boolean;
 }
 
 export type SettingsFieldGroup = {
   title: string;
   description?: string;
+  infoBox?: string;
 } & ({ fields: NumberField[] } | { context: string; levels: Record<HeadingLevel, NumberField[]> });
+
+export interface SettingsCatalogOptions {
+  nativeMermaidZoom?: boolean;
+}
 
 // Shared by the tabbed UI and the native searchable settings pages.
 export class SettingsCatalog {
-  constructor(private readonly t: Translator, private readonly mode: ModeKey) {}
+  private readonly nativeMermaidZoom: boolean;
 
+  constructor(
+    private readonly t: Translator,
+    private readonly mode: ModeKey,
+    options: SettingsCatalogOptions = {},
+  ) {
+    this.nativeMermaidZoom = Boolean(options.nativeMermaidZoom);
+  }
   build(tab: SettingsTabDefinition): SettingsFieldGroup[] {
     const panel: SettingsFieldGroup[] = [];
     switch (tab.id) {
@@ -176,9 +189,9 @@ export class SettingsCatalog {
     return panel;
   }
 
-  private addGroup(groups: SettingsFieldGroup[], title: string, description?: string): NumberField[] {
+  private addGroup(groups: SettingsFieldGroup[], title: string, description?: string, infoBox?: string): NumberField[] {
     const fields: NumberField[] = [];
-    groups.push({ title, description, fields });
+    groups.push(infoBox === undefined ? { title, description, fields } : { title, description, infoBox, fields });
     return fields;
   }
 
@@ -188,8 +201,19 @@ export class SettingsCatalog {
     return levels;
   }
 
-  private addNumber(fields: NumberField[], path: string[], name: string, description: string, options: NumberOptions = {}): void {
-    fields.push({ path, name, description, options: { ...inferNumberOptions(path, this.mode), ...options } });
+  private addNumber(
+    fields: NumberField[],
+    path: string[],
+    name: string,
+    description: string,
+    options: NumberOptions = {},
+    disabled = false,
+  ): void {
+    const field: NumberField = { path, name, description, options: { ...inferNumberOptions(path, this.mode), ...options } };
+    if (disabled) {
+      field.disabled = true;
+    }
+    fields.push(field);
   }
 
   private renderBodySection(container: SettingsFieldGroup[]): void {
@@ -354,10 +378,22 @@ export class SettingsCatalog {
 
   private renderMermaidSection(container: SettingsFieldGroup[]): void {
     const content = container;
-    const card = this.addGroup(content, this.t("mermaid.group"), this.t("mermaid.groupDesc"));
+    const card = this.addGroup(
+      content,
+      this.t("mermaid.group"),
+      this.t("mermaid.groupDesc"),
+      this.nativeMermaidZoom ? this.t("mermaid.landscapeWidthDisabledNotice") : undefined,
+    );
     this.addNumber(card, ["mermaid", "portraitMaxWidthPct"], this.t("mermaid.portraitWidth"), this.t("mermaid.portraitWidthDesc"));
     this.addNumber(card, ["mermaid", "portraitAspectRatio"], this.t("mermaid.portraitRatio"), this.t("mermaid.portraitRatioDesc"), { min: 0.05, max: 5, step: 0.05 });
-    this.addNumber(card, ["mermaid", "landscapeMinWidthPx"], this.t("mermaid.landscapeWidth"), this.t("mermaid.landscapeWidthDesc"), { min: 0, max: 4096, step: 10 });
+    this.addNumber(
+      card,
+      ["mermaid", "landscapeMinWidthPx"],
+      this.t("mermaid.landscapeWidth"),
+      this.t("mermaid.landscapeWidthDesc"),
+      { min: 0, max: 4096, step: 10 },
+      this.nativeMermaidZoom,
+    );
   }
 
   private renderTableSection(container: SettingsFieldGroup[]): void {

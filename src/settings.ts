@@ -249,8 +249,8 @@ const READ_CALLOUT_HEADINGS: Record<HeadingLevel, ContextHeadingSettings> = {
   h2: { lineHeight: 1.372, topEm: 0.4, bottomEm: 0, bottomPx: 1 },
   h3: { lineHeight: 1.372, topEm: 0.4, bottomEm: 0, bottomPx: 0 },
   h4: { lineHeight: 1.372, topEm: 0.4, bottomEm: 0, bottomPx: 8 },
-  h5: { lineHeight: 1.3524, topEm: 0.35, bottomEm: 0, bottomPx: -4 },
-  h6: { lineHeight: 1.3328, topEm: 0.35, bottomEm: 0, bottomPx: -2 },
+  h5: { lineHeight: 1.3524, topEm: 0.35, bottomEm: 0, bottomPx: 4 },
+  h6: { lineHeight: 1.3328, topEm: 0.35, bottomEm: 0, bottomPx: 2 },
 };
 
 const EDIT_BLOCKQUOTE_HEADINGS: Record<HeadingLevel, ContextHeadingSettings> = {
@@ -347,7 +347,7 @@ export const DEFAULT_SETTINGS: RefinedLayoutSettings = {
     image: { ...EDIT_IMAGE, marginTopPx: 5, marginBottomPx: 10 },
     mermaid: {
       portraitMaxWidthPct: 55,
-      portraitAspectRatio: 1,
+      portraitAspectRatio: 0.8,
       landscapeMinWidthPx: 450,
     },
     table: { ...EDIT_TABLE },
@@ -451,7 +451,7 @@ export const DEFAULT_SETTINGS: RefinedLayoutSettings = {
     image: { ...READ_IMAGE, marginTopPx: 0, marginBottomPx: 10 },
     mermaid: {
       portraitMaxWidthPct: 55,
-      portraitAspectRatio: 1,
+      portraitAspectRatio: 0.8,
       landscapeMinWidthPx: 450,
     },
     table: { ...READ_TABLE },

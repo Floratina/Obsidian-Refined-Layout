@@ -12,7 +12,7 @@ const result = await build({
       export * from "./src/settings-tab";
       export * from "./src/i18n/core";
       export { default as LayoutPlugin } from "./src/main";
-      export { PluginSettingTab, Setting, Notice, Modal } from "obsidian";`,
+      export { PluginSettingTab, Setting, Notice, Modal, setHostApiVersion } from "obsidian";`,
     resolveDir: fileURLToPath(new URL("../../", import.meta.url)),
     loader: "ts",
   },
@@ -37,15 +37,46 @@ const result = await build({
           constructor(message) { Notice.messages.push(message); }
         }
         export function getLanguage() { return "en"; }
+        let hostApiVersion = "1.14.4";
+        export function setHostApiVersion(version) { hostApiVersion = version; }
+        function compareSemver(left, right) {
+          const a = left.split(".").map(Number);
+          const b = right.split(".").map(Number);
+          for (let index = 0; index < 3; index++) {
+            if ((a[index] ?? 0) !== (b[index] ?? 0)) return (a[index] ?? 0) - (b[index] ?? 0);
+          }
+          return 0;
+        }
         export function requireApiVersion(version) {
-          if (version !== "1.13.0") throw new Error("Unexpected API boundary");
-          return typeof PluginSettingTab.prototype.update === "function";
+          if (version === "1.13.0") {
+            return typeof PluginSettingTab.prototype.update === "function" && compareSemver(hostApiVersion, "1.13.0") >= 0;
+          }
+          if (version === "1.15.0") {
+            return compareSemver(hostApiVersion, "1.15.0") >= 0;
+          }
+          throw new Error("Unexpected API boundary: " + version);
+        }
+        export function setIcon(element, iconId) { element.icon = iconId; }
+        function makeElement(options = {}) {
+          return {
+            cls: options.cls ?? "",
+            text: options.text ?? "",
+            attr: { ...(options.attr ?? {}) },
+            children: [],
+            empty() { this.children = []; this.text = ""; },
+            addClass(...tokens) { this.cls = [this.cls, ...tokens].filter(Boolean).join(" "); },
+            createDiv(childOptions = {}) {
+              const child = makeElement(childOptions);
+              this.children.push(child);
+              return child;
+            },
+          };
         }
         export class PluginSettingTab {
           update() { this.updates = (this.updates ?? 0) + 1; this.settingItems = this.getSettingDefinitions(); }
         }
         export class Setting {
-          constructor(container) { container?.settings.push(this); this.buttons = []; }
+          constructor(container) { container?.settings.push(this); this.buttons = []; this.settingEl = makeElement(); }
           controlEl = { createSpan: (value) => { this.unit = value.text; } };
           setName(value) { this.name = value; return this; }
           setDesc(value) { this.desc = value; return this; }
@@ -83,7 +114,7 @@ const result = await build({
 });
 const {
   SettingsCatalog, getSettingsTabs, cloneDefaultSettings, HEADING_LEVELS,
-  translatorForLocale, RefinedLayoutSettingTab, LayoutPlugin, PluginSettingTab, Setting, Notice, Modal,
+  translatorForLocale, RefinedLayoutSettingTab, LayoutPlugin, PluginSettingTab, Setting, Notice, Modal, setHostApiVersion,
 } = await import(`data:text/javascript;base64,${Buffer.from(result.outputFiles[0].text).toString("base64")}`);
 
 function numericPaths(value, prefix = []) {
@@ -293,5 +324,61 @@ test("language refresh rebuilds translated search entries and older hosts retain
     assert.equal(tab.updates, 2);
   } finally {
     PluginSettingTab.prototype.update = update;
+  }
+});
+
+test("Mermaid landscape minimum width stays active below 1.15 and shows a localized infobox while disabled on 1.15+", () => {
+  const { plugin, tab } = fixture();
+  try {
+    setHostApiVersion("1.14.4");
+    for (const mode of ["edit", "read"]) {
+      tab.mode = mode;
+      const all = nativeFields(tab.getSettingDefinitions());
+      const mermaidItems = all.filter(({ pages }) => pages[0]?.endsWith(`· ${translatorForLocale("en")("tabs.mermaid")}`));
+      assert.equal(mermaidItems.filter(({ item }) => item.searchable === false).length, 0, "No infobox below 1.15");
+      const landscape = mermaidItems.find(({ item }) => item.aliases?.at(-1) === "mermaid landscapeMinWidthPx");
+      const setting = new Setting();
+      landscape.item.render(setting);
+      assert.equal(setting.disabled, false);
+      assert.notEqual(setting.text.inputEl.disabled, true);
+      setting.text.change("520");
+      assert.equal(plugin.settings[mode].mermaid.landscapeMinWidthPx, 520);
+    }
+
+    setHostApiVersion("1.15.0");
+    for (const locale of ["zh-CN", "zh-TW", "en", "ja"]) {
+      plugin.setLanguage(locale);
+      const t = translatorForLocale(locale);
+      for (const mode of ["edit", "read"]) {
+        tab.mode = mode;
+        const pageLabel = `${t(mode === "edit" ? "mode.edit" : "mode.read")} · ${t("tabs.mermaid")}`;
+        const mermaidItems = nativeFields(tab.getSettingDefinitions()).filter(({ pages }) => pages[0] === pageLabel);
+        const portrait = mermaidItems.find(({ item }) => item.aliases?.at(-1) === "mermaid portraitMaxWidthPct");
+        const portraitSetting = new Setting();
+        portrait.item.render(portraitSetting);
+        assert.equal(portraitSetting.disabled, false);
+
+        const landscape = mermaidItems.find(({ item }) => item.aliases?.at(-1) === "mermaid landscapeMinWidthPx");
+        const landscapeSetting = new Setting();
+        landscape.item.render(landscapeSetting);
+        assert.equal(landscapeSetting.disabled, true);
+        assert.equal(landscapeSetting.text.inputEl.disabled, true);
+        landscapeSetting.text.change("640");
+        assert.equal(plugin.settings[mode].mermaid.landscapeMinWidthPx, 520, "Disabled input must not mutate settings");
+
+        const infoBoxes = mermaidItems.filter(({ item }) => item.searchable === false);
+        assert.equal(infoBoxes.length, 1);
+        const infoSetting = new Setting();
+        infoBoxes[0].item.render(infoSetting);
+        assert.equal(infoSetting.settingEl.children.length, 1);
+        const callout = infoSetting.settingEl.children[0];
+        assert.equal(callout.cls, "callout rl-settings-infobox");
+        assert.equal(callout.attr["data-callout"], "info");
+        assert.equal(callout.children[0].icon, "lucide-info");
+        assert.equal(callout.children[1].text, t("mermaid.landscapeWidthDisabledNotice"));
+      }
+    }
+  } finally {
+    setHostApiVersion("1.14.4");
   }
 });

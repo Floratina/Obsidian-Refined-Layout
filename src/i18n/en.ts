@@ -182,6 +182,7 @@ export const en = {
   "mermaid.portraitRatioDesc": "Original SVG width divided by height. Ratios at or below this value are treated as portrait.",
   "mermaid.landscapeWidth": "Landscape minimum width",
   "mermaid.landscapeWidthDesc": "Minimum width for regular or landscape Mermaid diagrams. Allow horizontal scrolling when space is insufficient.",
+  "mermaid.landscapeWidthDisabledNotice": "Obsidian 1.15+ natively supports responsive Mermaid diagrams with zoom and pan, so a minimum landscape width is no longer needed and “Landscape minimum width” is disabled in this version.",
   "table.group": "Body table typography & appearance",
   "table.groupDesc": "Font size, text line height, blank line height, cell padding, borders, corner radius, and vertical spacing of body tables.",
   "table.fontSize": "Font size",
