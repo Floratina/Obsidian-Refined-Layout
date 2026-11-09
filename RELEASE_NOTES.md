@@ -2,6 +2,19 @@
 
 **English** | [简体中文](RELEASE_NOTES_zh-CN.md) | [繁體中文](RELEASE_NOTES_zh-TW.md) | [日本語](RELEASE_NOTES_ja.md)
 
+## 1.0.4
+
+#### Obsidian 1.15 Mermaid compatibility
+
+- Added support for the new Mermaid rendering engine in Obsidian 1.15, preserving portrait diagram centering and maximum width controls while working with native responsive sizing, zoom, and pan.
+- On Obsidian 1.15 and later, "Landscape minimum width" is automatically disabled with an explanatory notice in settings, since Mermaid diagrams now natively resize, zoom, and pan. Earlier Obsidian versions retain this setting as before.
+- Changed the default "Portrait aspect ratio threshold" from `1` to `0.8`. Existing saved values are not overwritten.
+
+#### Other adjustments and fixes
+
+- Changed the default bottom spacing for H5 and H6 headings inside callouts in Reading view from `-4px` and `-2px` to `4px` and `2px`.
+- Fixed an extra divider line above the bottom button in the update notes dialog.
+
 ## 1.0.3
 
 #### Added table layout settings
